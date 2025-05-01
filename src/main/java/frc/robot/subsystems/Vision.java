@@ -1,0 +1,323 @@
+package frc.robot.subsystems;
+
+import static edu.wpi.first.units.Units.*;
+
+import com.ctre.phoenix6.Utils;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Consumer;
+import org.littletonrobotics.junction.Logger;
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.targeting.PhotonPipelineResult;
+
+public class Vision extends SubsystemBase {
+
+  public static class Config {
+    public Transform3d frontCameraToRobot;
+    public Transform3d backRightCameraToRobot;
+    public Transform3d backLeftCameraToRobot;
+  }
+
+  // Method to be called when a new pose estimate is ready
+  private Optional<Consumer<StampedPose2d>> updatePoseCallback = Optional.empty();
+
+  public record StampedPose2d(Pose2d pose, double timestamp) {}
+
+  VisionProcessing frontVision;
+  VisionProcessing backRightVision;
+  VisionProcessing backLeftVision;
+  private long lastLogTime;
+  private Alliance alliance;
+  public Pose2d coralStationLeft;
+  public Pose2d coralStationRight;
+  Pose2d reefCenter;
+  private static Transform2d coralStationTransform =
+      new Transform2d(Inches.of(20), Inches.of(11.628), Rotation2d.k180deg);
+
+  private double latest_reef_tag_pitch_right_cam = 1058.0;
+  private double latest_reef_tag_yaw_right_cam = 1058.0;
+  private double latest_reef_tag_pitch_left_cam = 1058.0;
+  private double latest_reef_tag_yaw_left_cam = 1058.0;
+
+  AprilTagFieldLayout fieldLayout =
+      AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
+
+  public void updateAlliance(Alliance alliance) {
+    this.alliance = alliance;
+
+    if (alliance == Alliance.Red) {
+      coralStationLeft =
+          fieldLayout.getTagPose(1).get().toPose2d().transformBy(coralStationTransform);
+      coralStationRight =
+          fieldLayout.getTagPose(2).get().toPose2d().transformBy(coralStationTransform);
+      reefCenter = new Pose2d(Inches.of(513.625), Inches.of(158.5), Rotation2d.fromDegrees(-150));
+    } else {
+      coralStationLeft =
+          fieldLayout.getTagPose(13).get().toPose2d().transformBy(coralStationTransform);
+      coralStationRight =
+          fieldLayout.getTagPose(12).get().toPose2d().transformBy(coralStationTransform);
+      reefCenter = new Pose2d(Inches.of(176.75), Inches.of(158.5), Rotation2d.fromDegrees(30));
+    }
+  }
+
+  public class VisionProcessing {
+    PhotonPoseEstimator primaryPoseEstimator;
+    PhotonPoseEstimator secondaryPoseEstimator;
+    PhotonCamera camera;
+    double poseAmbiguity;
+
+    Optional<StampedPose2d> robotPose = Optional.empty();
+
+    // Initialize the PhotonPoseEstimator
+    VisionProcessing(String cameraName, Transform3d cameraToRobot) {
+      camera = new PhotonCamera(cameraName);
+      try {
+        primaryPoseEstimator = new PhotonPoseEstimator(
+            fieldLayout,
+            PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+            cameraToRobot);
+
+        secondaryPoseEstimator = new PhotonPoseEstimator(
+            fieldLayout, PhotonPoseEstimator.PoseStrategy.LOWEST_AMBIGUITY, cameraToRobot);
+
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+
+    private static boolean isValidPose(Pose3d pose) {
+      double z = pose.getZ();
+      Rotation3d rotation = pose.getRotation();
+
+      double roll = rotation.getX();
+      double pitch = rotation.getY();
+      double yaw = rotation.getZ();
+
+      if (Math.abs(roll) > Math.PI / 2 || Math.abs(pitch) > Math.PI / 2) {
+        return false;
+      }
+
+      if (z < -0.1) {
+        return false;
+      }
+
+      double maxTilt = Math.toRadians(30);
+      if (Math.abs(roll) > maxTilt || Math.abs(pitch) > maxTilt) {
+        return false;
+      }
+
+      return true;
+    }
+
+    private Optional<StampedPose2d> readRobotPoseFromNT() {
+
+      List<PhotonPipelineResult> resultList = camera.getAllUnreadResults();
+
+      if (resultList.isEmpty()) {
+        if (Objects.equals(this.camera.getName(), "back_right")) {
+          latest_reef_tag_pitch_right_cam = 1058.0;
+          latest_reef_tag_yaw_right_cam = 1058.0;
+        } else if (Objects.equals(this.camera.getName(), "back_left")) {
+          latest_reef_tag_pitch_left_cam = 1058.0;
+          latest_reef_tag_yaw_left_cam = 1058.0;
+        }
+        return Optional.empty();
+      }
+
+      PhotonPipelineResult result = resultList.get(resultList.size() - 1);
+
+      if (this.camera.getName() == "back_right" && result.hasTargets()) {
+        latest_reef_tag_pitch_right_cam = result.getBestTarget().getPitch();
+        latest_reef_tag_yaw_right_cam = result.getBestTarget().getYaw();
+      } else if (this.camera.getName() == "back_right") {
+        latest_reef_tag_pitch_right_cam = 1058.0;
+        latest_reef_tag_yaw_right_cam = 1058.0;
+      }
+
+      if (this.camera.getName() == "back_left" && result.hasTargets()) {
+        latest_reef_tag_pitch_left_cam = result.getBestTarget().getPitch();
+        latest_reef_tag_yaw_left_cam = result.getBestTarget().getYaw();
+      } else if (this.camera.getName() == "back_left") {
+        latest_reef_tag_pitch_left_cam = 1058.0;
+        latest_reef_tag_yaw_left_cam = 1058.0;
+      }
+
+      if (result.hasTargets()) {
+        // Update the pose estimator with the latest camera data
+        EstimatedRobotPose estimatedPose = primaryPoseEstimator.update(result).orElse(null);
+        poseAmbiguity = 0;
+        if (estimatedPose == null) {
+          estimatedPose = secondaryPoseEstimator.update(result).orElse(null);
+          poseAmbiguity = result.getBestTarget().poseAmbiguity;
+          if (estimatedPose == null || poseAmbiguity > 0.3) {
+            return Optional.empty();
+          }
+        }
+
+        Pose2d pose2d = estimatedPose.estimatedPose.toPose2d();
+        Pose3d pose3d = estimatedPose.estimatedPose;
+        Logger.recordOutput(
+            "Pose3dZTranslation", pose3d.getTranslation().getMeasureZ().baseUnitMagnitude());
+        Logger.recordOutput(
+            "Pose3dXTranslation", pose3d.getTranslation().getMeasureX().baseUnitMagnitude());
+        Logger.recordOutput(
+            "Pose3dYTranslation", pose3d.getTranslation().getMeasureY().baseUnitMagnitude());
+        Logger.recordOutput(camera.getName() + "/2DVisionPoseUnfiltered", pose2d);
+        Logger.recordOutput(camera.getName() + "/3DVisionPoseUnfiltered", pose3d);
+
+        if (isValidPose(pose3d)) {
+          Logger.recordOutput(camera.getName() + "/2DVisionPoseFiltered", pose2d);
+          Logger.recordOutput(camera.getName() + "/3DVisionPoseFiltered", pose3d);
+          return Optional.of(
+              new StampedPose2d(pose2d, Utils.fpgaToCurrentTime(result.getTimestampSeconds())));
+        }
+      }
+      return Optional.empty();
+    }
+
+    public void updateRobotPose() {
+      this.robotPose = readRobotPoseFromNT();
+    }
+
+    public Optional<StampedPose2d> getPose() {
+      if (this.camera.getName().equals("front")) {
+        return Optional.empty();
+      }
+      return robotPose;
+    }
+  }
+
+  public Vision(Config config) {
+    backRightVision = new VisionProcessing("back_right", config.backRightCameraToRobot);
+    backLeftVision = new VisionProcessing("back_left", config.backLeftCameraToRobot);
+  }
+
+  public void onPoseUpdate(Consumer<StampedPose2d> cb) {
+    updatePoseCallback = Optional.of(cb);
+  }
+
+  public double getLatestReefTagPitchRightCam() {
+    return latest_reef_tag_pitch_right_cam;
+  }
+
+  public double getLatestReefTagYawRightCam() {
+    return latest_reef_tag_yaw_right_cam;
+  }
+
+  public double getLatestReefTagPitchLeftCam() {
+    return latest_reef_tag_pitch_left_cam;
+  }
+
+  public double getLatestReefTagYawLeftCam() {
+    return latest_reef_tag_yaw_left_cam;
+  }
+
+  public StampedPose2d chooseBestPoseBetweenBothBackCameras(
+      StampedPose2d backLeftCameraPose, StampedPose2d backRightCameraPose) {
+    Translation2d averageTranslation = backLeftCameraPose
+        .pose
+        .getTranslation()
+        .plus(backRightCameraPose.pose.getTranslation())
+        .div(2.0);
+    Rotation2d averageRotation = backLeftCameraPose
+        .pose
+        .getRotation()
+        .interpolate(backRightCameraPose.pose.getRotation(), 0.5);
+    if (RobotState.isAutonomous()) {
+      return backLeftCameraPose;
+    }
+    return new StampedPose2d(
+        new Pose2d(averageTranslation, averageRotation),
+        (backLeftCameraPose.timestamp + backRightCameraPose.timestamp) / 2);
+  }
+
+  public StampedPose2d chooseBestPoseBetween2CamerasToClosestTarget(
+      StampedPose2d frontCameraPose, StampedPose2d backCameraPose) {
+    Translation2d averageTranslation = frontCameraPose
+        .pose
+        .getTranslation()
+        .plus(backCameraPose.pose.getTranslation())
+        .div(2.0);
+    Rotation2d averageRotation =
+        frontCameraPose.pose.getRotation().interpolate(backCameraPose.pose.getRotation(), 0.5);
+
+    var distanceToReef = averageTranslation.getDistance(this.reefCenter.getTranslation());
+    var distanceToCoralStationLeft =
+        averageTranslation.getDistance(this.coralStationLeft.getTranslation());
+    var distanceToCoralStationRight =
+        averageTranslation.getDistance(this.coralStationRight.getTranslation());
+
+    if (distanceToReef < distanceToCoralStationLeft
+        && distanceToReef < distanceToCoralStationRight) {
+      return backCameraPose;
+    } else if (distanceToCoralStationLeft < distanceToReef
+        || distanceToCoralStationRight < distanceToReef) {
+      return frontCameraPose;
+    }
+    return new StampedPose2d(
+        new Pose2d(averageTranslation, averageRotation),
+        (backCameraPose.timestamp + frontCameraPose.timestamp) / 2);
+  }
+
+  public StampedPose2d chooseBestPoseBetween3CamerasToClosestTarget(
+      StampedPose2d frontCameraPose,
+      StampedPose2d backLeftCameraPose,
+      StampedPose2d backRightCameraPose) {
+    StampedPose2d bestFirstPose =
+        chooseBestPoseBetween2CamerasToClosestTarget(frontCameraPose, backLeftCameraPose);
+    StampedPose2d bestSecondPose =
+        chooseBestPoseBetween2CamerasToClosestTarget(frontCameraPose, backRightCameraPose);
+    return chooseBestPoseBetween2CamerasToClosestTarget(bestFirstPose, bestSecondPose);
+  }
+
+  @Override
+  public void periodic() {
+    backRightVision.updateRobotPose();
+    backLeftVision.updateRobotPose();
+
+    lastLogTime = System.currentTimeMillis();
+    var backRightRobotPose = backRightVision.getPose();
+    var backLeftRobotPose = backLeftVision.getPose();
+
+    // if (updatePoseCallback.isPresent()) {
+    //   if (backLeftRobotPose.isPresent() && backRightRobotPose.isPresent()) {
+    //     updatePoseCallback
+    //         .get()
+    //         .accept(chooseBestPoseBetweenBothBackCameras(
+    //             backLeftRobotPose.get(), backRightRobotPose.get()));
+    //   } else if (backLeftRobotPose.isPresent()) {
+    //     updatePoseCallback.get().accept((backLeftRobotPose.get()));
+    //   } else if (backRightRobotPose.isPresent()) {
+    //     updatePoseCallback.get().accept((backRightRobotPose.get()));
+    //   }
+    // }
+
+    if (updatePoseCallback.isPresent()) {
+      if (backLeftRobotPose.isPresent() && backRightRobotPose.isPresent()) {
+        updatePoseCallback
+            .get()
+            .accept(chooseBestPoseBetweenBothBackCameras(
+                backLeftRobotPose.get(), backRightRobotPose.get()));
+      } else if (backLeftRobotPose.isPresent()) {
+        updatePoseCallback.get().accept((backLeftRobotPose.get()));
+      } else if (backRightRobotPose.isPresent()) {
+        updatePoseCallback.get().accept((backRightRobotPose.get()));
+      }
+    }
+  }
+}
