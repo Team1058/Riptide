@@ -113,8 +113,12 @@ public class RobotContainer {
     leds.applyPatternsToStrips();
 
     if (shooter.getCurrentCommand().getName().equals("coral intake command")
-    || shooter.getCurrentCommand().getName().equals("Manual Shoot Command")){
+        || shooter.getCurrentCommand().getName().equals("Manual Shoot Command"))
+    {
         leds.leftPattern = leds.greenBase;
+    }
+    else if(shooter.algaePositionController) {
+
     }
     else{
         leds.leftPattern = leds.redOrangeBlinkWithRsl;

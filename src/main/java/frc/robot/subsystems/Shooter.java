@@ -136,7 +136,10 @@ public class Shooter extends SubsystemBase {
   public boolean coralDetectedByInSensor() {
     return inLimitSwitch.isPressed();
   }
-
+//needs fixing
+  public boolean algaeMechDeployed(){
+    return algaeEncoder.getPosition() == DEPLOYED;
+  }
   // and provide commands to set rumble state
   public Trigger bothSensorsDetectCoral() {
     return new Trigger(() -> inLimitSwitch.isPressed() && outLimitSwitch.isPressed());
