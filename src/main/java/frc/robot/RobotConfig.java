@@ -117,19 +117,19 @@ public class RobotConfig {
     //     new Translation3d(Inches.of(6.996), Inches.of(7.250), Inches.of(38.075)),
     //     new Rotation3d(Degrees.of(0), Degrees.of(-30), Degrees.of(0)));
 
-    v3.visionConfig.backLeftCameraToRobot = new Transform3d(
-        new Translation3d(Inches.of(-9.3), Inches.of(-3.80), Inches.of(9.51)),
+    v3.visionConfig.rightCameraToRobot = new Transform3d(
+        new Translation3d(Inches.of(-11.186), Inches.of(9.091), Inches.of(9.026)),
         new Rotation3d(
-            Degrees.of(0.41 + 0.3 + 0.2 + 0.05),
-            Degrees.of(-14.69 - 0.75 - 0.3 - 0.1),
-            Degrees.of(150.24)));
+            Degrees.of(0),
+            Degrees.of(20),
+            Degrees.of(28)));
 
-    v3.visionConfig.backRightCameraToRobot = new Transform3d(
-        new Translation3d(Inches.of(-7.7), Inches.of(3.5), Inches.of(9.51)),
+    v3.visionConfig.leftCameraToRobot = new Transform3d(
+        new Translation3d(Inches.of(11.186), Inches.of(9.091), Inches.of(9.026)),
         new Rotation3d(
-            Degrees.of(-0.3 - 1.77 - 0.4 + 0.3),
-            Degrees.of(-17.5 - 1.78 + 0.8),
-            Degrees.of(215.1)));
+            Degrees.of(0),
+            Degrees.of(20),
+            Degrees.of(-28)));
 
     return v3;
   }
