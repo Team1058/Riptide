@@ -9,8 +9,6 @@ import edu.wpi.first.math.geometry.Translation3d;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Elevator;
-import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.Processor;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Vision;
 import java.util.HashMap;
@@ -21,14 +19,10 @@ public class RobotConfig {
   int driverControllerPort;
   int operatorControllerPort;
   boolean hasSubsystems;
-  boolean hasProcessor;
   boolean hasClimber;
   boolean hasShooter;
-  boolean hasIntake;
   Elevator.Config elevatorConfig;
   Shooter.Config shooterConfig;
-  Intake.Config intakeConfig;
-  Processor.Config processorConfig;
   Climber.Config climberConfig;
   Drivetrain.Config drivetrainConfig;
   Vision.Config visionConfig;
@@ -51,14 +45,10 @@ public class RobotConfig {
   static RobotConfig getCommonConfig() {
     var common = new RobotConfig();
     common.hasSubsystems = false;
-    common.hasProcessor = false;
     common.hasClimber = false;
     common.hasShooter = true;
-    common.hasIntake = true;
     common.elevatorConfig = new Elevator.Config();
     common.shooterConfig = new Shooter.Config();
-    common.intakeConfig = new Intake.Config();
-    common.processorConfig = new Processor.Config();
     common.climberConfig = new Climber.Config();
     common.driverControllerPort = 0;
     common.operatorControllerPort = 1;

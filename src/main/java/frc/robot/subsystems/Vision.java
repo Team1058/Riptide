@@ -54,7 +54,7 @@ public class Vision extends SubsystemBase {
   private double latest_reef_tag_yaw_left_cam = 1058.0;
 
   AprilTagFieldLayout fieldLayout =
-      AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
+      AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
 
   public void updateAlliance(Alliance alliance) {
     this.alliance = alliance;
