@@ -244,7 +244,7 @@ public class Shooter extends SubsystemBase {
   public Command intakeCoralCommand() {
     return acceptUntilGamePieceDetectedByInputSensorCommand()
     .andThen(acceptUntilGamePieceDetectedByOutputSensorCommand()
-    .andThen(pullBackUntilGamePieceDetectedByInputSensorCommand()));
+    .andThen(pullBackUntilGamePieceDetectedByInputSensorCommand())).withName("coral intake command");
   }
 
   public void setAllMotorsBrake() {

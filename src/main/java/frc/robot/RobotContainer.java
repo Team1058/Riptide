@@ -2,9 +2,7 @@ package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
-import frc.robot.subsystems.Climber;
-import frc.robot.subsystems.Shooter;
-import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -13,7 +11,10 @@ public class RobotContainer {
   Climber climber;
   Shooter shooter;
   Elevator elevator;
+  Leds leds;
+
   RobotConfig robotConfig;
+
 
   CommandXboxController operatorController;
   CommandXboxController driveController;
@@ -105,6 +106,19 @@ public class RobotContainer {
         // Shoots the coral out of the shooter
         operatorController.x().whileTrue(shooter.spitOutCoralCommand());
       }
+  }
+
+  public void ledSetPatternsLogic(){
+
+    leds.applyPatternsToStrips();
+
+    if (shooter.getCurrentCommand().getName().equals("coral intake command")
+    || shooter.getCurrentCommand().getName().equals("Manual Shoot Command")){
+        leds.leftPattern = leds.greenBase;
+    }
+    else{
+        leds.leftPattern = leds.redOrangeBlinkWithRsl;
+    }
   }
 
   public Command getAutonomousCommand() {
