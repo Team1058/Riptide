@@ -3,9 +3,13 @@ package frc.robot;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
 import frc.robot.subsystems.Climber;
+import frc.robot.subsystems.Controllers;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Elevator;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -14,6 +18,9 @@ public class RobotContainer {
   Shooter shooter;
   Elevator elevator;
   RobotConfig robotConfig;
+  int driverPort = 0;
+  int operatorPort = 1;
+  Controllers controllers;
 
   CommandXboxController operatorController;
   CommandXboxController driveController;
@@ -29,11 +36,11 @@ public class RobotContainer {
     climber = new Climber(robotConfig.climberConfig);
     elevator = new Elevator(robotConfig.elevatorConfig);
     shooter = new Shooter(robotConfig.shooterConfig);
-    configureBindings();
+    configureOperatorBindings();
   }
 
 
-  private void configureBindings() {
+  private void configureOperatorBindings() {
     if (robotConfig.hasClimber) {
       operatorController
           .leftTrigger(0.5)
@@ -104,6 +111,12 @@ public class RobotContainer {
             .and(() -> shooter.coralNotDetectedByEitherSensor()
                 || operatorController.leftBumper().getAsBoolean())
             .onTrue(elevator.setRequestedPositionCommand(elevator.LEVELBARGE));
+
+        operatorController
+            .back()
+            .and(operatorController.start())
+            .onTrue(new RunCommand(() -> swapControllers(), controllers)
+            .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
             
         // Shoots the coral out of the shooter
         operatorController.x()
@@ -114,4 +127,18 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     return null;
   }
+
+    private void swapControllers() {
+        int tempDriverPort = driverPort;
+        driverPort = operatorPort;
+        operatorPort = tempDriverPort;
+        driveController = new CommandXboxController(driverPort);
+        operatorController = new CommandXboxController(operatorPort);
+        controllers = new Controllers(driveController, operatorController);
+        CommandScheduler.getInstance().disable();
+        CommandScheduler.getInstance().cancelAll();
+        CommandScheduler.getInstance().getDefaultButtonLoop().clear();
+        CommandScheduler.getInstance().enable();
+        configureOperatorBindings();
+    }
 }
