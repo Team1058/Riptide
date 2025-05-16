@@ -106,7 +106,8 @@ public class RobotContainer {
             .onTrue(elevator.setRequestedPositionCommand(elevator.LEVELBARGE));
             
         // Shoots the coral out of the shooter
-        operatorController.x().whileTrue(shooter.spitOutCoralCommand());
+        operatorController.x()
+        .whileTrue(shooter.spitOutCoralCommand());
       }
   }
 
