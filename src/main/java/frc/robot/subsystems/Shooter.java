@@ -147,27 +147,35 @@ public class Shooter extends SubsystemBase {
   }
 
   public Command manualShootCommand(DoubleSupplier supplier) {
-    return runEnd(() -> shooterMotor.set(supplier.getAsDouble()), () -> shooterMotor.disable())
-        .withName("Manual Shoot Command");
+    return runEnd(
+      () -> shooterMotor.set(supplier.getAsDouble()),
+      () -> shooterMotor.disable())
+      .withName("Manual Shoot Command");
   }
 
   public Command spitOutCoralCommand() {
-    return new StartEndCommand(() -> shooterMotor.set(-1), () -> shooterMotor.disable(), this)
-        .withName("Spit Out Coral Command");
+    return new StartEndCommand(
+      () -> shooterMotor.set(-1),
+      () -> shooterMotor.disable(),
+      this)
+      .withName("Spit Out Coral Command");
   }
 
   public Command deployAlgaeHookCommand() {
-    return runOnce(() -> algaePositionController.setReference(DEPLOYED, ControlType.kPosition))
+    return runOnce(
+      () -> algaePositionController.setReference(DEPLOYED, ControlType.kPosition))
         .withName("Deploy Algae Hook Command");
   }
 
   public Command holdAlgaeHookCommand() {
-    return runOnce(() -> algaePositionController.setReference(HOLD, ControlType.kPosition))
+    return runOnce(
+      () -> algaePositionController.setReference(HOLD, ControlType.kPosition))
         .withName("Hold Algae Hook Command");
   }
 
   public Command stowAlgaeHookCommand() {
-    return runOnce(() -> algaePositionController.setReference(STOWED, ControlType.kPosition))
+    return runOnce(
+      () -> algaePositionController.setReference(STOWED, ControlType.kPosition))
         .withName("Stow Algae Hook Command");
   }
 
@@ -176,8 +184,11 @@ public class Shooter extends SubsystemBase {
   }
 
   public Command intakeAlgae() {
-    return new StartEndCommand(() -> shooterMotor.set(.5), () -> shooterMotor.set(.2), this)
-        .withName("Intake Algae");
+    return new StartEndCommand(
+      () -> shooterMotor.set(.5),
+      () -> shooterMotor.set(.2),
+      this)
+      .withName("Intake Algae");
   }
 
   public Command shootAlgae() {
@@ -191,60 +202,37 @@ public class Shooter extends SubsystemBase {
         .withName("Shoot Algae");
   }
 
-  public Command spitOutUntilGamePieceNotDetectedCommand() {
+  public Command runShooterInFastUntilInAndOutLimitTriggered() {
     return new FunctionalCommand(
-            () -> {},
-            () -> shooterMotor.set(-.5),
-            interrupted -> shooterMotor.disable(),
-            this::coralNotDetectedByEitherSensor,
-            this)
-        .withName("Spit Out Until Game Piece Not Detected Command");
+      ()-> shooterMotor.set(-1),
+      ()-> {},
+      interupted -> shooterMotor.disable(),
+      ()-> inLimitSwitch.isPressed() && outLimitSwitch.isPressed(),
+      this);
   }
 
-  public Command acceptUntilGamePieceDetectedByInputSensorCommand() {
+  public Command runShooterInSlowUntilOutLimitTriggered() {
     return new FunctionalCommand(
-            () -> {},
-            () -> shooterMotor.set(-.75),
-            interrupted -> shooterMotor.disable(),
-            () -> inLimitSwitch.isPressed(),
-            this)
-        .withName("Accept Until Game Piece Detected By Input Sensor Command");
+      ()-> shooterMotor.set(-0.25),
+      ()-> {},
+      interrupted -> shooterMotor.disable(),
+      ()-> outLimitSwitch.isPressed(),
+      this);
   }
 
-  public Command acceptUntilGamePieceNotDetectedByInputSensorCommand() {
+  public Command runShooterOutSlowUntilInAndOutLimitTriggeredThenStop() {
     return new FunctionalCommand(
-            () -> {},
-            () -> shooterMotor.set(-.75),
-            interrupted -> shooterMotor.disable(),
-            () -> !inLimitSwitch.isPressed(),
-            this)
-        .withName("Accept Until Game Piece Detected By Input Sensor Command");
-  }
-
-  public Command acceptUntilGamePieceDetectedByOutputSensorCommand() {
-    return new FunctionalCommand(
-            () -> {},
-            () -> shooterMotor.set(-.3),
-            interrupted -> shooterMotor.disable(),
-            () -> outLimitSwitch.isPressed(),
-            this)
-        .withName("Accept Until Game Piece Detected By Output Sensor Command");
-  }
-
-  public Command pullBackUntilGamePieceDetectedByInputSensorCommand() {
-    return new FunctionalCommand(
-            () -> {},
-            () -> shooterMotor.set(.2),
-            interrupted -> shooterMotor.disable(),
-            () -> inLimitSwitch.isPressed(),
-            this)
-        .withName("Pull Back Until Game Piece Detected By Input Sensor Command");
+      ()-> shooterMotor.set(0.25),
+      ()-> {},
+      interrupted -> shooterMotor.disable(),
+      ()-> inLimitSwitch.isPressed() && outLimitSwitch.isPressed(),
+      this);
   }
 
   public Command intakeCoralCommand() {
-    return acceptUntilGamePieceDetectedByInputSensorCommand()
-    .andThen(acceptUntilGamePieceDetectedByOutputSensorCommand()
-    .andThen(pullBackUntilGamePieceDetectedByInputSensorCommand()));
+    return runShooterInFastUntilInAndOutLimitTriggered()
+    .andThen(runShooterInSlowUntilOutLimitTriggered()
+    .andThen(runShooterOutSlowUntilInAndOutLimitTriggeredThenStop()));
   }
 
   public void setAllMotorsBrake() {

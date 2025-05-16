@@ -55,7 +55,10 @@ public class RobotContainer {
       .onTrue(elevator.resetElevatorCommand());
       
       if (robotConfig.hasShooter) {
-        operatorController.a().whileTrue(elevator.setRequestedPositionCommand(elevator.LEVELHP).andThen(elevator.goToRequestedPositionCommand().andThen(shooter.intakeCoralCommand())));
+        operatorController.a()
+        .whileTrue(elevator.setRequestedPositionCommand(elevator.LEVELHP)
+        .andThen(elevator.goToRequestedPositionCommand())
+        .andThen(shooter.intakeCoralCommand()));
         
         // Going to Coral positions commands
         operatorController
