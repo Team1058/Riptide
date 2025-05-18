@@ -3,23 +3,36 @@ package frc.robot;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
 import frc.robot.subsystems.Climber;
+import frc.robot.subsystems.Controllers;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.FieldMap;
+
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
+
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-public class RobotContainer {
+public class RobotContainer {   
   Climber climber;
   Shooter shooter;
   Elevator elevator;
   RobotConfig robotConfig;
   Drivetrain drivetrain;
-
+  Vision vision;
   CommandXboxController operatorController;
   CommandXboxController driveController;
+
+  Controllers controllers;
   
+
+  FieldMap fieldMap;
   SwerveRequest.FieldCentric drive;
   SwerveRequest.FieldCentricFacingAngle reefLock;   
 
@@ -33,8 +46,8 @@ public class RobotContainer {
     climber = new Climber(robotConfig.climberConfig);
     elevator = new Elevator(robotConfig.elevatorConfig);
     shooter = new Shooter(robotConfig.shooterConfig);
-    drivetrain = new Drivetrain(robotConfig.drivetrainConfig);
-
+    drivetrain = Drivetrain.makeDrivetrain(robotConfig.drivetrainConfig);
+    controllers = new Controllers(driveController, operatorController);
     configureBindings();
   }
 
@@ -42,11 +55,11 @@ public class RobotContainer {
   private void configureBindings() {
 
     //Drivetrain Bindings
- driveController
-        .back()
-        .debounce(.25)
-        .and(driveController.start().negate())
-        .onTrue(cameraCalibrator.runCameraCalibration());
+//  driveController
+//         .back()
+//         .debounce(.25)
+//         .and(driveController.start().negate())
+//         .onTrue(cameraCalibrator.runCameraCalibration());
     driveController
         .start()
         .debounce(.25)
@@ -184,11 +197,17 @@ public class RobotContainer {
                           -controllers
                               .getDriverRightX())) // Drive counterclockwise with negative X (left)
               ));
-
-      configureDriverBindings(config);
-      registerDriverNamedCommands(config);
+    // 
+    //   configureDriverBindings(config);
+    //   registerDriverNamedCommands(config);
     }
   }
+
+  public void updateAlliance(Alliance alliance) {
+    fieldMap = new FieldMap(alliance);
+    vision.updateAlliance(alliance);
+  }
+  
   public Command getAutonomousCommand() {
     return null;
   }
