@@ -6,6 +6,7 @@ import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj.RobotController;
 
 public class RobotContainer {
   Climber climber;
@@ -30,6 +31,7 @@ public class RobotContainer {
     climber = new Climber(robotConfig.climberConfig);
     elevator = new Elevator(robotConfig.elevatorConfig);
     shooter = new Shooter(robotConfig.shooterConfig);
+    leds = new Leds(elevator);
     configureBindings();
   }
 
@@ -117,12 +119,33 @@ public class RobotContainer {
     {
         leds.leftPattern = leds.greenBase;
     }
-    else if(shooter.algaePositionController) {
-
+    else if(shooter.algaeMechDeployed()) {
+        leds.leftPattern = leds.blueBlink;
+    }
+    else if(climber.isClimbing){
+        leds.leftPattern = leds.whiteBase;
     }
     else{
         leds.leftPattern = leds.redOrangeBlinkWithRsl;
     }
+
+    if (RobotController.getCPUTemp() > 85){
+        leds.middlePattern = leds.redSlowBlink;
+    }
+    else if (RobotController.getCommsDisableCount() > 5){
+        leds.middlePattern = leds.blueBase;
+    }
+    else if (RobotController.getBatteryVoltage() <= 8) {
+        leds.middlePattern = leds.yellowBase;
+    }
+
+    else if (RobotController.getBrownoutVoltage() >= RobotController.getBatteryVoltage()){
+        leds.middlePattern = leds.brownBase;
+    }
+    else {
+        leds.middlePattern = leds.lightGreenBase;
+    }
+        leds.rightPattern = leds.redProgressMaskWithElevator;
   }
 
   public Command getAutonomousCommand() {

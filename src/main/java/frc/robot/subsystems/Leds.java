@@ -1,56 +1,72 @@
 package frc.robot.subsystems;
 
-import java.util.regex.Pattern;
+import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
+import edu.wpi.first.wpilibj.AddressableLEDBufferView;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.util.Color;
 
 public class Leds {
-    private static final int leftPort = 9;
-    private static final int leftLength = 120;
-    private static final int middlePort = 8;
-    private static final int middleLength = 120;
-    private static final int rightPort = 7;
-    private static final int rightLength = 120;
+    private static final int ledPort = 9;
+    private static final int ledLangth = 60;
 
-
-    private final AddressableLED leftLed;
-    private final AddressableLEDBuffer leftLedBuffer;
-    private final AddressableLED middleLed;
-    private final AddressableLEDBuffer middleLedBuffer;
-    private final AddressableLED rightLed;
-    private final AddressableLEDBuffer rightLedBuffer;
+    private final AddressableLED ledStrip;
+    private final AddressableLEDBuffer ledBuffer;
+    private final AddressableLEDBufferView leftLedBuffer;
+    private final AddressableLEDBufferView middleLedBuffer;
+    private final AddressableLEDBufferView rightLedBuffer;
 
     public LEDPattern leftPattern;
     public LEDPattern middlePattern;
     public LEDPattern rightPattern;
     
+    public LEDPattern elevatorProgressMask;
     public LEDPattern redOrangeBase;
     public LEDPattern redOrangeBlinkWithRsl;
+    public LEDPattern redBase;
+    public LEDPattern redProgressMaskWithElevator;
+    public LEDPattern redSlowBlink;
     public LEDPattern greenBase;
+    public LEDPattern lightGreenBase;
+    public LEDPattern blueBase;
+    public LEDPattern blueBlink;
+    public LEDPattern whiteBase;
+    public LEDPattern brownBase;
+    public LEDPattern yellowBase;
 
 
-  public Leds() {
-    leftLed = new AddressableLED(leftPort);
-    leftLedBuffer = new AddressableLEDBuffer(leftLength);
-    leftLed.setLength(leftLength);
-    leftLed.start();
-    middleLed = new AddressableLED(middlePort);
-    middleLedBuffer = new AddressableLEDBuffer(middleLength);
-    middleLed.setLength(middleLength);
-    middleLed.start();
-    rightLed = new AddressableLED(rightPort);
-    rightLedBuffer = new AddressableLEDBuffer(rightLength);
-    rightLed.setLength(rightLength);
-    rightLed.start();
+  public Leds(Elevator elevator) {
+    ledStrip = new AddressableLED(ledPort);
+    ledBuffer = new AddressableLEDBuffer(ledLangth);
+    rightLedBuffer = ledBuffer.createView(0, 19);
+    middleLedBuffer = ledBuffer.createView(20, 39).reversed();
+    leftLedBuffer = ledBuffer.createView(40, 59);
+    ledStrip.start();
 
+    elevatorProgressMask = LEDPattern.progressMaskLayer(() -> elevator.getCurrentPosition() / elevator.LEVELBARGE);
 
     redOrangeBase = LEDPattern.solid(Color.kOrangeRed);
     redOrangeBlinkWithRsl = redOrangeBase.synchronizedBlink(RobotController::getRSLState);
+
+    redBase = LEDPattern.solid(Color.kRed);
+    redProgressMaskWithElevator = redBase.mask(elevatorProgressMask);
+    redSlowBlink = redBase.blink(Seconds.of(2), Seconds.of(1));
+
     greenBase = LEDPattern.solid(Color.kGreen);
+
+    lightGreenBase = LEDPattern.solid(Color.kLightGreen);
+
+    blueBase = LEDPattern.solid(Color.kBlue);
+    blueBlink = blueBase.blink(Seconds.of(0.5));
+
+    whiteBase = LEDPattern.solid(Color.kWhite);
+
+    brownBase = LEDPattern.solid(Color.kBrown);
+
+    yellowBase = LEDPattern.solid(Color.kYellow);
 
     leftPattern = redOrangeBlinkWithRsl;
     middlePattern = redOrangeBlinkWithRsl;
@@ -61,26 +77,24 @@ public class Leds {
 
   public void applyPatternsToStrips(){
     leftPattern.applyTo(leftLedBuffer);
-    leftLed.setData(leftLedBuffer);
     middlePattern.applyTo(middleLedBuffer);
-    middleLed.setData(middleLedBuffer);
     rightPattern.applyTo(rightLedBuffer);
-    rightLed.setData(rightLedBuffer);
+    ledStrip.setData(ledBuffer);
   }
   
 }
 /*p order for left leds
  * defalt blink with rsl
  * first priority shooter motors moving (blinking Green)
- * Second priority algae mech Deployed
- * third priority deep climber out ()
+ * Second priority algae mech Deployed(blinkingblue)
+ * third priority deep climber out (white)
  * forth priority to be determind
  * 
  *  order for middle leds: used for detecting errors
  * defalt light green 
  * first priority overheating CPU: above 85 celsius
- * second priority can error
- * third priority  comms error
+ * second priority comms error
  * last priority battery voltage low (yellow), browning out (brown)
  * 
+ * right leds are a progress mark of elevator height (red)
  */
