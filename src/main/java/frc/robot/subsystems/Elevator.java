@@ -88,8 +88,6 @@ public class Elevator extends SubsystemBase {
   private final SparkFlex followerMotor;
   private final RelativeEncoder elevatorEncoder;
   private SparkFlex followerMotor2 = null;
-  private SparkLimitSwitch bottomLimitSwitch;
-  private SparkLimitSwitch topLimitSwitch;
   private SparkFlexConfig leaderConfig;
   private SparkFlexConfig followerConfig;
   private SparkFlexConfig follower2Config;
@@ -117,8 +115,6 @@ public class Elevator extends SubsystemBase {
   private double rampRate = .02;
   private Config config;
   protected Double positionToHoldWhenNotSafeToMoveElevator;
-
-  private boolean zeroed = false;
 
   private final SysIdRoutine sysIdRoutine;
 
@@ -151,7 +147,7 @@ public class Elevator extends SubsystemBase {
     leaderConfig
         .limitSwitch
         .forwardLimitSwitchType(Type.kNormallyOpen)
-        .forwardLimitSwitchEnabled(true)
+        .forwardLimitSwitchEnabled(false)
         .reverseLimitSwitchType(Type.kNormallyOpen)
         .reverseLimitSwitchEnabled(false);
 
@@ -189,19 +185,11 @@ public class Elevator extends SubsystemBase {
     followerMotor.configure(
         followerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    System.out.println("p value " + leaderMotor.configAccessor.closedLoop.getP());
-
     requestedPosition = 0;
-    bottomLimitSwitch = leaderMotor.getReverseLimitSwitch();
     sparkPIDController = leaderMotor.getClosedLoopController();
-    topLimitSwitch = leaderMotor.getForwardLimitSwitch();
     elevatorEncoder = leaderMotor.getEncoder();
 
     positionToHoldWhenNotSafeToMoveElevator = null;
-
-    if (bottomLimitSwitchPressed()) {
-      zeroed = true;
-    }
 
     initializeShuffleboardEntries();
 
@@ -326,25 +314,24 @@ public class Elevator extends SubsystemBase {
   public Command resetElevatorCommand() {
     return new FunctionalCommand(
             () -> {
-              this.setAllMotorsBrake();
               leaderConfig.softLimit.reverseSoftLimitEnabled(false);
               leaderMotor.configure(
-                  leaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+                leaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
             },
-            () -> leaderMotor.set(-.25),
+            () -> leaderMotor.set(-.1),
             interrupted -> {
               if (!interrupted) {
                 leaderMotor.set(0);
                 elevatorEncoder.setPosition(0);
-                zeroed = true;
                 requestedPosition = 0;
                 setRequestedPosition(LEVEL2);
               }
               leaderConfig.softLimit.reverseSoftLimitEnabled(true);
               leaderMotor.configure(
-                  leaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+                leaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+                
             },
-            () -> bottomLimitSwitch.isPressed(),
+            () -> leaderMotor.getOutputCurrent() >= 20,
             this)
         .withName("Reset Elevator Command");
   }
@@ -364,11 +351,7 @@ public class Elevator extends SubsystemBase {
 
           double requested;
 
-          if (!zeroed) {
-            requested = getCurrentPosition();
-          } else {
             requested = getRequestedPosition();
-          }
 
           // if (requested- getCurrentPosition() < 0.1)
           if (requested > getCurrentPosition()) {
@@ -389,52 +372,14 @@ public class Elevator extends SubsystemBase {
     return Math.abs(this.getCurrentPosition() - target) < 0.35;
   }
 
-  public boolean bottomLimitSwitchPressed() {
-    return bottomLimitSwitch.isPressed();
-  }
-
-  public boolean topLimitSwitchPressed() {
-    return topLimitSwitch.isPressed();
-  }
-
   public double getRequestedPosition() {
     return requestedPosition;
-  }
-
-  public void setAllMotorsBrake() {
-    leaderConfig.idleMode(IdleMode.kBrake);
-    leaderMotor.configure(
-        leaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    followerConfig.idleMode(IdleMode.kBrake);
-    followerMotor.configure(
-        followerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    if (config.hasFollowerMotor2) {
-      follower2Config.idleMode(IdleMode.kBrake);
-      followerMotor2.configure(
-          follower2Config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    }
-  }
-
-  public void setAllMotorsCoast() {
-    leaderConfig.idleMode(IdleMode.kCoast);
-    leaderMotor.configure(
-        leaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    followerConfig.idleMode(IdleMode.kCoast);
-    followerMotor.configure(
-        followerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    if (config.hasFollowerMotor2) {
-      follower2Config.idleMode(IdleMode.kCoast);
-      followerMotor2.configure(
-          follower2Config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    }
   }
 
   @Override
   public void periodic() {
     Logger.recordOutput("Elevator Encoder Position", getCurrentPosition());
     Logger.recordOutput("Elevator Requested Position", getRequestedPosition());
-    Logger.recordOutput("Bottom Limit Switch State", bottomLimitSwitchPressed());
-    Logger.recordOutput("Top Limit Switch State", topLimitSwitchPressed());
     Logger.recordOutput("Leader Motor Output", leaderMotor.getAppliedOutput());
     Logger.recordOutput("Elevator Speed", leaderMotor.getEncoder().getVelocity());
     Logger.recordOutput("Elevator Current", leaderMotor.getOutputCurrent());
@@ -450,14 +395,6 @@ public class Elevator extends SubsystemBase {
 
   public void holdPosition() {
     setRequestedPosition(getCurrentPosition());
-  }
-
-  public boolean isZeroed() {
-    return zeroed;
-  }
-
-  public Trigger isZeroedTrigger() {
-    return new Trigger(this::isZeroed);
   }
 
   public void testPeriodic() {

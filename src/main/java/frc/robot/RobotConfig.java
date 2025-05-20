@@ -77,7 +77,7 @@ public class RobotConfig {
     v3.elevatorConfig.leaderMotorId = 1;
     v3.elevatorConfig.followerMotorId = 2;
     v3.elevatorConfig.followerMotor2Id = 3;
-    v3.elevatorConfig.lowerLimit = .5;
+    v3.elevatorConfig.lowerLimit = .1;
     v3.elevatorConfig.upperLimit = 81;
     v3.elevatorConfig.invertLeaderMotor = true;
 
