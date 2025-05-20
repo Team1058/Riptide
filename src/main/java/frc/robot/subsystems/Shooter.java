@@ -208,7 +208,7 @@ public class Shooter extends SubsystemBase {
       ()-> {},
       interupted -> shooterMotor.disable(),
       ()-> inLimitSwitch.isPressed() && outLimitSwitch.isPressed(),
-      this);
+      this).withName("Runs shooter fast til' the in and out limit switch is triggered.");
   }
 
   public Command runShooterInSlowUntilOutLimitTriggered() {
@@ -217,7 +217,7 @@ public class Shooter extends SubsystemBase {
       ()-> {},
       interrupted -> shooterMotor.disable(),
       ()-> outLimitSwitch.isPressed(),
-      this);
+      this).withName("Runs shooter in slow until the out limit switch is triggered.");
   }
 
   public Command runShooterOutSlowUntilInAndOutLimitTriggeredThenStop() {
@@ -226,7 +226,7 @@ public class Shooter extends SubsystemBase {
       ()-> {},
       interrupted -> shooterMotor.disable(),
       ()-> inLimitSwitch.isPressed() && outLimitSwitch.isPressed(),
-      this);
+      this).withName("Runs the shooter in slow until the in and out limit switch is triggered then stop the shooter.");
   }
 
   public Command intakeCoralCommand() {
