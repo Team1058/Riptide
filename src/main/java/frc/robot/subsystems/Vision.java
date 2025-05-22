@@ -128,10 +128,10 @@ public class Vision extends SubsystemBase {
       List<PhotonPipelineResult> resultList = camera.getAllUnreadResults();
 
       if (resultList.isEmpty()) {
-        if (Objects.equals(this.camera.getName(), "leftCamera")) {
+        if (Objects.equals(this.camera.getName(), "left")) {
           latest_reef_tag_pitch_right_cam = 1058.0;
           latest_reef_tag_yaw_right_cam = 1058.0;
-        } else if (Objects.equals(this.camera.getName(), "rightCamera")) {
+        } else if (Objects.equals(this.camera.getName(), "right")) {
           latest_reef_tag_pitch_left_cam = 1058.0;
           latest_reef_tag_yaw_left_cam = 1058.0;
         }
@@ -140,18 +140,18 @@ public class Vision extends SubsystemBase {
 
       PhotonPipelineResult result = resultList.get(resultList.size() - 1);
 
-      if (this.camera.getName() == "rightCamera" && result.hasTargets()) {
+      if (this.camera.getName() == "right" && result.hasTargets()) {
         latest_reef_tag_pitch_right_cam = result.getBestTarget().getPitch();
         latest_reef_tag_yaw_right_cam = result.getBestTarget().getYaw();
-      } else if (this.camera.getName() == "rightCamera") {
+      } else if (this.camera.getName() == "right") {
         latest_reef_tag_pitch_right_cam = 1058.0;
         latest_reef_tag_yaw_right_cam = 1058.0;
       }
 
-      if (this.camera.getName() == "leftCamera" && result.hasTargets()) {
+      if (this.camera.getName() == "left" && result.hasTargets()) {
         latest_reef_tag_pitch_left_cam = result.getBestTarget().getPitch();
         latest_reef_tag_yaw_left_cam = result.getBestTarget().getYaw();
-      } else if (this.camera.getName() == "leftCamera") {
+      } else if (this.camera.getName() == "left") {
         latest_reef_tag_pitch_left_cam = 1058.0;
         latest_reef_tag_yaw_left_cam = 1058.0;
       }
@@ -199,8 +199,8 @@ public class Vision extends SubsystemBase {
   }
 
   public Vision(Config config) {
-    leftVision = new VisionProcessing("leftCamera", config.rightCameraToRobot);
-    rightVision = new VisionProcessing("rightCamera", config.leftCameraToRobot);
+    leftVision = new VisionProcessing("left", config.rightCameraToRobot);
+    rightVision = new VisionProcessing("right", config.leftCameraToRobot);
   }
 
   public void onPoseUpdate(Consumer<StampedPose2d> cb) {

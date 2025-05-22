@@ -80,6 +80,7 @@ public class RobotContainer {
     elevator = new Elevator(robotConfig.elevatorConfig);
     shooter = new Shooter(robotConfig.shooterConfig);
     controllers = new Controllers(driveController, operatorController);
+    leds = new Leds(elevator);
     initDrivetrain(robotConfig.drivetrainConfig);
     initVision(robotConfig.visionConfig);
     configureDriverBindings(robotConfig.drivetrainConfig);
@@ -455,7 +456,7 @@ public class RobotContainer {
   }
 
   public void ledSetPatternsLogic(){
-
+    if (leds !=null) {
     leds.applyPatternsToStrips();
 
     if ((shooter.getCurrentCommand()!= null && shooter.getCurrentCommand().getName().equals("coral intake command"))
@@ -491,5 +492,5 @@ public class RobotContainer {
     }
         leds.rightPattern = leds.redProgressMaskWithElevator;
   }
-    
+}
 }
