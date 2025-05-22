@@ -149,7 +149,7 @@ public class Elevator extends SubsystemBase {
         .forwardLimitSwitchType(Type.kNormallyOpen)
         .forwardLimitSwitchEnabled(false)
         .reverseLimitSwitchType(Type.kNormallyOpen)
-        .reverseLimitSwitchEnabled(false);
+        .reverseLimitSwitchEnabled(true);
 
     leaderConfig
         .closedLoop

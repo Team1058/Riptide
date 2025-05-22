@@ -40,5 +40,5 @@ public class RoboRio {
   public static final RoboRio GAMMA = new RoboRio("GAMMA", "0305ec4b");
   public static final RoboRio DELTA = new RoboRio("DELTA", "0312db68");
   public static final RoboRio EPSILON = new RoboRio("EPSILON", "023D2C29");
-  public static final RoboRio ZETA = new RoboRio("ZETA", null);
+  public static final RoboRio ZETA = new RoboRio("ZETA", "23FF3A0");
 }
