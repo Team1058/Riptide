@@ -28,9 +28,8 @@ import org.photonvision.targeting.PhotonPipelineResult;
 public class Vision extends SubsystemBase {
 
   public static class Config {
-    public Transform3d frontCameraToRobot;
-    public Transform3d backRightCameraToRobot;
-    public Transform3d backLeftCameraToRobot;
+    public Transform3d rightCameraToRobot;
+    public Transform3d leftCameraToRobot;
   }
 
   // Method to be called when a new pose estimate is ready
@@ -38,9 +37,9 @@ public class Vision extends SubsystemBase {
 
   public record StampedPose2d(Pose2d pose, double timestamp) {}
 
-  VisionProcessing frontVision;
-  VisionProcessing backRightVision;
-  VisionProcessing backLeftVision;
+  VisionProcessing leftVision;
+  VisionProcessing rightVision;
+  
   private long lastLogTime;
   private Alliance alliance;
   public Pose2d coralStationLeft;
@@ -55,7 +54,7 @@ public class Vision extends SubsystemBase {
   private double latest_reef_tag_yaw_left_cam = 1058.0;
 
   AprilTagFieldLayout fieldLayout =
-      AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
+      AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
 
   public void updateAlliance(Alliance alliance) {
     this.alliance = alliance;
@@ -129,10 +128,10 @@ public class Vision extends SubsystemBase {
       List<PhotonPipelineResult> resultList = camera.getAllUnreadResults();
 
       if (resultList.isEmpty()) {
-        if (Objects.equals(this.camera.getName(), "back_right")) {
+        if (Objects.equals(this.camera.getName(), "leftCamera")) {
           latest_reef_tag_pitch_right_cam = 1058.0;
           latest_reef_tag_yaw_right_cam = 1058.0;
-        } else if (Objects.equals(this.camera.getName(), "back_left")) {
+        } else if (Objects.equals(this.camera.getName(), "rightCamera")) {
           latest_reef_tag_pitch_left_cam = 1058.0;
           latest_reef_tag_yaw_left_cam = 1058.0;
         }
@@ -141,18 +140,18 @@ public class Vision extends SubsystemBase {
 
       PhotonPipelineResult result = resultList.get(resultList.size() - 1);
 
-      if (this.camera.getName() == "back_right" && result.hasTargets()) {
+      if (this.camera.getName() == "rightCamera" && result.hasTargets()) {
         latest_reef_tag_pitch_right_cam = result.getBestTarget().getPitch();
         latest_reef_tag_yaw_right_cam = result.getBestTarget().getYaw();
-      } else if (this.camera.getName() == "back_right") {
+      } else if (this.camera.getName() == "rightCamera") {
         latest_reef_tag_pitch_right_cam = 1058.0;
         latest_reef_tag_yaw_right_cam = 1058.0;
       }
 
-      if (this.camera.getName() == "back_left" && result.hasTargets()) {
+      if (this.camera.getName() == "leftCamera" && result.hasTargets()) {
         latest_reef_tag_pitch_left_cam = result.getBestTarget().getPitch();
         latest_reef_tag_yaw_left_cam = result.getBestTarget().getYaw();
-      } else if (this.camera.getName() == "back_left") {
+      } else if (this.camera.getName() == "leftCamera") {
         latest_reef_tag_pitch_left_cam = 1058.0;
         latest_reef_tag_yaw_left_cam = 1058.0;
       }
@@ -195,16 +194,13 @@ public class Vision extends SubsystemBase {
     }
 
     public Optional<StampedPose2d> getPose() {
-      if (this.camera.getName().equals("front")) {
-        return Optional.empty();
-      }
       return robotPose;
     }
   }
 
   public Vision(Config config) {
-    backRightVision = new VisionProcessing("back_right", config.backRightCameraToRobot);
-    backLeftVision = new VisionProcessing("back_left", config.backLeftCameraToRobot);
+    leftVision = new VisionProcessing("leftCamera", config.rightCameraToRobot);
+    rightVision = new VisionProcessing("rightCamera", config.leftCameraToRobot);
   }
 
   public void onPoseUpdate(Consumer<StampedPose2d> cb) {
@@ -227,7 +223,8 @@ public class Vision extends SubsystemBase {
     return latest_reef_tag_yaw_left_cam;
   }
 
-  public StampedPose2d chooseBestPoseBetweenBothBackCameras(
+  //Isn't this more like "getAveragePoseFromBothCameras"? - Ben
+  public StampedPose2d chooseBestPoseBetweenCameras(
       StampedPose2d backLeftCameraPose, StampedPose2d backRightCameraPose) {
     Translation2d averageTranslation = backLeftCameraPose
         .pose
@@ -238,61 +235,59 @@ public class Vision extends SubsystemBase {
         .pose
         .getRotation()
         .interpolate(backRightCameraPose.pose.getRotation(), 0.5);
-    if (RobotState.isAutonomous()) {
-      return backLeftCameraPose;
-    }
+
     return new StampedPose2d(
         new Pose2d(averageTranslation, averageRotation),
         (backLeftCameraPose.timestamp + backRightCameraPose.timestamp) / 2);
   }
 
-  public StampedPose2d chooseBestPoseBetween2CamerasToClosestTarget(
-      StampedPose2d frontCameraPose, StampedPose2d backCameraPose) {
-    Translation2d averageTranslation = frontCameraPose
-        .pose
-        .getTranslation()
-        .plus(backCameraPose.pose.getTranslation())
-        .div(2.0);
-    Rotation2d averageRotation =
-        frontCameraPose.pose.getRotation().interpolate(backCameraPose.pose.getRotation(), 0.5);
+  // public StampedPose2d chooseBestPoseBetween2CamerasToClosestTarget(
+  //     StampedPose2d frontCameraPose, StampedPose2d backCameraPose) {
+  //   Translation2d averageTranslation = frontCameraPose
+  //       .pose
+  //       .getTranslation()
+  //       .plus(backCameraPose.pose.getTranslation())
+  //       .div(2.0);
+  //   Rotation2d averageRotation =
+  //       frontCameraPose.pose.getRotation().interpolate(backCameraPose.pose.getRotation(), 0.5);
 
-    var distanceToReef = averageTranslation.getDistance(this.reefCenter.getTranslation());
-    var distanceToCoralStationLeft =
-        averageTranslation.getDistance(this.coralStationLeft.getTranslation());
-    var distanceToCoralStationRight =
-        averageTranslation.getDistance(this.coralStationRight.getTranslation());
+  //   var distanceToReef = averageTranslation.getDistance(this.reefCenter.getTranslation());
+  //   var distanceToCoralStationLeft =
+  //       averageTranslation.getDistance(this.coralStationLeft.getTranslation());
+  //   var distanceToCoralStationRight =
+  //       averageTranslation.getDistance(this.coralStationRight.getTranslation());
 
-    if (distanceToReef < distanceToCoralStationLeft
-        && distanceToReef < distanceToCoralStationRight) {
-      return backCameraPose;
-    } else if (distanceToCoralStationLeft < distanceToReef
-        || distanceToCoralStationRight < distanceToReef) {
-      return frontCameraPose;
-    }
-    return new StampedPose2d(
-        new Pose2d(averageTranslation, averageRotation),
-        (backCameraPose.timestamp + frontCameraPose.timestamp) / 2);
-  }
+  //   if (distanceToReef < distanceToCoralStationLeft
+  //       && distanceToReef < distanceToCoralStationRight) {
+  //     return backCameraPose;
+  //   } else if (distanceToCoralStationLeft < distanceToReef
+  //       || distanceToCoralStationRight < distanceToReef) {
+  //     return frontCameraPose;
+  //   }
+  //   return new StampedPose2d(
+  //       new Pose2d(averageTranslation, averageRotation),
+  //       (backCameraPose.timestamp + frontCameraPose.timestamp) / 2);
+  // }
 
-  public StampedPose2d chooseBestPoseBetween3CamerasToClosestTarget(
-      StampedPose2d frontCameraPose,
-      StampedPose2d backLeftCameraPose,
-      StampedPose2d backRightCameraPose) {
-    StampedPose2d bestFirstPose =
-        chooseBestPoseBetween2CamerasToClosestTarget(frontCameraPose, backLeftCameraPose);
-    StampedPose2d bestSecondPose =
-        chooseBestPoseBetween2CamerasToClosestTarget(frontCameraPose, backRightCameraPose);
-    return chooseBestPoseBetween2CamerasToClosestTarget(bestFirstPose, bestSecondPose);
-  }
+  // public StampedPose2d chooseBestPoseBetween3CamerasToClosestTarget(
+  //     StampedPose2d frontCameraPose,
+  //     StampedPose2d backLeftCameraPose,
+  //     StampedPose2d backRightCameraPose) {
+  //   StampedPose2d bestFirstPose =
+  //       chooseBestPoseBetween2CamerasToClosestTarget(frontCameraPose, backLeftCameraPose);
+  //   StampedPose2d bestSecondPose =
+  //       chooseBestPoseBetween2CamerasToClosestTarget(frontCameraPose, backRightCameraPose);
+  //   return chooseBestPoseBetween2CamerasToClosestTarget(bestFirstPose, bestSecondPose);
+  // }
 
   @Override
   public void periodic() {
-    backRightVision.updateRobotPose();
-    backLeftVision.updateRobotPose();
+    leftVision.updateRobotPose();
+    rightVision.updateRobotPose();
 
     lastLogTime = System.currentTimeMillis();
-    var backRightRobotPose = backRightVision.getPose();
-    var backLeftRobotPose = backLeftVision.getPose();
+    var leftRobotPose = leftVision.getPose();
+    var rightRobotPose = rightVision.getPose();
 
     // if (updatePoseCallback.isPresent()) {
     //   if (backLeftRobotPose.isPresent() && backRightRobotPose.isPresent()) {
@@ -308,15 +303,15 @@ public class Vision extends SubsystemBase {
     // }
 
     if (updatePoseCallback.isPresent()) {
-      if (backLeftRobotPose.isPresent() && backRightRobotPose.isPresent()) {
+      if (leftRobotPose.isPresent() && rightRobotPose.isPresent()) {
         updatePoseCallback
             .get()
-            .accept(chooseBestPoseBetweenBothBackCameras(
-                backLeftRobotPose.get(), backRightRobotPose.get()));
-      } else if (backLeftRobotPose.isPresent()) {
-        updatePoseCallback.get().accept((backLeftRobotPose.get()));
-      } else if (backRightRobotPose.isPresent()) {
-        updatePoseCallback.get().accept((backRightRobotPose.get()));
+            .accept(chooseBestPoseBetweenCameras(
+                leftRobotPose.get(), rightRobotPose.get()));
+      } else if (leftRobotPose.isPresent()) {
+        updatePoseCallback.get().accept((leftRobotPose.get()));
+      } else if (rightRobotPose.isPresent()) {
+        updatePoseCallback.get().accept((rightRobotPose.get()));
       }
     }
   }

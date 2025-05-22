@@ -1,0 +1,89 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.6786352040816332,
+        "y": 5.017410714285714
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.556360767991408,
+        "y": 5.870404806659506
+      },
+      "isLocked": false,
+      "linkedName": "reef5_right"
+    },
+    {
+      "anchor": {
+        "x": 1.3302526595744681,
+        "y": 7.175
+      },
+      "prevControl": {
+        "x": 0.5639131723831636,
+        "y": 6.532564174122144
+      },
+      "nextControl": {
+        "x": 2.1722546892497197,
+        "y": 7.880865061590146
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 3.999489795918367,
+        "y": 5.218877551020407
+      },
+      "prevControl": {
+        "x": 3.4975899570354447,
+        "y": 6.621290950594492
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "reef5_left"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.0164917541229377,
+      "rotationDegrees": 125.00000000000001
+    }
+  ],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0.6462585034013605,
+      "maxWaypointRelativePos": 1.2074829931972775,
+      "constraints": {
+        "maxVelocity": 1.0,
+        "maxAcceleration": 3.6,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 6.0,
+    "maxAcceleration": 3.6,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 119.99999999999999
+  },
+  "reversed": false,
+  "folder": "LeftSidePaths",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 119.99999999999999
+  },
+  "useDefaultConstraints": true
+}

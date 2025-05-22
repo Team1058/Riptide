@@ -1,0 +1,113 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LB_to_Reef6"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "goToL4ScoreAndRetract"
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "moveElevatorToHPAndIntakeToIntakeOutForAuto"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Reef6(R)_to_LHP"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "LHP_to_Reef5(R)"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "continueIntakeToShooterOutForAuto"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "goToL4ScoreAndRetract"
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Reef5(R)_to_LHP"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "moveElevatorToHPAndIntakeToIntakeOutForAuto"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "LHP_to_Reef5(L)"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "continueIntakeToShooterOutForAuto"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "goToL4ScoreAndRetract"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": false,
+  "folder": "SWAuTos",
+  "choreoAuto": false
+}

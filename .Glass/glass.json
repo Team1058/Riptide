@@ -1,0 +1,23 @@
+{
+  "NetworkTables": {
+    "transitory": {
+      "LiveWindow": {
+        "open": true
+      }
+    },
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/Shuffleboard/SysID/Routine": "String Chooser",
+      "/Shuffleboard/SysID/Test": "String Chooser",
+      "/SmartDashboard/Alerts": "Alerts",
+      "/SmartDashboard/Field": "Field2d",
+      "/SmartDashboard/PhotonAlerts": "Alerts"
+    }
+  },
+  "NetworkTables Info": {
+    "visible": true
+  },
+  "NetworkTables Settings": {
+    "mode": "Client (NT4)"
+  }
+}

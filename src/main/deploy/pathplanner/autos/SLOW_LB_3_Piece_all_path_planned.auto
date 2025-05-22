@@ -1,0 +1,113 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "SlowPathToLeftPole"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "goToL4ScoreAndRetract"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "PathToHPLeft"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "moveElevatorToHPAndIntakeToIntakeOutForAuto"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "continueIntakeToShooterOutForAuto"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "SlowPathToRightPole"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "goToL4ScoreAndRetract"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "PathToHPLeft"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "moveElevatorToHPAndIntakeToIntakeOutForAuto"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "continueIntakeToShooterOutForAuto"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "SlowPathToRightPole"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "goToL4ScoreAndRetract"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": false,
+  "folder": "SWAuTos",
+  "choreoAuto": false
+}
