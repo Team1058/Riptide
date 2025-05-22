@@ -5,12 +5,14 @@ import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLimitSwitch;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.LimitSwitchConfig.Type;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -46,11 +48,11 @@ public class Shooter extends SubsystemBase {
   public double HOLD = 0.45;
   public double DEPLOYED = 0.80;
 
-  private SparkMax shooterMotor;
+  private SparkFlex shooterMotor;
   public SparkMax algaeMotor = null;
   private SparkClosedLoopController algaePositionController = null;
   private SparkMaxConfig algaeMotorConfig;
-  private SparkMaxConfig motorConfig;
+  private SparkFlexConfig motorConfig;
 
   private Config config;
 
@@ -61,8 +63,8 @@ public class Shooter extends SubsystemBase {
 
   public Shooter(Config config) {
     this.config = config;
-    shooterMotor = new SparkMax(config.shooterMotorId, MotorType.kBrushless);
-    motorConfig = new SparkMaxConfig();
+    shooterMotor = new SparkFlex(config.shooterMotorId, MotorType.kBrushless);
+    motorConfig = new SparkFlexConfig();
     algaeMotorConfig = new SparkMaxConfig();
 
     if (config.hasAlgaeMotor) {
@@ -231,8 +233,8 @@ public class Shooter extends SubsystemBase {
 
   public Command intakeCoralCommand() {
     return runShooterInFastUntilInAndOutLimitTriggered()
-    .andThen(runShooterInSlowUntilOutLimitTriggered()
-    .andThen(runShooterOutSlowUntilInAndOutLimitTriggeredThenStop()));
+    .andThen(runShooterInSlowUntilOutLimitTriggered())
+    .andThen(runShooterOutSlowUntilInAndOutLimitTriggeredThenStop());
   }
 
   public void setAllMotorsBrake() {

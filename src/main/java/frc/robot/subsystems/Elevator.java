@@ -66,23 +66,18 @@ public class Elevator extends SubsystemBase {
     public double upperLimit;
     public double lowerLimit;
   }
-
-  public double LEVEL1 = 11.5 + 4.5;
-  public double LEVEL2 = 22.5 + 4.5;
-  public double LEVEL3 = 41.65 + 4.5;
-  public double LEVEL4 = 77;
-
-  public double LEVEL1NOSERVO = 11.5 + 3.5;
-  public double LEVEL2NOSERVO = 25.5;
-  public double LEVEL3NOSERVO = 44.65;
-  public double LEVEL4NOSERVO = 75.5;
+  //DON'T go beyond 31.25
+  public double LEVEL1 = 10;
+  public double LEVEL2 = 15;
+  public double LEVEL3 = 20;
+  public double LEVEL4 = 25;
 
   public double LEVELALGAEPROC = 1;
   public double LEVELALGAELOLLIPOP = 1;
-  public double LEVELALGAE1 = 20.25;
-  public double LEVELALGAE2 = 39.25;
-  public double LEVELBARGE = 81.3;
-  public double LEVELHP = 1.0;
+  public double LEVELALGAE1 = 5;
+  public double LEVELALGAE2 = 10;
+  public double LEVELBARGE = 15;
+  public double LEVELHP = 0.8;
 
   private final SparkFlex leaderMotor;
   private final SparkFlex followerMotor;
@@ -386,11 +381,16 @@ public class Elevator extends SubsystemBase {
   }
 
   public Command setRequestedPositionCommand(double position) {
-    return runOnce(() -> this.setRequestedPosition(position)).withName("setRequestedPosition");
+    return runOnce(
+      () -> this.setRequestedPosition(position))
+    .withName("setRequestedPosition")
+    .andThen(goToRequestedPositionCommand());
   }
 
   public Command setRequestedToCurrentPositionCommand() {
-    return runOnce(() -> holdPosition()).withName("setRequestedPositionFromSupplier");
+    return runOnce(
+      () -> holdPosition())
+    .withName("setRequestedPositionFromSupplier");
   }
 
   public void holdPosition() {

@@ -39,7 +39,7 @@ public class RobotConfig {
     if (knownConfigs.containsKey(rio)) {
       return knownConfigs.get(rio);
     } else {
-      return getCommonConfig();
+      return getriptideConfig();
     }
   }
 
@@ -66,10 +66,10 @@ public class RobotConfig {
     riptide.hasShooter = true;
 
     riptide.drivetrainConfig = new Drivetrain.Config();
-    riptide.drivetrainConfig.frontLeftModule = Drivetrain.Config.Module.B;
-    riptide.drivetrainConfig.frontRightModule = Drivetrain.Config.Module.A;
-    riptide.drivetrainConfig.backLeftModule = Drivetrain.Config.Module.G;
-    riptide.drivetrainConfig.backRightModule = Drivetrain.Config.Module.C;
+    riptide.drivetrainConfig.frontLeftModule = Drivetrain.Config.Module.D;
+    riptide.drivetrainConfig.frontRightModule = Drivetrain.Config.Module.K;
+    riptide.drivetrainConfig.backLeftModule = Drivetrain.Config.Module.W;
+    riptide.drivetrainConfig.backRightModule = Drivetrain.Config.Module.E;
     riptide.drivetrainConfig.sidelength = Inches.of(26);
     riptide.drivetrainConfig.shouldUsePIDForAlignment = false;
     riptide.hasSubsystems = true;
@@ -78,7 +78,7 @@ public class RobotConfig {
     riptide.elevatorConfig.followerMotorId = 2;
     riptide.elevatorConfig.followerMotor2Id = 3;
     riptide.elevatorConfig.lowerLimit = .1;
-    riptide.elevatorConfig.upperLimit = 81;
+    riptide.elevatorConfig.upperLimit = 31.2;
     riptide.elevatorConfig.invertLeaderMotor = true;
 
     riptide.elevatorConfig.kP_Up = 0.16;
@@ -97,7 +97,7 @@ public class RobotConfig {
     riptide.elevatorConfig.maxAcceleration_Down = 10000;
     riptide.elevatorConfig.allowedError_Down = .2;
 
-    riptide.shooterConfig.shooterMotorId = 12;
+    riptide.shooterConfig.shooterMotorId = 6;
     riptide.shooterConfig.algaeMotorId = 61;
     riptide.shooterConfig.hasAlgaeMotor = true;
     riptide.shooterConfig.algaeKP = 3.25;

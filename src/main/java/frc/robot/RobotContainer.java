@@ -65,16 +65,15 @@ public class RobotContainer {
   private ShuffleboardTab autosTab;
 
   public RobotContainer() {
-    driveController = new CommandXboxController(robotConfig.driverControllerPort);
-    operatorController = new CommandXboxController(robotConfig.operatorControllerPort);
-
+    
     String serialNumber = System.getenv("serialnum");
     RoboRio roboRio = RoboRio.lookupBySerialNumber(serialNumber);
     robotConfig = RobotConfig.lookupConfig(roboRio);
+    driveController = new CommandXboxController(robotConfig.driverControllerPort);
+    operatorController = new CommandXboxController(robotConfig.operatorControllerPort);
     climber = new Climber(robotConfig.climberConfig);
     elevator = new Elevator(robotConfig.elevatorConfig);
     shooter = new Shooter(robotConfig.shooterConfig);
-    drivetrain = Drivetrain.makeDrivetrain(robotConfig.drivetrainConfig);
     controllers = new Controllers(driveController, operatorController);
     initDrivetrain(robotConfig.drivetrainConfig);
     initVision(robotConfig.visionConfig);
