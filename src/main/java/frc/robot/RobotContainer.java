@@ -22,12 +22,12 @@ public class RobotContainer {
   
 
   public RobotContainer() {
+      String serialNumber = System.getenv("serialnum");
+      RoboRio roboRio = RoboRio.lookupBySerialNumber(serialNumber);
+    robotConfig = RobotConfig.lookupConfig(roboRio);
     driveController = new CommandXboxController(robotConfig.driverControllerPort);
     operatorController = new CommandXboxController(robotConfig.operatorControllerPort);
 
-    String serialNumber = System.getenv("serialnum");
-    RoboRio roboRio = RoboRio.lookupBySerialNumber(serialNumber);
-    robotConfig = RobotConfig.lookupConfig(roboRio);
     climber = new Climber(robotConfig.climberConfig);
     elevator = new Elevator(robotConfig.elevatorConfig);
     shooter = new Shooter(robotConfig.shooterConfig);
@@ -114,8 +114,8 @@ public class RobotContainer {
 
     leds.applyPatternsToStrips();
 
-    if (shooter.getCurrentCommand().getName().equals("coral intake command")
-        || shooter.getCurrentCommand().getName().equals("Manual Shoot Command"))
+    if ((shooter.getCurrentCommand()!= null && shooter.getCurrentCommand().getName().equals("coral intake command"))
+        || (shooter.getCurrentCommand()!= null && shooter.getCurrentCommand().getName().equals("Manual Shoot Command")))
     {
         leds.leftPattern = leds.greenBase;
     }

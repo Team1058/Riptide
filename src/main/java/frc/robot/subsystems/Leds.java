@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.util.Color;
 
 public class Leds {
-    private static final int ledPort = 9;
+    private static final int ledPort = 0;
     private static final int ledLangth = 60;
 
     private final AddressableLED ledStrip;
@@ -40,6 +40,7 @@ public class Leds {
 
   public Leds(Elevator elevator) {
     ledStrip = new AddressableLED(ledPort);
+    ledStrip.setLength(ledLangth);
     ledBuffer = new AddressableLEDBuffer(ledLangth);
     rightLedBuffer = ledBuffer.createView(0, 19);
     middleLedBuffer = ledBuffer.createView(20, 39).reversed();

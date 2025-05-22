@@ -39,7 +39,7 @@ public class RobotConfig {
     if (knownConfigs.containsKey(rio)) {
       return knownConfigs.get(rio);
     } else {
-      return getCommonConfig();
+      return getV3Config();
     }
   }
 
