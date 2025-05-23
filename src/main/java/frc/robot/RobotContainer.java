@@ -2,6 +2,7 @@ package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
+import frc.robot.subsystems.*;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Controllers;
 import frc.robot.subsystems.Drivetrain;
@@ -35,17 +36,21 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj.RobotController;
 
 public class RobotContainer {   
   Climber climber;
   Shooter shooter;
   Elevator elevator;
+  Leds leds;
+
   RobotConfig robotConfig;
   int driverPort = 0;
   int operatorPort = 1;
   Controllers controllers;
   Drivetrain drivetrain;
   Vision vision;
+
 
   CommandXboxController operatorController;
   CommandXboxController driveController;
@@ -447,6 +452,44 @@ public class RobotContainer {
   
   public Command getAutonomousCommand() {
     return autoChooser.getSelected();
+  }
+
+  public void ledSetPatternsLogic(){
+
+    leds.applyPatternsToStrips();
+
+    if ((shooter.getCurrentCommand()!= null && shooter.getCurrentCommand().getName().equals("coral intake command"))
+        || (shooter.getCurrentCommand()!= null && shooter.getCurrentCommand().getName().equals("Manual Shoot Command")))
+    {
+        leds.leftPattern = leds.greenBase;
+    }
+    else if(shooter.algaeMechDeployed()) {
+        leds.leftPattern = leds.blueBlink;
+    }
+    else if(climber.isClimbing){
+        leds.leftPattern = leds.whiteBase;
+    }
+    else{
+        leds.leftPattern = leds.redOrangeBlinkWithRsl;
+    }
+
+    if (RobotController.getCPUTemp() > 85){
+        leds.middlePattern = leds.redSlowBlink;
+    }
+    else if (RobotController.getCommsDisableCount() > 5){
+        leds.middlePattern = leds.blueBase;
+    }
+    else if (RobotController.getBatteryVoltage() <= 8) {
+        leds.middlePattern = leds.yellowBase;
+    }
+
+    else if (RobotController.getBrownoutVoltage() >= RobotController.getBatteryVoltage()){
+        leds.middlePattern = leds.brownBase;
+    }
+    else {
+        leds.middlePattern = leds.lightGreenBase;
+    }
+        leds.rightPattern = leds.redProgressMaskWithElevator;
   }
     
 }
