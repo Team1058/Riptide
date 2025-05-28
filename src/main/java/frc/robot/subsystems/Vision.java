@@ -199,8 +199,8 @@ public class Vision extends SubsystemBase {
   }
 
   public Vision(Config config) {
-    leftVision = new VisionProcessing("left", config.rightCameraToRobot);
-    rightVision = new VisionProcessing("right", config.leftCameraToRobot);
+    rightVision = new VisionProcessing("right", config.rightCameraToRobot);
+    leftVision = new VisionProcessing("left", config.leftCameraToRobot);
   }
 
   public void onPoseUpdate(Consumer<StampedPose2d> cb) {

@@ -1,11 +1,25 @@
 {
   "NetworkTables": {
     "transitory": {
+      "AdvantageKit": {
+        "RealOutputs": {
+          "open": true
+        },
+        "open": true
+      },
       "LiveWindow": {
+        "open": true
+      },
+      "Shuffleboard": {
+        "PID": {
+          "open": true
+        },
         "open": true
       }
     },
     "types": {
+      "/AdvantageKit/RealOutputs/Alerts": "Alerts",
+      "/AdvantageKit/RealOutputs/PhotonAlerts": "Alerts",
       "/FMSInfo": "FMSInfo",
       "/Shuffleboard/SysID/Routine": "String Chooser",
       "/Shuffleboard/SysID/Test": "String Chooser",
@@ -15,6 +29,12 @@
     }
   },
   "NetworkTables Info": {
+    "Server": {
+      "Publishers": {
+        "open": true
+      },
+      "open": true
+    },
     "visible": true
   },
   "NetworkTables Settings": {

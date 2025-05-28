@@ -160,7 +160,7 @@ public class Shooter extends SubsystemBase {
 
   public Command spitOutCoralCommand() {
     return new StartEndCommand(
-      () -> shooterMotor.set(-1),
+      () -> shooterMotor.set(-0.5),
       () -> shooterMotor.disable(),
       this)
       .withName("Spit Out Coral Command");
@@ -209,25 +209,25 @@ public class Shooter extends SubsystemBase {
 
   public Command runShooterInFastUntilInAndOutLimitTriggered() {
     return new FunctionalCommand(
-      ()-> shooterMotor.set(-1),
+      ()-> shooterMotor.set(-0.1),
       ()-> {},
       interupted -> shooterMotor.disable(),
-      ()-> inLimitSwitch.isPressed() && outLimitSwitch.isPressed(),
+      ()-> outLimitSwitch.isPressed(),
       this).withName("Runs shooter fast til' the in and out limit switch is triggered.");
   }
 
   public Command runShooterInSlowUntilOutLimitTriggered() {
     return new FunctionalCommand(
-      ()-> shooterMotor.set(-0.25),
+      ()-> shooterMotor.set(-0.1),
       ()-> {},
       interrupted -> shooterMotor.disable(),
-      ()-> outLimitSwitch.isPressed(),
+      ()-> outLimitSwitch.isPressed() && !inLimitSwitch.isPressed(),
       this).withName("Runs shooter in slow until the out limit switch is triggered.");
   }
 
   public Command runShooterOutSlowUntilInAndOutLimitTriggeredThenStop() {
     return new FunctionalCommand(
-      ()-> shooterMotor.set(0.25),
+      ()-> shooterMotor.set(0.15),
       ()-> {},
       interrupted -> shooterMotor.disable(),
       ()-> inLimitSwitch.isPressed() && outLimitSwitch.isPressed(),
@@ -236,7 +236,6 @@ public class Shooter extends SubsystemBase {
 
   public Command intakeCoralCommand() {
     return runShooterInFastUntilInAndOutLimitTriggered()
-    .andThen(runShooterInSlowUntilOutLimitTriggered())
     .andThen(runShooterOutSlowUntilInAndOutLimitTriggeredThenStop());
   }
 

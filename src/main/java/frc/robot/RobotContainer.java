@@ -93,9 +93,7 @@ public class RobotContainer {
       operatorController
           .leftTrigger(0.5)
           .onTrue(climber
-              .deployClimberCommand()
-              .alongWith(elevator.setRequestedPositionCommand(elevator.LEVEL2))
-              .andThen(elevator.goToRequestedPositionCommand()));
+              .deployClimberCommand());
     operatorController
     .rightTrigger(.1)
     .whileTrue((elevator.setRequestedPositionCommand(elevator.LEVEL1))

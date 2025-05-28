@@ -66,10 +66,10 @@ public class RobotConfig {
     riptide.hasShooter = true;
 
     riptide.drivetrainConfig = new Drivetrain.Config();
-    riptide.drivetrainConfig.frontLeftModule = Drivetrain.Config.Module.D;
-    riptide.drivetrainConfig.frontRightModule = Drivetrain.Config.Module.K;
-    riptide.drivetrainConfig.backLeftModule = Drivetrain.Config.Module.W;
-    riptide.drivetrainConfig.backRightModule = Drivetrain.Config.Module.E;
+    riptide.drivetrainConfig.frontLeftModule = Drivetrain.Config.Module.E;
+    riptide.drivetrainConfig.frontRightModule = Drivetrain.Config.Module.W;
+    riptide.drivetrainConfig.backLeftModule = Drivetrain.Config.Module.K;
+    riptide.drivetrainConfig.backRightModule = Drivetrain.Config.Module.D;
     riptide.drivetrainConfig.sidelength = Inches.of(26);
     riptide.drivetrainConfig.shouldUsePIDForAlignment = false;
     riptide.hasSubsystems = true;
@@ -77,22 +77,22 @@ public class RobotConfig {
     riptide.elevatorConfig.leaderMotorId = 1;
     riptide.elevatorConfig.followerMotorId = 2;
     riptide.elevatorConfig.followerMotor2Id = 3;
-    riptide.elevatorConfig.lowerLimit = .1;
+    riptide.elevatorConfig.lowerLimit = .3;
     riptide.elevatorConfig.upperLimit = 31.2;
     riptide.elevatorConfig.invertLeaderMotor = true;
 
-    riptide.elevatorConfig.kP_Up = 0.16;
+    riptide.elevatorConfig.kP_Up = 0.075;
     riptide.elevatorConfig.kI_Up = 0.0;
     riptide.elevatorConfig.kD_Up = 0.0;
-    riptide.elevatorConfig.kF_Up = 0.25;
+    riptide.elevatorConfig.kF_Up = 0.5;
     riptide.elevatorConfig.maxVelocity_Up = 5000;
     riptide.elevatorConfig.maxAcceleration_Up = 10000;
     riptide.elevatorConfig.allowedError_Up = .2;
 
-    riptide.elevatorConfig.kP_Down = 0.16;
+    riptide.elevatorConfig.kP_Down = 0.075;
     riptide.elevatorConfig.kI_Down = 0.0;
     riptide.elevatorConfig.kD_Down = 0.0;
-    riptide.elevatorConfig.kF_Down = 0.25;
+    riptide.elevatorConfig.kF_Down = 0.5;
     riptide.elevatorConfig.maxVelocity_Down = 5000;
     riptide.elevatorConfig.maxAcceleration_Down = 10000;
     riptide.elevatorConfig.allowedError_Down = .2;
@@ -108,9 +108,9 @@ public class RobotConfig {
     riptide.hasClimber = true;
     riptide.climberConfig.climberLeaderMotorId = 4;
     riptide.climberConfig.climberFollowerMotorId = 5;
-    riptide.climberConfig.invertLeaderMotor = true;
-    riptide.climberConfig.climberReverseSoftLimit = 0.058;
-    riptide.climberConfig.climberDeploySoftLimit = 0.422;
+    riptide.climberConfig.invertLeaderMotor = false;
+    riptide.climberConfig.climberClimbed = 0.658;
+    riptide.climberConfig.climberDeployed = 0.25;
     riptide.visionConfig = new Vision.Config();
 
     // riptide.visionConfig.frontCameraToRobot = new Transform3d(
@@ -121,9 +121,10 @@ public class RobotConfig {
     // These are (theoretically) close to correct
     riptide.visionConfig.rightCameraToRobot = new Transform3d(
         new Translation3d(Inches.of(-11.186), Inches.of(9.091), Inches.of(9.026)),
+        // new Translation3d(Inches.of(0), Inches.of(0), Inches.of(0)),
         new Rotation3d(
             Degrees.of(0),
-            Degrees.of(20),
+            Degrees.of(-20),
             Degrees.of(28)));
 
     riptide.visionConfig.leftCameraToRobot = new Transform3d(

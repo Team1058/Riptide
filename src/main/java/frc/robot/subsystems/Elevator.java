@@ -67,17 +67,21 @@ public class Elevator extends SubsystemBase {
     public double lowerLimit;
   }
   //DON'T go beyond 31.25
-  public double LEVEL1 = 10;
-  public double LEVEL2 = 15;
-  public double LEVEL3 = 20;
-  public double LEVEL4 = 25;
+  public double LEVEL1 = 4.75;
+  //4.75
+  public double LEVEL2 = 8.7;
+  //8.7
+  public double LEVEL3 = 15.6;
+  //15.6
+  public double LEVEL4 = 27.5;
+  //26.9
 
   public double LEVELALGAEPROC = 1;
   public double LEVELALGAELOLLIPOP = 1;
   public double LEVELALGAE1 = 5;
-  public double LEVELALGAE2 = 10;
-  public double LEVELBARGE = 15;
-  public double LEVELHP = 0.8;
+  public double LEVELALGAE2 = 28.6;
+  public double LEVELBARGE = 30.5;
+  public double LEVELHP = 0.355;
 
   private final SparkFlex leaderMotor;
   private final SparkFlex followerMotor;

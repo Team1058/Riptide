@@ -20,8 +20,8 @@ public class Climber extends SubsystemBase {
     public int climberLeaderMotorId;
     public int climberFollowerMotorId;
     public boolean invertLeaderMotor;
-    public double climberReverseSoftLimit;
-    public double climberDeploySoftLimit;
+    public double climberClimbed;
+    public double climberDeployed;
   }
 
   public boolean isClimbing = false;
@@ -44,9 +44,9 @@ public class Climber extends SubsystemBase {
         .inverted(config.invertLeaderMotor)
         .openLoopRampRate(0.05)
         .softLimit
-        .reverseSoftLimit(config.climberReverseSoftLimit)
+        .reverseSoftLimit(config.climberClimbed)
         .reverseSoftLimitEnabled(false)
-        .forwardSoftLimit(config.climberDeploySoftLimit)
+        .forwardSoftLimit(config.climberDeployed)
         .forwardSoftLimitEnabled(false);
     leaderConfig.limitSwitch.forwardLimitSwitchEnabled(false).reverseLimitSwitchEnabled(false);
 
@@ -56,8 +56,7 @@ public class Climber extends SubsystemBase {
     followerMotor = new SparkMax(config.climberFollowerMotorId, MotorType.kBrushless);
     followerConfig = new SparkMaxConfig();
     followerConfig
-    .follow(config.climberLeaderMotorId)
-    .inverted(!config.invertLeaderMotor);
+    .follow(config.climberLeaderMotorId, true);
 
     followerMotor.configure(
         followerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -66,10 +65,9 @@ public class Climber extends SubsystemBase {
   public Command manualClimbCommand(DoubleSupplier supplier) {
     return new FunctionalCommand(
             () -> {},
-            () -> leaderMotor.set(-Math.abs(supplier.getAsDouble())),
+            () -> leaderMotor.set(Math.abs(supplier.getAsDouble())),
             interrupted -> leaderMotor.disable(),
-            () -> climberEncoder.getPosition() <= config.climberReverseSoftLimit
-                || climberEncoder.getPosition() >= 0.95,
+            () -> climberEncoder.getPosition() >= config.climberClimbed,
             this)
         .withName("Manual Climb Command");
   }
@@ -82,14 +80,14 @@ public class Climber extends SubsystemBase {
             },
             () -> {},
             interrupted -> leaderMotor.disable(),
-            () -> climberEncoder.getPosition() >= config.climberDeploySoftLimit,
+            () -> climberEncoder.getPosition() >= config.climberDeployed,
             this)
         .withName("Deploy Climber Command");
   }
 
   public Trigger readyToClimbTrigger() {
     // TODO: Should this be a final class level?
-    return new Trigger(() -> climberEncoder.getPosition() >= config.climberDeploySoftLimit);
+    return new Trigger(() -> climberEncoder.getPosition() >= config.climberDeployed);
   }
 
   public void setAllMotorsBrake() {
