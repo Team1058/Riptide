@@ -43,11 +43,15 @@ public class Climber extends SubsystemBase {
         .idleMode(IdleMode.kBrake)
         .inverted(config.invertLeaderMotor)
         .openLoopRampRate(0.05)
+        .absoluteEncoder
+        .inverted(true);
+    leaderConfig
         .softLimit
         .reverseSoftLimit(config.climberClimbed)
         .reverseSoftLimitEnabled(false)
         .forwardSoftLimit(config.climberDeployed)
         .forwardSoftLimitEnabled(false);
+
     leaderConfig.limitSwitch.forwardLimitSwitchEnabled(false).reverseLimitSwitchEnabled(false);
 
     leaderMotor.configure(
