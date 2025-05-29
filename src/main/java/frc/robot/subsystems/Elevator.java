@@ -335,10 +335,14 @@ public class Elevator extends SubsystemBase {
         .withName("Reset Elevator Command");
   }
 
-  public boolean isAtPostion(double position) {
+  public boolean isAtPosition(double position) {
     return Math.abs(getCurrentPosition() - position) < config.allowedError_Up;
   }
-  ;
+
+  public Trigger isAtPositionTrigger(double position) {
+      return new Trigger(
+        ()-> isAtPosition(position));
+  }
 
   public double getCurrentPosition() {
     return elevatorEncoder.getPosition();
@@ -361,14 +365,6 @@ public class Elevator extends SubsystemBase {
           }
         })
         .withName("goToRequestedPosition");
-  }
-
-  public boolean currentPositionAtTarget(double target) {
-    return Math.abs(this.getCurrentPosition() - target) < 0.2;
-  }
-
-  public boolean currentPositionAtTargetHP(double target) {
-    return Math.abs(this.getCurrentPosition() - target) < 0.35;
   }
 
   public double getRequestedPosition() {
