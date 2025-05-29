@@ -165,6 +165,10 @@ public class RobotContainer {
             .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
             
         // Shoots the coral out of the shooter
+        operatorController.x().and(elevator.isAtPositionTrigger(elevator.LEVEL4))
+        .onFalse(elevator.setRequestedPositionCommand(elevator.LEVEL4 + 2)
+        .andThen(elevator.goToRequestedPositionCommand()));
+
         operatorController.x()
         .whileTrue(shooter.spitOutCoralCommand());
       }
