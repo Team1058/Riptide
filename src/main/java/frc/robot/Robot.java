@@ -44,6 +44,7 @@ public class Robot extends LoggedRobot {
     Logger.addDataReceiver(new WPILOGWriter());
     Logger.addDataReceiver(new NT4Publisher());
     Logger.start();
+    DriverStation.silenceJoystickConnectionWarning(true);
   }
 
   /**

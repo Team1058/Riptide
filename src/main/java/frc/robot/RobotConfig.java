@@ -120,18 +120,18 @@ public class RobotConfig {
 
     // These are (theoretically) close to correct
     riptide.visionConfig.rightCameraToRobot = new Transform3d(
-        new Translation3d(Inches.of(-11.186), Inches.of(9.091), Inches.of(9.026)),
+        new Translation3d(Inches.of(11.186), Inches.of(-9.091), Inches.of(9.026)),
         // new Translation3d(Inches.of(0), Inches.of(0), Inches.of(0)),
         new Rotation3d(
             Degrees.of(0),
             Degrees.of(-20),
-            Degrees.of(28)));
+            Degrees.of(28 + 1)));
 
     riptide.visionConfig.leftCameraToRobot = new Transform3d(
         new Translation3d(Inches.of(11.186), Inches.of(9.091), Inches.of(9.026)),
         new Rotation3d(
             Degrees.of(0),
-            Degrees.of(20),
+            Degrees.of(-20),
             Degrees.of(-28)));
 
     return riptide;
