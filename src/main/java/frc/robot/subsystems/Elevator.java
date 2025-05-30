@@ -81,7 +81,7 @@ public class Elevator extends SubsystemBase {
   public double LEVELALGAE1 = 5;
   public double LEVELALGAE2 = 28.6;
   public double LEVELBARGE = 30.5;
-  public double LEVELHP = 0.355;
+  public double LEVELHP = 0.3;
 
   private final SparkFlex leaderMotor;
   private final SparkFlex followerMotor;

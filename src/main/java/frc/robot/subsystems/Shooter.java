@@ -236,7 +236,7 @@ public class Shooter extends SubsystemBase {
 
   public Command intakeCoralCommand() {
     return runShooterInFastUntilInAndOutLimitTriggered()
-    .andThen(runShooterOutSlowUntilInAndOutLimitTriggeredThenStop());
+    .andThen(runShooterOutSlowUntilInAndOutLimitTriggeredThenStop()).withName("coral intake command");
   }
 
   public void setAllMotorsBrake() {
