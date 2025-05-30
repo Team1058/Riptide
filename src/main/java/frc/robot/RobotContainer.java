@@ -469,6 +469,9 @@ public class RobotContainer {
     else if(shooter.algaeMechDeployed()) {
         leds.leftPattern = leds.blueBlink;
     }
+    else if(climber.getCurrentCommand() != null && climber.getCurrentCommand().getName().equals("Manual Climb Command")){
+        leds.leftPattern = leds.whiteBlink;
+    }
     else if(climber.isClimbing){
         leds.leftPattern = leds.whiteBase;
     }

@@ -34,6 +34,7 @@ public class Leds {
     public LEDPattern blueBase;
     public LEDPattern blueBlink;
     public LEDPattern whiteBase;
+    public LEDPattern whiteBlink;
     public LEDPattern brownBase;
     public LEDPattern yellowBase;
 
@@ -65,6 +66,7 @@ public class Leds {
     blueBlink = blueBase.blink(Seconds.of(0.5));
 
     whiteBase = LEDPattern.solid(Color.kWhite);
+    whiteBlink = whiteBase.blink(Seconds.of(0.5));
 
     brownBase = LEDPattern.solid(Color.kBrown);
 
