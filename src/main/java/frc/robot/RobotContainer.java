@@ -65,6 +65,9 @@ public class RobotContainer {
 
   private Command driveToLeftCoralStation;
   private Command driveToRightCoralStation;
+  
+  private Command driveSlowlyToNearestLeftPole;
+  private Command driveSlowlyToNearestRightPole;
 
   SendableChooser<Command> autoChooser;
   private ShuffleboardTab autosTab;
@@ -165,10 +168,6 @@ public class RobotContainer {
             .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
             
         // Shoots the coral out of the shooter
-        operatorController.x().and(elevator.isAtPositionTrigger(elevator.LEVEL4))
-        .onFalse(elevator.setRequestedPositionCommand(elevator.LEVEL4 + 2)
-        .andThen(elevator.goToRequestedPositionCommand()));
-
         operatorController.x()
         .whileTrue(shooter.spitOutCoralCommand());
       }
@@ -215,6 +214,10 @@ public class RobotContainer {
 
     driveController.a().and(driveController.leftBumper()).whileTrue(driveToNearestLeftPole);
     driveController.a().and(driveController.rightBumper()).whileTrue(driveToNearestRightPole);
+
+
+    driveController.y().and(driveController.leftBumper()).whileTrue(driveSlowlyToNearestLeftPole);
+    driveController.y().and(driveController.rightBumper()).whileTrue(driveSlowlyToNearestRightPole);
 
     driveController.b().and(driveController.leftBumper()).whileTrue(driveToLeftCoralStation);
     driveController.b().and(driveController.rightBumper()).whileTrue(driveToRightCoralStation);
@@ -367,24 +370,54 @@ public class RobotContainer {
             var approachPose = fieldMap.getPolePose(reefFace, ReefPole.FarLeft);
             var finalPose = fieldMap.getPolePose(reefFace, ReefPole.Left);
             return drivetrain.makeGoToCommand(
-                finalPose.getRotation().rotateBy(Rotation2d.k180deg),
+                finalPose.getRotation(),
                 MetersPerSecond.zero(),
                 approachPose,
                 finalPose);
           },
           Set.of(drivetrain));
-      driveToNearestRightPole = Commands.defer(
+    driveToNearestRightPole = Commands.defer(
           () -> {
             var reefFace = fieldMap.getLockedReefFace(drivetrain.getPose());
             var approachPose = fieldMap.getPolePose(reefFace, ReefPole.FarRight);
             var finalPose = fieldMap.getPolePose(reefFace, ReefPole.Right);
             return drivetrain.makeGoToCommand(
-                finalPose.getRotation().rotateBy(Rotation2d.k180deg),
+                finalPose.getRotation(),
                 MetersPerSecond.zero(),
                 approachPose,
                 finalPose);
           },
           Set.of(drivetrain));
+
+driveSlowlyToNearestRightPole = Commands.defer(
+          () -> {
+            var reefFace = fieldMap.getLockedReefFace(drivetrain.getPose());
+            var approachPose = fieldMap.getPolePose(reefFace, ReefPole.FarRight);
+            var finalPose = fieldMap.getPolePose(reefFace, ReefPole.Right);
+            return drivetrain.makeGoToCommandWithMaxMPS(
+                finalPose.getRotation(),
+                MetersPerSecond.zero(),
+                MetersPerSecond.zero(),
+                0.5,
+                approachPose,
+                finalPose);
+          },
+          Set.of(drivetrain));
+driveSlowlyToNearestLeftPole = Commands.defer(
+          () -> {
+            var reefFace = fieldMap.getLockedReefFace(drivetrain.getPose());
+            var approachPose = fieldMap.getPolePose(reefFace, ReefPole.FarLeft);
+            var finalPose = fieldMap.getPolePose(reefFace, ReefPole.Right);
+            return drivetrain.makeGoToCommandWithMaxMPS(
+                finalPose.getRotation(),
+                MetersPerSecond.zero(),
+                MetersPerSecond.zero(),
+                0.5,
+                approachPose,
+                finalPose);
+          },
+          Set.of(drivetrain));
+
       driveToLeftCoralStation = Commands.defer(
           () -> {
             var currentPose = drivetrain.getPose();
@@ -421,6 +454,9 @@ public class RobotContainer {
             return Commands.none();
           },
           Set.of(drivetrain));
+
+
+
  
       configureDriverBindings(config);
     //   registerDriverNamedCommands(config);
