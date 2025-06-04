@@ -104,8 +104,10 @@ public class Shooter extends SubsystemBase {
 
     intakeFlapMotorConfig.smartCurrentLimit(90, 90)
         .idleMode(IdleMode.kBrake)
-        .softLimit.forwardSoftLimit(config.flapForwardLimit).forwardSoftLimitEnabled(true)
-        .reverseSoftLimit(config.flapReversedLimit).reverseSoftLimitEnabled(true);
+        .softLimit.forwardSoftLimit(config.flapForwardLimit)
+        .forwardSoftLimitEnabled(true)
+        .reverseSoftLimit(config.flapReversedLimit)
+        .reverseSoftLimitEnabled(true);
 
     intakeFlapMotor.configure(
       intakeFlapMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);

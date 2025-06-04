@@ -519,15 +519,14 @@ driveSlowlyToNearestLeftPole = Commands.defer(
     if (RobotController.getCPUTemp() > 85){
         leds.middlePattern = leds.redSlowBlink;
     }
-    else if (RobotController.getCommsDisableCount() > 5){
-        leds.middlePattern = leds.blueBase;
-    }
     else if (RobotController.getBatteryVoltage() <= 8) {
         leds.middlePattern = leds.yellowBase;
     }
-
     else if (RobotController.getBrownoutVoltage() >= RobotController.getBatteryVoltage()){
         leds.middlePattern = leds.brownBase;
+    }
+    else if (RobotController.getCommsDisableCount() > 5){
+        leds.middlePattern = leds.blueBase;
     }
     else {
         leds.middlePattern = leds.lightGreenBase;
