@@ -18,6 +18,7 @@ import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -182,6 +183,10 @@ public class Shooter extends SubsystemBase {
       () -> shooterMotor.disable(),
       this)
       .withName("Spit Out Coral Command");
+  }
+
+  public Command timedSpitCoralCommand(double time) {
+    return Commands.race(spitOutCoralCommand(), Commands.waitSeconds(time));
   }
 
   public Command deployAlgaeHookCommand() {
