@@ -25,7 +25,7 @@ public class Climber extends SubsystemBase {
   }
 
   public boolean isClimbing = false;
-  private SparkMax leaderMotor;
+  public SparkMax leaderMotor;
   private SparkMax followerMotor;
   private SparkMaxConfig leaderConfig;
   private SparkMaxConfig followerConfig;

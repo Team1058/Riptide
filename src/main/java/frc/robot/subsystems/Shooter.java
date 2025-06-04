@@ -36,6 +36,9 @@ public class Shooter extends SubsystemBase {
     public int shooterMotorId;
     public boolean invertMotors;
     public int algaeMotorId;
+    public int intakeFlapMotorID;
+    public double flapForwardLimit;
+    public double flapReversedLimit;
     public boolean hasAlgaeMotor;
     public double algaeKP;
     public double algaeKI;
@@ -49,10 +52,12 @@ public class Shooter extends SubsystemBase {
   public double DEPLOYED = 0.80;
 
   private SparkFlex shooterMotor;
+  private SparkMax intakeFlapMotor;
   public SparkMax algaeMotor = null;
   private SparkClosedLoopController algaePositionController = null;
   private SparkMaxConfig algaeMotorConfig;
   private SparkFlexConfig motorConfig;
+  private SparkMaxConfig intakeFlapMotorConfig;
 
   private Config config;
 
@@ -64,8 +69,10 @@ public class Shooter extends SubsystemBase {
   public Shooter(Config config) {
     this.config = config;
     shooterMotor = new SparkFlex(config.shooterMotorId, MotorType.kBrushless);
+    intakeFlapMotor = new SparkMax(config.intakeFlapMotorID, MotorType.kBrushless);
     motorConfig = new SparkFlexConfig();
     algaeMotorConfig = new SparkMaxConfig();
+    intakeFlapMotorConfig = new SparkMaxConfig();
 
     if (config.hasAlgaeMotor) {
       algaeMotor = new SparkMax(config.algaeMotorId, MotorType.kBrushless);
@@ -95,8 +102,17 @@ public class Shooter extends SubsystemBase {
         .reverseLimitSwitchType(Type.kNormallyOpen)
         .reverseLimitSwitchEnabled(false);
 
+    intakeFlapMotorConfig.smartCurrentLimit(90, 90)
+        .idleMode(IdleMode.kBrake)
+        .softLimit.forwardSoftLimit(config.flapForwardLimit).forwardSoftLimitEnabled(true)
+        .reverseSoftLimit(config.flapReversedLimit).reverseSoftLimitEnabled(true);
+
+    intakeFlapMotor.configure(
+      intakeFlapMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
     shooterMotor.configure(
         motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    
 
     inLimitSwitch = shooterMotor.getForwardLimitSwitch();
     outLimitSwitch = shooterMotor.getReverseLimitSwitch();
@@ -207,21 +223,22 @@ public class Shooter extends SubsystemBase {
         .withName("Shoot Algae");
   }
 
-  public Command runShooterInFastUntilInAndOutLimitTriggered() {
+  public Command runShooterInFastUntilInLimitTriggered() {
     return new FunctionalCommand(
-      ()-> shooterMotor.set(-0.1),
+      ()-> shooterMotor.set(-0.25),
       ()-> {},
       interupted -> shooterMotor.disable(),
-      ()-> outLimitSwitch.isPressed(),
+      ()-> inLimitSwitch.isPressed(),
       this).withName("Runs shooter fast til' the in and out limit switch is triggered.");
   }
 
+
   public Command runShooterInSlowUntilOutLimitTriggered() {
     return new FunctionalCommand(
-      ()-> shooterMotor.set(-0.1),
+      ()-> shooterMotor.set(-0.075),
       ()-> {},
       interrupted -> shooterMotor.disable(),
-      ()-> outLimitSwitch.isPressed() && !inLimitSwitch.isPressed(),
+      ()-> outLimitSwitch.isPressed(),
       this).withName("Runs shooter in slow until the out limit switch is triggered.");
   }
 
@@ -235,8 +252,31 @@ public class Shooter extends SubsystemBase {
   }
 
   public Command intakeCoralCommand() {
-    return runShooterInFastUntilInAndOutLimitTriggered()
-    .andThen(runShooterOutSlowUntilInAndOutLimitTriggeredThenStop()).withName("coral intake command");
+    return runShooterInFastUntilInLimitTriggered()
+      .andThen(runShooterInSlowUntilOutLimitTriggered())
+      .withName("Coral intake command");
+  }
+
+  public Command openSesameCommand() {
+    return pullPinCommand()
+      .andThen(unPullPinCommand())
+      .withName("Open intake flaps");
+  }
+
+  private Command pullPinCommand() {
+    return new StartEndCommand(
+      ()-> intakeFlapMotor.set(-0.5), 
+      ()->intakeFlapMotor.disable(), 
+      this)
+      .until(()-> intakeFlapMotor.getEncoder().getPosition() <= config.flapReversedLimit + 0.1);
+    }
+
+  private Command unPullPinCommand() {
+    return new StartEndCommand(
+      ()-> intakeFlapMotor.set(0.5), 
+      ()->intakeFlapMotor.disable(), 
+      this)
+      .until(()-> intakeFlapMotor.getEncoder().getPosition() >= config.flapForwardLimit - 0.1);
   }
 
   public void setAllMotorsBrake() {

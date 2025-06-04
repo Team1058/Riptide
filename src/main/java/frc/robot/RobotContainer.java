@@ -98,9 +98,10 @@ public class RobotContainer {
           .onTrue(climber
               .deployClimberCommand());
     operatorController
-    .rightTrigger(.1)
-    .whileTrue((elevator.setRequestedPositionCommand(elevator.LEVEL1))
+        .rightTrigger(.1).and(()-> climber.leaderMotor.getAbsoluteEncoder().getPosition() >= 0.2)
+        .whileTrue(elevator.setRequestedPositionCommand(elevator.LEVEL1)
         .andThen(elevator.goToRequestedPositionCommand())
+        .alongWith(shooter.openSesameCommand())
         .andThen(climber.manualClimbCommand(operatorController::getRightTriggerAxis)));
       }    
       

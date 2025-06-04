@@ -99,11 +99,14 @@ public class RobotConfig {
 
     riptide.shooterConfig.shooterMotorId = 6;
     riptide.shooterConfig.algaeMotorId = 61;
+    riptide.shooterConfig.intakeFlapMotorID = 12;
     riptide.shooterConfig.hasAlgaeMotor = true;
     riptide.shooterConfig.algaeKP = 3.25;
     riptide.shooterConfig.algaeKI = 0.000200;
     riptide.shooterConfig.algaeKD = 0;
     riptide.shooterConfig.algaeKF = 0;
+    riptide.shooterConfig.flapForwardLimit = 0;
+    riptide.shooterConfig.flapReversedLimit = -4;
 
     riptide.hasClimber = true;
     riptide.climberConfig.climberLeaderMotorId = 4;
