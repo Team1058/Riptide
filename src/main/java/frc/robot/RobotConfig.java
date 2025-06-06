@@ -112,7 +112,7 @@ public class RobotConfig {
     riptide.climberConfig.climberLeaderMotorId = 4;
     riptide.climberConfig.climberFollowerMotorId = 5;
     riptide.climberConfig.invertLeaderMotor = false;
-    riptide.climberConfig.climberClimbed = 0.808;
+    riptide.climberConfig.climberClimbed = 0.73;
     riptide.climberConfig.climberDeployed = 0.4;
     riptide.visionConfig = new Vision.Config();
 

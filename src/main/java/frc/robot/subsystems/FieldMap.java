@@ -182,17 +182,17 @@ public class FieldMap extends SubsystemBase {
     // }
 
     if (reefFace == ReefFace.One) {
-        return Rotation2d.fromDegrees(180);
-      } else if (reefFace == ReefFace.Two) {
-        return Rotation2d.fromDegrees(120);
-      } else if (reefFace == ReefFace.Three) {
-        return Rotation2d.fromDegrees(60);
-      } else if (reefFace == ReefFace.Four) {
         return Rotation2d.fromDegrees(0);
-      } else if (reefFace == ReefFace.Five) {
+      } else if (reefFace == ReefFace.Two) {
         return Rotation2d.fromDegrees(-60);
-      } else {
+      } else if (reefFace == ReefFace.Three) {
         return Rotation2d.fromDegrees(-120);
+      } else if (reefFace == ReefFace.Four) {
+        return Rotation2d.fromDegrees(180);
+      } else if (reefFace == ReefFace.Five) {
+        return Rotation2d.fromDegrees(120);
+      } else {
+        return Rotation2d.fromDegrees(60);
       }
   }
 

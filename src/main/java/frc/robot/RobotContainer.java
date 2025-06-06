@@ -592,6 +592,11 @@ driveSlowlyToNearestLeftPole = Commands.defer(
 
   private void initAutoScoreCommands() {
 
+    // driveNearLeftPole = CommandUtil.wrappedEventCommand(driveNearLeftPole);
+    // driveNearRightPole = CommandUtil.wrappedEventCommand(driveNearRightPole);
+    // driveSlowlyToNearestLeftPole = CommandUtil.wrappedEventCommand(driveSlowlyToNearestLeftPole);
+    // driveSlowlyToNearestRightPole = CommandUtil.wrappedEventCommand(driveSlowlyToNearestRightPole);
+
     // autoscore l4: Drive near pole (line up in x but not y), deploy elevator, drive in slowly, score, back off, retract
  
     autoScoreL4Left = Commands.defer(()-> CommandUtil.wrappedEventCommand(driveNearLeftPole)
