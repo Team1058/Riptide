@@ -145,41 +145,55 @@ public class FieldMap extends SubsystemBase {
     angleToReef = Math.atan2(reefRelativePose.getY(), reefRelativePose.getX());
     Logger.recordOutput("AngleToReef", angleToReef);
     if (angleToReef > (2 * Math.PI) / 3) {
-    //   return ReefFace.Four;
-        return ReefFace.One;
+      return ReefFace.Four;
+        // return ReefFace.One;
     } else if (angleToReef > (Math.PI) / 3) {
-    //   return ReefFace.Five;
-        return ReefFace.Two;
+      return ReefFace.Five;
+        // return ReefFace.Two;
     } else if (angleToReef > 0) {
-    //   return ReefFace.Six;
-        return ReefFace.Three;
+      return ReefFace.Six;
+        // return ReefFace.Three;
     } else if (angleToReef > (-Math.PI / 3)) {
-    //   return ReefFace.One;
-    return ReefFace.Four;
+      return ReefFace.One;
+    // return ReefFace.Four;
     } else if (angleToReef > ((-Math.PI * 2) / 3)) {
-    //   return ReefFace.Two;
-    return ReefFace.Five;
+      return ReefFace.Two;
+    // return ReefFace.Five;
     } else {
-    //   return ReefFace.Three;
-    return ReefFace.Six;
+      return ReefFace.Three;
+    // return ReefFace.Six;
     }
   }
 
   public Rotation2d getLockedReefFaceAngle(ReefFace reefFace) {
 
-    if (reefFace == ReefFace.Four) {
-      return Rotation2d.fromDegrees(180);
-    } else if (reefFace == ReefFace.Five) {
-      return Rotation2d.fromDegrees(120);
-    } else if (reefFace == ReefFace.Six) {
-      return Rotation2d.fromDegrees(60);
-    } else if (reefFace == ReefFace.One) {
-      return Rotation2d.fromDegrees(0);
-    } else if (reefFace == ReefFace.Two) {
-      return Rotation2d.fromDegrees(-60);
-    } else {
-      return Rotation2d.fromDegrees(-120);
-    }
+    // if (reefFace == ReefFace.Four) {
+    //   return Rotation2d.fromDegrees(180);
+    // } else if (reefFace == ReefFace.Five) {
+    //   return Rotation2d.fromDegrees(120);
+    // } else if (reefFace == ReefFace.Six) {
+    //   return Rotation2d.fromDegrees(60);
+    // } else if (reefFace == ReefFace.One) {
+    //   return Rotation2d.fromDegrees(0);
+    // } else if (reefFace == ReefFace.Two) {
+    //   return Rotation2d.fromDegrees(-60);
+    // } else {
+    //   return Rotation2d.fromDegrees(-120);
+    // }
+
+    if (reefFace == ReefFace.One) {
+        return Rotation2d.fromDegrees(180);
+      } else if (reefFace == ReefFace.Two) {
+        return Rotation2d.fromDegrees(120);
+      } else if (reefFace == ReefFace.Three) {
+        return Rotation2d.fromDegrees(60);
+      } else if (reefFace == ReefFace.Four) {
+        return Rotation2d.fromDegrees(0);
+      } else if (reefFace == ReefFace.Five) {
+        return Rotation2d.fromDegrees(-60);
+      } else {
+        return Rotation2d.fromDegrees(-120);
+      }
   }
 
   public double getLeftPolePitch() {

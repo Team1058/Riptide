@@ -1,15 +1,6 @@
 package frc.robot;
 
-import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.Autos;
 import frc.robot.subsystems.*;
-import frc.robot.subsystems.Climber;
-import frc.robot.subsystems.Controllers;
-import frc.robot.subsystems.Drivetrain;
-import frc.robot.subsystems.Shooter;
-import frc.robot.subsystems.Vision;
-import frc.robot.subsystems.Elevator;
-import frc.robot.subsystems.FieldMap;
 import frc.robot.subsystems.FieldMap.ReefFace;
 import frc.robot.subsystems.FieldMap.ReefPole;
 
@@ -21,9 +12,8 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.CommandUtil;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -33,11 +23,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj.RobotController;
 
 public class RobotContainer {   
@@ -385,22 +373,24 @@ public class RobotContainer {
      * @param level Height of elevator
      * @return a Command
      */
-    private Command getScoreL2L3Command(double level) {
+
+     // This returns a sequence so can only be run by itself (no andThens)
+    // private Command getScoreL2L3Command(double level) {
         
 
-    if (level == elevator.LEVEL4) {
-        return elevator.setRequestedPositionCommand(level)
-          .andThen(elevator.goToRequestedPositionCommand())
-          .andThen(new WaitUntilCommand(() -> elevator.isAtPosition(level)))
-          .andThen(shooter.timedSpitCoralCommand(0.2));}
+    // if (level == elevator.LEVEL4) {
+    //     return elevator.setRequestedPositionCommand(level)
+    //       .andThen(elevator.goToRequestedPositionCommand())
+    //       .andThen(new WaitUntilCommand(() -> elevator.isAtPosition(level)))
+    //       .andThen(shooter.timedSpitCoralCommand(0.2));}
 
-      return elevator
-          .setRequestedPositionCommand(level)
-          .andThen(elevator.goToRequestedPositionCommand())
-          .andThen(new WaitUntilCommand(() -> elevator.isAtPosition(level)))
-          .andThen(shooter.timedSpitCoralCommand(0.2));
+    //   return elevator
+    //       .setRequestedPositionCommand(level)
+    //       .andThen(elevator.goToRequestedPositionCommand())
+    //       .andThen(new WaitUntilCommand(() -> elevator.isAtPosition(level)))
+    //       .andThen(shooter.timedSpitCoralCommand(0.2));
 
-    }
+    // }
 
   private void initDrivetrain(Drivetrain.Config config) {
     drivetrain = Drivetrain.makeDrivetrain(config);
@@ -431,6 +421,7 @@ public class RobotContainer {
                           -controllers
                               .getDriverRightX())) // Drive counterclockwise with negative X (left)
               ));
+
  driveToNearestLeftPole = Commands.defer(
           () -> {
             var reefFace = fieldMap.getLockedReefFace(drivetrain.getPose());
@@ -465,7 +456,7 @@ driveSlowlyToNearestRightPole = Commands.defer(
                 finalPose.getRotation(),
                 MetersPerSecond.zero(),
                 MetersPerSecond.zero(),
-                0.5,
+                0.2,
                 approachPose,
                 finalPose);
           },
@@ -479,7 +470,7 @@ driveSlowlyToNearestLeftPole = Commands.defer(
                 finalPose.getRotation(),
                 MetersPerSecond.zero(),
                 MetersPerSecond.zero(),
-                0.5,
+                0.2,
                 approachPose,
                 finalPose);
           },
@@ -548,7 +539,7 @@ driveSlowlyToNearestLeftPole = Commands.defer(
                   finalPose);
             },
           Set.of(drivetrain)); 
-      configureDriverBindings(config);
+    //   configureDriverBindings(config);
     //   registerDriverNamedCommands(config);
 
 
@@ -573,47 +564,60 @@ driveSlowlyToNearestLeftPole = Commands.defer(
 
     // autoscore l4: Drive near pole (line up in x but not y), deploy elevator, drive in slowly, score, back off, retract
  
-    autoScoreL4Left = Commands.defer(()-> driveNearLeftPole
+    autoScoreL4Left = Commands.defer(()-> CommandUtil.wrappedEventCommand(driveNearLeftPole)
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL4))
-        .andThen(driveSlowlyToNearestLeftPole)
+        .andThen(new WaitUntilCommand(()-> elevator.isAtPosition(elevator.LEVEL4)))
+        .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestLeftPole))
         .andThen(shooter.spitOutCoralCommand())
     // (Do we need an elevator up command to prevent collision with pole?)
-        .andThen(driveNearLeftPole)
+        .andThen(CommandUtil.wrappedEventCommand(driveNearLeftPole))
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL1)),
     Set.of(drivetrain, elevator, shooter));
 
-    autoScoreL3Left = Commands.defer(()-> driveNearLeftPole
-        .andThen(driveSlowlyToNearestLeftPole)
-        .andThen(getScoreL2L3Command(elevator.LEVEL3))
-        .andThen(driveNearLeftPole)
+    autoScoreL3Left = Commands.defer(()-> CommandUtil.wrappedEventCommand(driveNearLeftPole)
+        .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestLeftPole))
+        .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL3))
+    .andThen(elevator.goToRequestedPositionCommand())
+    .andThen(new WaitUntilCommand(() -> elevator.isAtPosition(elevator.LEVEL3)))
+    .andThen(shooter.timedSpitCoralCommand(0.2))
+        .andThen(CommandUtil.wrappedEventCommand(driveNearLeftPole))
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL1)),
     Set.of(drivetrain, elevator, shooter));
 
-    autoScoreL2Left = Commands.defer(()-> driveNearLeftPole
-    .andThen(driveSlowlyToNearestLeftPole)
-    .andThen(getScoreL2L3Command(elevator.LEVEL2))
+    autoScoreL2Left = Commands.defer(()-> CommandUtil.wrappedEventCommand(driveNearLeftPole)
+    .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestLeftPole))
+    .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL2))
+    .andThen(elevator.goToRequestedPositionCommand())
+    .andThen(new WaitUntilCommand(() -> elevator.isAtPosition(elevator.LEVEL2)))
+    .andThen(shooter.timedSpitCoralCommand(0.2))
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL1)),
     Set.of(drivetrain, elevator, shooter));
 
-    autoScoreL4Right = Commands.defer(()-> driveNearRightPole
+    autoScoreL4Right = Commands.defer(()-> CommandUtil.wrappedEventCommand(driveNearRightPole)
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL4))
-        .andThen(driveSlowlyToNearestRightPole)
+        .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestRightPole))
         .andThen(shooter.spitOutCoralCommand())
     // (Do we need an elevator up command to prevent collision with pole?)
-        .andThen(driveNearRightPole)
+        .andThen(CommandUtil.wrappedEventCommand(driveNearRightPole))
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL1)),
     Set.of(drivetrain, elevator, shooter));
 
-    autoScoreL3Right = Commands.defer(()-> driveNearRightPole
-        .andThen(driveSlowlyToNearestRightPole)
-        .andThen(getScoreL2L3Command(elevator.LEVEL3))
-        .andThen(driveNearRightPole)
+    autoScoreL3Right = Commands.defer(()-> CommandUtil.wrappedEventCommand(driveNearRightPole)
+        .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestRightPole))
+        .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL3))
+    .andThen(elevator.goToRequestedPositionCommand())
+    .andThen(new WaitUntilCommand(() -> elevator.isAtPosition(elevator.LEVEL3)))
+    .andThen(shooter.timedSpitCoralCommand(0.2))
+        .andThen(CommandUtil.wrappedEventCommand(driveNearRightPole))
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL1)),
     Set.of(drivetrain, elevator, shooter));
 
-    autoScoreL2Right = Commands.defer(()-> driveNearRightPole
-    .andThen(driveSlowlyToNearestRightPole)
-    .andThen(getScoreL2L3Command(elevator.LEVEL2))
+    autoScoreL2Right = Commands.defer(()-> CommandUtil.wrappedEventCommand(driveNearRightPole)
+    .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestRightPole))
+    .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL2))
+    .andThen(elevator.goToRequestedPositionCommand())
+    .andThen(new WaitUntilCommand(() -> elevator.isAtPosition(elevator.LEVEL2)))
+    .andThen(shooter.timedSpitCoralCommand(0.2))
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL1)),
     Set.of(drivetrain, elevator, shooter));
 
