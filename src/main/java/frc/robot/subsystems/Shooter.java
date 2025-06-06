@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -31,7 +32,7 @@ public class Shooter extends SubsystemBase {
   private SparkLimitSwitch inLimitSwitch;
   private SparkLimitSwitch outLimitSwitch;
 
-  private SparkAbsoluteEncoder algaeEncoder;
+  private RelativeEncoder algaeEncoder;
 
   public static class Config {
     public int shooterMotorId;
@@ -47,10 +48,10 @@ public class Shooter extends SubsystemBase {
     public double algaeKF;
   }
 
-  public double STOWED = 0.15;
+  public double STOWED = 4;
   // public double HOLD = 0.56;
-  public double HOLD = 0.45;
-  public double DEPLOYED = 0.80;
+  public double HOLD = 20;
+  public double DEPLOYED = 20;
 
   private SparkFlex shooterMotor;
   private SparkMax intakeFlapMotor;
@@ -77,13 +78,13 @@ public class Shooter extends SubsystemBase {
 
     if (config.hasAlgaeMotor) {
       algaeMotor = new SparkMax(config.algaeMotorId, MotorType.kBrushless);
-      algaeEncoder = algaeMotor.getAbsoluteEncoder();
+      algaeEncoder = algaeMotor.getEncoder();
 
       algaeMotorConfig
           .smartCurrentLimit(20, 20)
           .idleMode(IdleMode.kBrake)
           .closedLoop
-          .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
+          .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
           .pidf(config.algaeKP, config.algaeKI, config.algaeKD, config.algaeKF);
       algaeMotorConfig.softLimit.forwardSoftLimit(DEPLOYED + .5).forwardSoftLimitEnabled(false);
       algaeMotorConfig.softLimit.reverseSoftLimit(STOWED).reverseSoftLimitEnabled(false);
@@ -116,6 +117,7 @@ public class Shooter extends SubsystemBase {
     shooterMotor.configure(
         motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     
+    algaeEncoder.setPosition(0);
 
     inLimitSwitch = shooterMotor.getForwardLimitSwitch();
     outLimitSwitch = shooterMotor.getReverseLimitSwitch();
@@ -260,7 +262,7 @@ public class Shooter extends SubsystemBase {
 
   public Command intakeCoralCommand() {
     return runShooterInFastUntilInLimitTriggered()
-      .andThen(runShooterInSlowUntilOutLimitTriggered())
+      .andThen(runShooterOutSlowUntilInAndOutLimitTriggeredThenStop())
       .withName("Coral intake command");
   }
 

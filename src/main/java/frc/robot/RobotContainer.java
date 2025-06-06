@@ -163,19 +163,48 @@ public class RobotContainer {
             .and(operatorController.start())
             .onTrue(new RunCommand(() -> swapControllers(), controllers)
             .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
-            
-        // Shoots the coral out of the shooter
+        operatorController
+            .b()
+            .and(shooter::coralNotDetectedByEitherSensor)
+            .whileTrue(elevator
+            .setRequestedPositionCommand(elevator.LEVELALGAE1)
+            .andThen(elevator.goToRequestedPositionCommand())
+            .andThen(
+                new WaitUntilCommand(() -> elevator.currentPositionAtTarget(elevator.LEVELALGAE1)))
+            .andThen(shooter.deployAlgaeHookCommand())
+            .andThen(shooter.intakeAlgae()))
+            .toggleOnFalse(shooter
+                .holdAlgaeHookCommand()
+                .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL1))
+                .andThen(elevator.goToRequestedPositionCommand()));
+        operatorController
+            .y()
+            .and(shooter::coralNotDetectedByEitherSensor)
+            .whileTrue(elevator
+            .setRequestedPositionCommand(elevator.LEVELALGAE2)
+            .andThen(elevator.goToRequestedPositionCommand())
+            .andThen(
+                new WaitUntilCommand(() -> elevator.currentPositionAtTarget(elevator.LEVELALGAE2)))
+            .andThen(shooter.deployAlgaeHookCommand())
+            .andThen(shooter.intakeAlgae()))
+            .toggleOnFalse(shooter
+                .holdAlgaeHookCommand()
+                .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL1))
+                .andThen(elevator.goToRequestedPositionCommand()));
+
+        // Shoots the coral and algae out of the shooter and stow algae mech if it is deployed
         operatorController.x()
-        .whileTrue(shooter.spitOutCoralCommand());
+        .whileTrue(shooter.spitOutCoralCommand())
+        .toggleOnFalse(shooter.stowAlgaeHookCommand());
       }
   }
  
   private void configureDriverBindings(Drivetrain.Config config) {
-    // driveController
-    //     .back()
-    //     .and(driveController.start())
-    //     .onTrue(new RunCommand(() -> swapControllers(), controllers)
-    //         .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+    driveController
+        .back()
+        .and(driveController.start())
+        .onTrue(new RunCommand(() -> swapControllers(), controllers)
+            .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
     // driveController
     //     .back()
     //     .debounce(.25)
@@ -365,6 +394,7 @@ public class RobotContainer {
         CommandScheduler.getInstance().getDefaultButtonLoop().clear();
         CommandScheduler.getInstance().enable();
         configureOperatorBindings();
+        configureDriverBindings(robotConfig.drivetrainConfig);
     }
 
     /**
@@ -643,8 +673,8 @@ driveSlowlyToNearestLeftPole = Commands.defer(
     if (leds !=null) {
     leds.applyPatternsToStrips();
 
-    if ((shooter.getCurrentCommand()!= null && shooter.getCurrentCommand().getName().equals("coral intake command"))
-        || (shooter.getCurrentCommand()!= null && shooter.getCurrentCommand().getName().equals("Manual Shoot Command")))
+    if ((shooter.getCurrentCommand()!= null && shooter.getCurrentCommand().getName().equals("Coral intake command"))
+        || (shooter.getCurrentCommand()!= null && shooter.getCurrentCommand().getName().equals("Spit Out Coral Command")))
     {
         leds.leftPattern = leds.greenBase;
     }
@@ -674,7 +704,7 @@ driveSlowlyToNearestLeftPole = Commands.defer(
         leds.middlePattern = leds.blueBase;
     }
     else {
-        leds.middlePattern = leds.lightGreenBase;
+        leds.middlePattern = leds.greenBase;
     }
         leds.rightPattern = leds.redProgressMaskWithElevator;
   }

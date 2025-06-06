@@ -98,11 +98,11 @@ public class RobotConfig {
     riptide.elevatorConfig.allowedError_Down = .2;
 
     riptide.shooterConfig.shooterMotorId = 6;
-    riptide.shooterConfig.algaeMotorId = 61;
+    riptide.shooterConfig.algaeMotorId = 27;
     riptide.shooterConfig.intakeFlapMotorID = 12;
     riptide.shooterConfig.hasAlgaeMotor = true;
-    riptide.shooterConfig.algaeKP = 3.25;
-    riptide.shooterConfig.algaeKI = 0.000200;
+    riptide.shooterConfig.algaeKP = 3.25/10;
+    riptide.shooterConfig.algaeKI = 0.0002/10;
     riptide.shooterConfig.algaeKD = 0;
     riptide.shooterConfig.algaeKF = 0;
     riptide.shooterConfig.flapForwardLimit = 0;

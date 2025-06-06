@@ -78,8 +78,8 @@ public class Elevator extends SubsystemBase {
 
   public double LEVELALGAEPROC = 1;
   public double LEVELALGAELOLLIPOP = 1;
-  public double LEVELALGAE1 = 5;
-  public double LEVELALGAE2 = 28.6;
+  public double LEVELALGAE1 = 4.6;
+  public double LEVELALGAE2 = 11;
   public double LEVELBARGE = 30.5;
   public double LEVELHP = 0.32;
 
@@ -274,6 +274,10 @@ public class Elevator extends SubsystemBase {
 
   public void setRequestedPositionToCurrentPosition() {
     this.setRequestedPosition(this.getCurrentPosition());
+  }
+
+  public boolean currentPositionAtTarget(double target) {
+    return Math.abs(this.getCurrentPosition() - target) < 0.2;
   }
 
   public Command runSysIdRoutine() {
