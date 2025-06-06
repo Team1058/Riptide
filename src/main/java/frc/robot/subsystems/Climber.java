@@ -50,7 +50,7 @@ public class Climber extends SubsystemBase {
         .reverseSoftLimit(config.climberClimbed)
         .reverseSoftLimitEnabled(false)
         .forwardSoftLimit(config.climberClimbed)
-        .forwardSoftLimitEnabled(true);
+        .forwardSoftLimitEnabled(false);
 
     leaderConfig.limitSwitch.forwardLimitSwitchEnabled(false).reverseLimitSwitchEnabled(false);
 
