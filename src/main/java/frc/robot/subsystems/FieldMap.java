@@ -167,33 +167,33 @@ public class FieldMap extends SubsystemBase {
 
   public Rotation2d getLockedReefFaceAngle(ReefFace reefFace) {
 
-    // if (reefFace == ReefFace.Four) {
-    //   return Rotation2d.fromDegrees(180);
-    // } else if (reefFace == ReefFace.Five) {
-    //   return Rotation2d.fromDegrees(120);
-    // } else if (reefFace == ReefFace.Six) {
-    //   return Rotation2d.fromDegrees(60);
-    // } else if (reefFace == ReefFace.One) {
-    //   return Rotation2d.fromDegrees(0);
-    // } else if (reefFace == ReefFace.Two) {
-    //   return Rotation2d.fromDegrees(-60);
-    // } else {
-    //   return Rotation2d.fromDegrees(-120);
-    // }
-
     if (reefFace == ReefFace.One) {
-        return Rotation2d.fromDegrees(0);
-      } else if (reefFace == ReefFace.Two) {
-        return Rotation2d.fromDegrees(-60);
-      } else if (reefFace == ReefFace.Three) {
-        return Rotation2d.fromDegrees(-120);
-      } else if (reefFace == ReefFace.Four) {
-        return Rotation2d.fromDegrees(180);
-      } else if (reefFace == ReefFace.Five) {
-        return Rotation2d.fromDegrees(120);
-      } else {
-        return Rotation2d.fromDegrees(60);
-      }
+      return Rotation2d.fromDegrees(180);
+    } else if (reefFace == ReefFace.Two) {
+      return Rotation2d.fromDegrees(120);
+    } else if (reefFace == ReefFace.Three) {
+      return Rotation2d.fromDegrees(60);
+    } else if (reefFace == ReefFace.Four) {
+      return Rotation2d.fromDegrees(0);
+    } else if (reefFace == ReefFace.Five) {
+      return Rotation2d.fromDegrees(-60);
+    } else {
+      return Rotation2d.fromDegrees(-120);
+    }
+
+    // if (reefFace == ReefFace.One) {
+    //     return Rotation2d.fromDegrees(0);
+    //   } else if (reefFace == ReefFace.Two) {
+    //     return Rotation2d.fromDegrees(-60);
+    //   } else if (reefFace == ReefFace.Three) {
+    //     return Rotation2d.fromDegrees(-120);
+    //   } else if (reefFace == ReefFace.Four) {
+    //     return Rotation2d.fromDegrees(180);
+    //   } else if (reefFace == ReefFace.Five) {
+    //     return Rotation2d.fromDegrees(120);
+    //   } else {
+    //     return Rotation2d.fromDegrees(60);
+    //   }
   }
 
   public double getLeftPolePitch() {
