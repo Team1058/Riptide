@@ -327,7 +327,7 @@ public class Elevator extends SubsystemBase {
                 leaderMotor.set(0);
                 elevatorEncoder.setPosition(0);
                 requestedPosition = 0;
-                setRequestedPosition(LEVEL2);
+                setRequestedPosition(LEVELHP);
               }
               leaderConfig.softLimit.reverseSoftLimitEnabled(true);
               leaderMotor.configure(
