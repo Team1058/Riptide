@@ -35,13 +35,13 @@ public class FieldMap extends SubsystemBase {
       new Transform2d(Inches.of(17.5), Inches.of(12.628), Rotation2d.k180deg);
 
   private static final Transform2d leftReefTransform =
-      new Transform2d(Inches.of(12), Inches.of(-9.75), Rotation2d.k180deg);
+      new Transform2d(Inches.of(12), Inches.of(-2.323-2-1), Rotation2d.k180deg);
   private static final Transform2d farLeftReefTransform =
-      new Transform2d(Inches.of(48), Inches.of(-9.75), Rotation2d.k180deg);
+      new Transform2d(Inches.of(48), Inches.of(-2.323-2-1), Rotation2d.k180deg);
   private static final Transform2d rightReefTransform =
-      new Transform2d(Inches.of(12), Inches.of(3.25), Rotation2d.k180deg);
+      new Transform2d(Inches.of(12), Inches.of(4.29+2), Rotation2d.k180deg);
   private static final Transform2d farRightReefTransform =
-      new Transform2d(Inches.of(48), Inches.of(3.25), Rotation2d.k180deg);
+      new Transform2d(Inches.of(48), Inches.of(4.29+2), Rotation2d.k180deg);
 
   private static final double leftPolePitch = 2.5;
   private static final double leftPoleYaw = 31.5;

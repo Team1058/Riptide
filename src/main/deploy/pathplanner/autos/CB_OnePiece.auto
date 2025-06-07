@@ -1,0 +1,61 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "goNearCenterRight"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "setRequestedPositionL4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "goToRequestedPosition"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "goIntoCenterRight"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "spitOutCoral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "exitCenterRight"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "setRequestedPositionL1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "goToRequestedPosition"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "WPI_Autos",
+  "choreoAuto": false
+}

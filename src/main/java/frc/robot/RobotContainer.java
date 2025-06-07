@@ -608,20 +608,19 @@ driveSlowlyToNearestLeftPole = Commands.defer(
  
     autoScoreL4Left = Commands.defer(()-> CommandUtil.wrappedEventCommand(driveNearLeftPole)
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL4))
-        .andThen(new WaitUntilCommand(()-> elevator.isAtPosition(elevator.LEVEL4)))
+        .andThen(elevator.goToRequestedPositionCommand())
         .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestLeftPole))
-        .andThen(shooter.spitOutCoralCommand())
+        .andThen(shooter.timedSpitCoralCommand(0.5))
     // (Do we need an elevator up command to prevent collision with pole?)
         .andThen(CommandUtil.wrappedEventCommand(driveNearLeftPole))
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL1)),
-    Set.of(drivetrain, elevator, shooter));
+    Set.of(drivetrain, elevator, shooter)).withName("AutoScoreL4Left");
 
     autoScoreL3Left = Commands.defer(()-> CommandUtil.wrappedEventCommand(driveNearLeftPole)
         .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestLeftPole))
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL3))
     .andThen(elevator.goToRequestedPositionCommand())
-    .andThen(new WaitUntilCommand(() -> elevator.isAtPosition(elevator.LEVEL3)))
-    .andThen(shooter.timedSpitCoralCommand(0.2))
+    .andThen(shooter.timedSpitCoralCommand(0.5))
         .andThen(CommandUtil.wrappedEventCommand(driveNearLeftPole))
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL1)),
     Set.of(drivetrain, elevator, shooter));
@@ -631,14 +630,15 @@ driveSlowlyToNearestLeftPole = Commands.defer(
     .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL2))
     .andThen(elevator.goToRequestedPositionCommand())
     .andThen(new WaitUntilCommand(() -> elevator.isAtPosition(elevator.LEVEL2)))
-    .andThen(shooter.timedSpitCoralCommand(0.2))
+    .andThen(shooter.timedSpitCoralCommand(0.5))
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL1)),
     Set.of(drivetrain, elevator, shooter));
 
     autoScoreL4Right = Commands.defer(()-> CommandUtil.wrappedEventCommand(driveNearRightPole)
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL4))
+        .andThen(elevator.goToRequestedPositionCommand())
         .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestRightPole))
-        .andThen(shooter.spitOutCoralCommand())
+        .andThen(shooter.timedSpitCoralCommand(0.5))
     // (Do we need an elevator up command to prevent collision with pole?)
         .andThen(CommandUtil.wrappedEventCommand(driveNearRightPole))
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL1)),
@@ -649,7 +649,7 @@ driveSlowlyToNearestLeftPole = Commands.defer(
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL3))
     .andThen(elevator.goToRequestedPositionCommand())
     .andThen(new WaitUntilCommand(() -> elevator.isAtPosition(elevator.LEVEL3)))
-    .andThen(shooter.timedSpitCoralCommand(0.2))
+    .andThen(shooter.timedSpitCoralCommand(0.5))
         .andThen(CommandUtil.wrappedEventCommand(driveNearRightPole))
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL1)),
     Set.of(drivetrain, elevator, shooter));
@@ -659,7 +659,7 @@ driveSlowlyToNearestLeftPole = Commands.defer(
     .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL2))
     .andThen(elevator.goToRequestedPositionCommand())
     .andThen(new WaitUntilCommand(() -> elevator.isAtPosition(elevator.LEVEL2)))
-    .andThen(shooter.timedSpitCoralCommand(0.2))
+    .andThen(shooter.timedSpitCoralCommand(0.5))
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL1)),
     Set.of(drivetrain, elevator, shooter));
 
@@ -672,6 +672,11 @@ driveSlowlyToNearestLeftPole = Commands.defer(
     NamedCommands.registerCommand("AutoScoreL4Right", autoScoreL4Right);
     NamedCommands.registerCommand("AutoScoreL3Right", autoScoreL3Right);
     NamedCommands.registerCommand("AutoScoreL2Right", autoScoreL2Right);
+    NamedCommands.registerCommand("setRequestedPositionL4", elevator.setRequestedPositionCommand(elevator.LEVEL4));
+    NamedCommands.registerCommand("setRequestedPositionL1", elevator.setRequestedPositionCommand(elevator.LEVEL1));
+    NamedCommands.registerCommand("goToRequestedPosition", elevator.goToRequestedPositionCommand());
+    NamedCommands.registerCommand("spitOutCoral", shooter.timedSpitCoralCommand(1));
+
   }
 
   public void updateAlliance(Alliance alliance) {
