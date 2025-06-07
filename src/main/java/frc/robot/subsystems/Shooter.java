@@ -181,10 +181,18 @@ public class Shooter extends SubsystemBase {
 
   public Command spitOutCoralCommand() {
     return new StartEndCommand(
-      () -> shooterMotor.set(-0.5),
+      () -> shooterMotor.set(-0.3),
       () -> shooterMotor.disable(),
       this)
       .withName("Spit Out Coral Command");
+  }
+
+  public Command unIntakeCommand() {
+    return new StartEndCommand(
+      () -> shooterMotor.set(0.3),
+      () -> shooterMotor.disable(),
+      this)
+      .withName("Reverse the intake");
   }
 
   public Command timedSpitCoralCommand(double time) {

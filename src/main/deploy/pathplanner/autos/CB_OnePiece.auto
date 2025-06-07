@@ -5,57 +5,15 @@
     "data": {
       "commands": [
         {
-          "type": "path",
-          "data": {
-            "pathName": "goNearCenterRight"
-          }
-        },
-        {
           "type": "named",
           "data": {
-            "name": "setRequestedPositionL4"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "goToRequestedPosition"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "goIntoCenterRight"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "spitOutCoral"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "exitCenterRight"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "setRequestedPositionL1"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "goToRequestedPosition"
+            "name": "AutoScoreL4Right"
           }
         }
       ]
     }
   },
-  "resetOdom": true,
-  "folder": "WPI_Autos",
+  "resetOdom": false,
+  "folder": null,
   "choreoAuto": false
 }

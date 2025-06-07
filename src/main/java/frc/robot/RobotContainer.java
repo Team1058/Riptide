@@ -60,6 +60,8 @@ public class RobotContainer {
   private Command driveSlowlyToNearestRightPole;
   private Command driveNearLeftPole;
   private Command driveNearRightPole;
+  private Command driveNearLeftPoleForLowerL;
+  private Command driveNearRightPoleForLowerL;
   private Command autoScoreL2Left;
   private Command autoScoreL3Left;
   private Command autoScoreL4Left;
@@ -85,13 +87,13 @@ public class RobotContainer {
     leds = new Leds(elevator);
     fieldMap = new FieldMap(Alliance.Red);
     initDrivetrain(robotConfig.drivetrainConfig);
-    initAuto();
     initVision(robotConfig.visionConfig);
     initAutoScoreCommands();
     initNamedCommands();
     configureDriverBindings(robotConfig.drivetrainConfig);
     configureOperatorBindings();
-  }
+    initAuto();
+}
 
 
   private void configureOperatorBindings() {
@@ -106,7 +108,11 @@ public class RobotContainer {
         .andThen(elevator.goToRequestedPositionCommand())
         .alongWith(shooter.openSesameCommand())
         .andThen(climber.manualClimbCommand(operatorController::getRightTriggerAxis)));
-      }    
+      }   
+      
+      operatorController
+      .rightStick()
+      .whileTrue(shooter.unIntakeCommand());
       
       operatorController
       .start()
@@ -253,8 +259,8 @@ public class RobotContainer {
     driveController.a().and(driveController.rightBumper()).whileTrue(driveToNearestRightPole);
 
 
-    driveController.y().and(driveController.leftBumper()).whileTrue(driveSlowlyToNearestLeftPole);
-    driveController.y().and(driveController.rightBumper()).whileTrue(driveSlowlyToNearestRightPole);
+    driveController.y().and(driveController.leftBumper()).whileTrue(driveNearLeftPoleForLowerL);
+    driveController.y().and(driveController.rightBumper()).whileTrue(driveNearRightPoleForLowerL);
 
     driveController.b().and(driveController.leftBumper()).whileTrue(driveToLeftCoralStation);
     driveController.b().and(driveController.rightBumper()).whileTrue(driveToRightCoralStation);
@@ -497,7 +503,7 @@ driveSlowlyToNearestRightPole = Commands.defer(
                 finalPose.getRotation(),
                 MetersPerSecond.zero(),
                 MetersPerSecond.zero(),
-                0.2,
+                0.3,
                 approachPose,
                 finalPose);
           },
@@ -506,12 +512,12 @@ driveSlowlyToNearestLeftPole = Commands.defer(
           () -> {
             var reefFace = fieldMap.getLockedReefFace(drivetrain.getPose());
             var approachPose = fieldMap.getPolePose(reefFace, ReefPole.FarLeft);
-            var finalPose = fieldMap.getPolePose(reefFace, ReefPole.Right);
+            var finalPose = fieldMap.getPolePose(reefFace, ReefPole.Left);
             return drivetrain.makeGoToCommandWithMaxMPS(
                 finalPose.getRotation(),
                 MetersPerSecond.zero(),
                 MetersPerSecond.zero(),
-                0.2,
+                0.3,
                 approachPose,
                 finalPose);
           },
@@ -563,7 +569,7 @@ driveSlowlyToNearestLeftPole = Commands.defer(
               return drivetrain.makeGoToCommand(
                   finalPose.getRotation(),
                   MetersPerSecond.zero(),
-                  fieldMap.coralStationRightIntermediate,
+                  currentPose,
                   finalPose);
             },
           Set.of(drivetrain));
@@ -572,14 +578,46 @@ driveSlowlyToNearestLeftPole = Commands.defer(
             () -> {
             var currentPose = drivetrain.getPose();
             var reefFace = fieldMap.getLockedReefFace(currentPose);
-            var finalPose = fieldMap.getPolePose(reefFace, ReefPole.Right);
+            var finalPose = fieldMap.getPolePose(reefFace, ReefPole.FarRight);
               return drivetrain.makeGoToCommand(
                   finalPose.getRotation(),
                   MetersPerSecond.zero(),
-                  fieldMap.coralStationRightIntermediate,
+                  currentPose,
                   finalPose);
             },
           Set.of(drivetrain)); 
+
+          driveNearLeftPoleForLowerL = Commands.defer(
+            () -> {
+                var reefFace = fieldMap.getLockedReefFace(drivetrain.getPose());
+                var approachPose = fieldMap.getPolePose(reefFace, ReefPole.FarLeft);
+                var finalPose = fieldMap.getPolePose(reefFace, ReefPole.L2L3Left);
+                return drivetrain.makeGoToCommandWithMaxMPS(
+                    finalPose.getRotation(),
+                    MetersPerSecond.zero(),
+                    MetersPerSecond.zero(),
+                    0.3,
+                    approachPose,
+                    finalPose);
+              },
+          Set.of(drivetrain)); 
+
+          driveNearRightPoleForLowerL = Commands.defer(
+            () -> {
+                var reefFace = fieldMap.getLockedReefFace(drivetrain.getPose());
+                var approachPose = fieldMap.getPolePose(reefFace, ReefPole.FarRight);
+                var finalPose = fieldMap.getPolePose(reefFace, ReefPole.L2L3Right);
+                return drivetrain.makeGoToCommandWithMaxMPS(
+                    finalPose.getRotation(),
+                    MetersPerSecond.zero(),
+                    MetersPerSecond.zero(),
+                    0.3,
+                    approachPose,
+                    finalPose);
+              },
+          Set.of(drivetrain)); 
+
+          
     //   configureDriverBindings(config);
     //   registerDriverNamedCommands(config);
 
@@ -610,34 +648,6 @@ driveSlowlyToNearestLeftPole = Commands.defer(
 
     // autoscore l4: Drive near pole (line up in x but not y), deploy elevator, drive in slowly, score, back off, retract
  
-    autoScoreL4Left = Commands.defer(()-> CommandUtil.wrappedEventCommand(driveNearLeftPole)
-        .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL4))
-        .andThen(elevator.goToRequestedPositionCommand())
-        .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestLeftPole))
-        .andThen(shooter.timedSpitCoralCommand(0.5))
-    // (Do we need an elevator up command to prevent collision with pole?)
-        .andThen(CommandUtil.wrappedEventCommand(driveNearLeftPole))
-        .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL1)),
-    Set.of(drivetrain, elevator, shooter)).withName("AutoScoreL4Left");
-
-    autoScoreL3Left = Commands.defer(()-> CommandUtil.wrappedEventCommand(driveNearLeftPole)
-        .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestLeftPole))
-        .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL3))
-    .andThen(elevator.goToRequestedPositionCommand())
-    .andThen(shooter.timedSpitCoralCommand(0.5))
-        .andThen(CommandUtil.wrappedEventCommand(driveNearLeftPole))
-        .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL1)),
-    Set.of(drivetrain, elevator, shooter));
-
-    autoScoreL2Left = Commands.defer(()-> CommandUtil.wrappedEventCommand(driveNearLeftPole)
-    .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestLeftPole))
-    .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL2))
-    .andThen(elevator.goToRequestedPositionCommand())
-    .andThen(new WaitUntilCommand(() -> elevator.isAtPosition(elevator.LEVEL2)))
-    .andThen(shooter.timedSpitCoralCommand(0.5))
-        .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL1)),
-    Set.of(drivetrain, elevator, shooter));
-
     autoScoreL4Right = Commands.defer(()-> CommandUtil.wrappedEventCommand(driveNearRightPole)
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL4))
         .andThen(elevator.goToRequestedPositionCommand())
@@ -645,26 +655,55 @@ driveSlowlyToNearestLeftPole = Commands.defer(
         .andThen(shooter.timedSpitCoralCommand(0.5))
     // (Do we need an elevator up command to prevent collision with pole?)
         .andThen(CommandUtil.wrappedEventCommand(driveNearRightPole))
-        .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL1)),
+        .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP)),
     Set.of(drivetrain, elevator, shooter));
 
+    autoScoreL4Left = Commands.defer(()-> CommandUtil.wrappedEventCommand(driveNearLeftPole)
+        .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL4))
+        .andThen(elevator.goToRequestedPositionCommand())
+        .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestLeftPole))
+        .andThen(shooter.timedSpitCoralCommand(0.5))
+    // (Do we need an elevator up command to prevent collision with pole?)
+        .andThen(CommandUtil.wrappedEventCommand(driveNearLeftPole))
+        .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP)),
+    Set.of(drivetrain, elevator, shooter)).withName("AutoScoreL4Left");
+
+    autoScoreL3Left = Commands.defer(()-> CommandUtil.wrappedEventCommand(driveNearLeftPole)
+        .andThen(CommandUtil.wrappedEventCommand(driveNearLeftPoleForLowerL))
+        .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL3))
+    .andThen(elevator.goToRequestedPositionCommand())
+    .andThen(shooter.timedSpitCoralCommand(0.5))
+        .andThen(CommandUtil.wrappedEventCommand(driveNearLeftPole))
+        .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP)),
+    Set.of(drivetrain, elevator, shooter));
+
+    autoScoreL2Left = Commands.defer(()-> CommandUtil.wrappedEventCommand(driveNearLeftPole)
+    .andThen(CommandUtil.wrappedEventCommand(driveNearLeftPoleForLowerL))
+    .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL2))
+    .andThen(elevator.goToRequestedPositionCommand())
+    .andThen(new WaitUntilCommand(() -> elevator.isAtPosition(elevator.LEVEL2)))
+    .andThen(shooter.timedSpitCoralCommand(0.5))
+        .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP)),
+    Set.of(drivetrain, elevator, shooter));
+
+
     autoScoreL3Right = Commands.defer(()-> CommandUtil.wrappedEventCommand(driveNearRightPole)
-        .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestRightPole))
+        .andThen(CommandUtil.wrappedEventCommand(driveNearRightPoleForLowerL))
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL3))
     .andThen(elevator.goToRequestedPositionCommand())
     .andThen(new WaitUntilCommand(() -> elevator.isAtPosition(elevator.LEVEL3)))
     .andThen(shooter.timedSpitCoralCommand(0.5))
         .andThen(CommandUtil.wrappedEventCommand(driveNearRightPole))
-        .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL1)),
+        .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP)),
     Set.of(drivetrain, elevator, shooter));
 
     autoScoreL2Right = Commands.defer(()-> CommandUtil.wrappedEventCommand(driveNearRightPole)
-    .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestRightPole))
+    .andThen(CommandUtil.wrappedEventCommand(driveNearRightPoleForLowerL))
     .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL2))
     .andThen(elevator.goToRequestedPositionCommand())
     .andThen(new WaitUntilCommand(() -> elevator.isAtPosition(elevator.LEVEL2)))
     .andThen(shooter.timedSpitCoralCommand(0.5))
-        .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL1)),
+        .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP)),
     Set.of(drivetrain, elevator, shooter));
 
   }
@@ -678,8 +717,10 @@ driveSlowlyToNearestLeftPole = Commands.defer(
     NamedCommands.registerCommand("AutoScoreL2Right", autoScoreL2Right);
     NamedCommands.registerCommand("setRequestedPositionL4", elevator.setRequestedPositionCommand(elevator.LEVEL4));
     NamedCommands.registerCommand("setRequestedPositionL1", elevator.setRequestedPositionCommand(elevator.LEVEL1));
+    NamedCommands.registerCommand("setRequestedPositionHP", elevator.setRequestedPositionCommand(elevator.LEVELHP));
     NamedCommands.registerCommand("goToRequestedPosition", elevator.goToRequestedPositionCommand());
     NamedCommands.registerCommand("spitOutCoral", shooter.timedSpitCoralCommand(1));
+    
 
   }
 
