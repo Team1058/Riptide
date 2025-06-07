@@ -79,7 +79,9 @@ public class RobotContainer {
     shooter = new Shooter(robotConfig.shooterConfig);
     controllers = new Controllers(driveController, operatorController);
     leds = new Leds(elevator);
+    fieldMap = new FieldMap(Alliance.Red);
     initDrivetrain(robotConfig.drivetrainConfig);
+    initAuto();
     initVision(robotConfig.visionConfig);
     initAutoScoreCommands();
     configureDriverBindings(robotConfig.drivetrainConfig);
@@ -665,6 +667,7 @@ driveSlowlyToNearestLeftPole = Commands.defer(
 
    public void initAuto() {
     autoChooser = AutoBuilder.buildAutoChooser();
+    autoChooser.setDefaultOption("None", Commands.none());
     autosTab = Shuffleboard.getTab("Autos");
     autosTab.add("Auto Chooser", autoChooser).withWidget(BuiltInWidgets.kComboBoxChooser);
   }
