@@ -732,7 +732,12 @@ driveSlowlyToNearestLeftPole = Commands.defer(
     else {
         leds.middlePattern = leds.greenBase;
     }
+    if (shooter.coralNotDetectedByEitherSensor() && !operatorController.rightBumper().getAsBoolean() || operatorController.leftBumper().getAsBoolean()){
+        leds.rightPattern = leds.blueProgressMaskWithElevator;
+    }
+    else {
         leds.rightPattern = leds.redProgressMaskWithElevator;
+    }
   }
 }
 }
