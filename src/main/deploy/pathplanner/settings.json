@@ -4,12 +4,14 @@
   "holonomicMode": true,
   "pathFolders": [
     "LeftSidePaths",
-    "RightSidePaths"
+    "WPI_LeftPaths",
+    "RightSidePaths",
+    "WPI_RightPaths"
   ],
   "autoFolders": [
     "GSD_Autos",
-    "SWAuTos",
-    "old"
+    "WPI_Autos",
+    "SWAuTos"
   ],
   "defaultMaxVel": 6.0,
   "defaultMaxAccel": 3.6,

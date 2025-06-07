@@ -48,7 +48,7 @@
   "folder": "RightSidePaths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -37.665621198583544
+    "rotation": 142.334
   },
   "useDefaultConstraints": true
 }

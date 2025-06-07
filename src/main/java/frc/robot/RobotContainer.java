@@ -16,6 +16,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.CommandUtil;
+import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -87,6 +88,7 @@ public class RobotContainer {
     initAuto();
     initVision(robotConfig.visionConfig);
     initAutoScoreCommands();
+    initNamedCommands();
     configureDriverBindings(robotConfig.drivetrainConfig);
     configureOperatorBindings();
   }
@@ -661,6 +663,15 @@ driveSlowlyToNearestLeftPole = Commands.defer(
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL1)),
     Set.of(drivetrain, elevator, shooter));
 
+  }
+
+  public void initNamedCommands() {
+    NamedCommands.registerCommand("AutoScoreL4Left", autoScoreL4Left);
+    NamedCommands.registerCommand("AutoScoreL3Left", autoScoreL3Left);
+    NamedCommands.registerCommand("AutoScoreL2Left", autoScoreL2Left);
+    NamedCommands.registerCommand("AutoScoreL4Right", autoScoreL4Right);
+    NamedCommands.registerCommand("AutoScoreL3Right", autoScoreL3Right);
+    NamedCommands.registerCommand("AutoScoreL2Right", autoScoreL2Right);
   }
 
   public void updateAlliance(Alliance alliance) {
