@@ -152,8 +152,8 @@ public class Elevator extends SubsystemBase {
 
     leaderConfig
         .closedLoop
-        .pid(config.kP_Up, config.kI_Up, config.kD_Up, upSlot)
-        .pid(config.kP_Down, config.kI_Down, config.kD_Down, downSlot).outputRange(-0.4, .4, downSlot)
+        .pid(config.kP_Up, config.kI_Up, config.kD_Up, upSlot).outputRange(-0.75, .75, upSlot)
+        .pid(config.kP_Down, config.kI_Down, config.kD_Down, downSlot).outputRange(-0.2, .2, downSlot)
         .maxMotion
         .maxAcceleration(config.maxAcceleration_Up, upSlot)
         .maxVelocity(config.maxVelocity_Up, upSlot)

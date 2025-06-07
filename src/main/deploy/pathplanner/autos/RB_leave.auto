@@ -13,7 +13,7 @@
       ]
     }
   },
-  "resetOdom": true,
-  "folder": "SWAuTos",
+  "resetOdom": false,
+  "folder": "WPI_Autos",
   "choreoAuto": false
 }

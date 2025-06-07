@@ -716,7 +716,7 @@ driveSlowlyToNearestLeftPole = Commands.defer(
     if (RobotController.getCPUTemp() > 85){
         leds.middlePattern = leds.redSlowBlink;
     }
-    else if (RobotController.getBatteryVoltage() <= 8) {
+    else if (RobotController.getBatteryVoltage() <= 11.8) {
         leds.middlePattern = leds.yellowBase;
     }
     else if (RobotController.getBrownoutVoltage() >= RobotController.getBatteryVoltage()){

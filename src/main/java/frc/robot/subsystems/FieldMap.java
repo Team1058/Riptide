@@ -34,14 +34,25 @@ public class FieldMap extends SubsystemBase {
   private static final Transform2d coralStationTransform =
       new Transform2d(Inches.of(17.5), Inches.of(12.628), Rotation2d.k180deg);
 
+// old left: -9.75
+//old right: 3.25
+
   private static final Transform2d leftReefTransform =
-      new Transform2d(Inches.of(12), Inches.of(-9.75), Rotation2d.k180deg);
+      new Transform2d(Inches.of(12), Inches.of(-4.323), Rotation2d.k180deg);
   private static final Transform2d farLeftReefTransform =
-      new Transform2d(Inches.of(48), Inches.of(-9.75), Rotation2d.k180deg);
+      new Transform2d(Inches.of(48), Inches.of(-4.323), Rotation2d.k180deg);
   private static final Transform2d rightReefTransform =
-      new Transform2d(Inches.of(12), Inches.of(3.25), Rotation2d.k180deg);
+      new Transform2d(Inches.of(12), Inches.of(4.29), Rotation2d.k180deg);
   private static final Transform2d farRightReefTransform =
-      new Transform2d(Inches.of(48), Inches.of(3.25), Rotation2d.k180deg);
+      new Transform2d(Inches.of(48), Inches.of(4.29), Rotation2d.k180deg);
+
+
+      // private double leftrelativeX;
+      // private double leftRelativeY;
+
+      // private double rightrelativeX;
+      // private double rightRelativeY;
+    
 
   private static final double leftPolePitch = 2.5;
   private static final double leftPoleYaw = 31.5;
@@ -58,6 +69,15 @@ public class FieldMap extends SubsystemBase {
       reefCenter = new Pose2d(Inches.of(513.625), Inches.of(158.5), Rotation2d.fromDegrees(-150));
       coralStationLeftIntermediate = new Pose2d(Meters.of(13.8), Meters.of(1.5), Rotation2d.kZero);
       coralStationRightIntermediate = new Pose2d(Meters.of(13.8), Meters.of(6.5), Rotation2d.kZero);
+
+
+
+      // leftrelativeX = new Pose2d(Meters.of(12.44), Meters.of(5.21), new Rotation2d(Degrees.of(-60))).relativeTo(ReefFace.Two.redPose).getX();
+      // leftRelativeY = new Pose2d(Meters.of(12.44), Meters.of(5.21), new Rotation2d(Degrees.of(-60))).relativeTo(ReefFace.Two.redPose).getY();
+
+      // rightrelativeX = new Pose2d(Meters.of(12.31), Meters.of(5.10), new Rotation2d(Degrees.of(-60))).relativeTo(ReefFace.Two.redPose).getX();
+      // rightRelativeY = new Pose2d(Meters.of(12.31), Meters.of(5.10), new Rotation2d(Degrees.of(-60))).relativeTo(ReefFace.Two.redPose).getY();
+
 
       coralStationMiddleRightIntermediate =
           new Pose2d(Meters.of(12.72), Meters.of(5.915), Rotation2d.fromDegrees(50));
@@ -229,5 +249,11 @@ public class FieldMap extends SubsystemBase {
 
   public void periodic() {
     Logger.recordOutput("AngleToReef", angleToReef);
+    // Logger.recordOutput("LeftRelativeX", leftrelativeX);
+    // Logger.recordOutput("LeftRelativeY",leftRelativeY);
+
+    // Logger.recordOutput("RightRelativeX", rightrelativeX);
+    // Logger.recordOutput("RightRelativeY", rightRelativeY);
+
   }
 }
