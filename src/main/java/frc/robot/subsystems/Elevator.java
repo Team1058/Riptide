@@ -111,7 +111,7 @@ public class Elevator extends SubsystemBase {
 
   private int stallLimit = 90;
   private int freeLimit = 90;
-  private double rampRate = .02;
+  private double rampRate = .05;
   private Config config;
   protected Double positionToHoldWhenNotSafeToMoveElevator;
 
