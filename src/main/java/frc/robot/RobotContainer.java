@@ -363,13 +363,13 @@ public class RobotContainer {
     //         },
     //         Set.of(drivetrain)));
 
-    driveController.pov(0).and(driveController.rightBumper()).whileTrue(autoScoreL4Right);
-    driveController.pov(90).and(driveController.rightBumper()).whileTrue(autoScoreL3Right);
-    driveController.pov(180).and(driveController.rightBumper()).whileTrue(autoScoreL2Right);
+    driveController.pov(270).and(driveController.rightBumper()).whileTrue(autoScoreL4Right);
+    driveController.pov(180).and(driveController.rightBumper()).whileTrue(autoScoreL3Right);
+    driveController.pov(90).and(driveController.rightBumper()).whileTrue(autoScoreL2Right);
 
-    driveController.pov(0).and(driveController.leftBumper()).whileTrue(autoScoreL4Left);
-    driveController.pov(90).and(driveController.leftBumper()).whileTrue(autoScoreL3Left);
-    driveController.pov(180).and(driveController.leftBumper()).whileTrue(autoScoreL2Left);
+    driveController.pov(270).and(driveController.leftBumper()).whileTrue(autoScoreL4Left);
+    driveController.pov(180).and(driveController.leftBumper()).whileTrue(autoScoreL3Left);
+    driveController.pov(90).and(driveController.leftBumper()).whileTrue(autoScoreL2Left);
     
     driveController
         .rightTrigger(.5)
@@ -653,6 +653,8 @@ driveSlowlyToNearestLeftPole = Commands.defer(
         .andThen(elevator.goToRequestedPositionCommand())
         .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestRightPole))
         .andThen(shooter.timedSpitCoralCommand(0.5))
+        .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL4+2))
+        .andThen(new WaitUntilCommand(()->elevator.isAtPosition(elevator.LEVEL4+2)).withTimeout(0.2))
     // (Do we need an elevator up command to prevent collision with pole?)
         .andThen(CommandUtil.wrappedEventCommand(driveNearRightPole))
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP)),
@@ -663,6 +665,8 @@ driveSlowlyToNearestLeftPole = Commands.defer(
         .andThen(elevator.goToRequestedPositionCommand())
         .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestLeftPole))
         .andThen(shooter.timedSpitCoralCommand(0.5))
+        .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL4+2))
+        .andThen(new WaitUntilCommand(()->elevator.isAtPosition(elevator.LEVEL4+2)).withTimeout(0.2))
     // (Do we need an elevator up command to prevent collision with pole?)
         .andThen(CommandUtil.wrappedEventCommand(driveNearLeftPole))
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP)),
