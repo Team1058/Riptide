@@ -113,10 +113,6 @@ public class RobotContainer {
         operatorController.a()
         .whileTrue(elevator.setRequestedPositionCommand(elevator.LEVELHP)
         .andThen(elevator.goToRequestedPositionCommand())
-        .until(elevator.isAtPositionTrigger(elevator.LEVELHP))
-        .andThen(elevator.resetElevatorCommand())
-        .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP))
-        .andThen(elevator.goToRequestedPositionCommand())
         .andThen(shooter.intakeCoralCommand()));
         
         // Going to Coral positions commands
