@@ -123,19 +123,19 @@ public class RobotContainer {
         // Going to Coral positions commands
         operatorController
             .povUp()
-            .and(shooter::coralDetectedByEitherSensor)
+            .and(()-> shooter.coralDetectedByEitherSensor() || operatorController.rightBumper().getAsBoolean())
             .onTrue(elevator.setRequestedPositionCommand(elevator.LEVEL1));
         operatorController
             .povRight()
-            .and(shooter::coralDetectedByEitherSensor)
+            .and(()-> shooter.coralDetectedByEitherSensor() || operatorController.rightBumper().getAsBoolean())
             .onTrue(elevator.setRequestedPositionCommand(elevator.LEVEL2));
         operatorController
             .povDown()
-            .and(shooter::coralDetectedByEitherSensor)
+            .and(()-> shooter.coralDetectedByEitherSensor() || operatorController.rightBumper().getAsBoolean())
             .onTrue(elevator.setRequestedPositionCommand(elevator.LEVEL3));
         operatorController
             .povLeft()
-            .and(shooter::coralDetectedByEitherSensor)
+            .and(()-> shooter.coralDetectedByEitherSensor() || operatorController.rightBumper().getAsBoolean())
             .onTrue(elevator.setRequestedPositionCommand(elevator.LEVEL4));
             
         // Going to the algae positions
@@ -143,6 +143,7 @@ public class RobotContainer {
             .povUp()
             .and(() -> shooter.coralNotDetectedByEitherSensor()
                 || operatorController.leftBumper().getAsBoolean())
+                .and(operatorController.rightBumper().negate())
             .onTrue(elevator
                 .setRequestedPositionCommand(elevator.LEVELALGAELOLLIPOP)
                 .alongWith(shooter.deployAlgaeHookCommand()));
@@ -150,6 +151,7 @@ public class RobotContainer {
             .povRight()
             .and(() -> shooter.coralNotDetectedByEitherSensor()
                 || operatorController.leftBumper().getAsBoolean())
+                .and(operatorController.rightBumper().negate())
             .onTrue(elevator
                 .setRequestedPositionCommand(elevator.LEVELALGAEPROC)
                 .alongWith(shooter.deployAlgaeHookCommand()));
@@ -158,11 +160,13 @@ public class RobotContainer {
             .povDown()
             .and(() -> shooter.coralNotDetectedByEitherSensor()
                 || operatorController.leftBumper().getAsBoolean())
+                .and(operatorController.rightBumper().negate())
             .onTrue(elevator.setRequestedPositionCommand(elevator.LEVELALGAE2));
         operatorController
             .povLeft()
             .and(() -> shooter.coralNotDetectedByEitherSensor()
                 || operatorController.leftBumper().getAsBoolean())
+                .and(operatorController.rightBumper().negate())
             .onTrue(elevator.setRequestedPositionCommand(elevator.LEVELBARGE));
 
         operatorController

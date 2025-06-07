@@ -334,7 +334,7 @@ public class Elevator extends SubsystemBase {
                 leaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
                 
             },
-            () -> leaderMotor.getOutputCurrent() >= 20,
+            () -> leaderMotor.getOutputCurrent() >= 30,
             this)
         .withName("Reset Elevator Command");
   }
