@@ -81,7 +81,7 @@ public class RobotConfig {
     riptide.elevatorConfig.upperLimit = 31.2;
     riptide.elevatorConfig.invertLeaderMotor = true;
 
-    riptide.elevatorConfig.kP_Up = 0.065;
+    riptide.elevatorConfig.kP_Up = 0.075;
     riptide.elevatorConfig.kI_Up = 0.0;
     riptide.elevatorConfig.kD_Up = 0.0;
     riptide.elevatorConfig.kF_Up = 0.5;
@@ -89,7 +89,7 @@ public class RobotConfig {
     riptide.elevatorConfig.maxAcceleration_Up = 10000;
     riptide.elevatorConfig.allowedError_Up = .075;
 
-    riptide.elevatorConfig.kP_Down = 0.065;
+    riptide.elevatorConfig.kP_Down = 0.075;
     riptide.elevatorConfig.kI_Down = 0.0;
     riptide.elevatorConfig.kD_Down = 0.0;
     riptide.elevatorConfig.kF_Down = 0.5;
