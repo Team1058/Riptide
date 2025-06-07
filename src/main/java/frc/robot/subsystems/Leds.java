@@ -33,6 +33,7 @@ public class Leds {
     public LEDPattern lightGreenBase;
     public LEDPattern blueBase;
     public LEDPattern blueBlink;
+    public LEDPattern blueProgressMaskWithElevator;
     public LEDPattern whiteBase;
     public LEDPattern whiteBlink;
     public LEDPattern brownBase;
@@ -64,6 +65,7 @@ public class Leds {
 
     blueBase = LEDPattern.solid(Color.kBlue);
     blueBlink = blueBase.blink(Seconds.of(0.5));
+    blueProgressMaskWithElevator = blueBase.mask(elevatorProgressMask);
 
     whiteBase = LEDPattern.solid(Color.kWhite);
     whiteBlink = whiteBase.blink(Seconds.of(0.5));

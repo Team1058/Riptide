@@ -152,7 +152,7 @@ public class Elevator extends SubsystemBase {
 
     leaderConfig
         .closedLoop
-        .pid(config.kP_Up, config.kI_Up, config.kD_Up, upSlot)
+        .pid(config.kP_Up, config.kI_Up, config.kD_Up, upSlot).outputRange(-0.75, .75, upSlot)
         .pid(config.kP_Down, config.kI_Down, config.kD_Down, downSlot).outputRange(-0.2, .2, downSlot)
         .maxMotion
         .maxAcceleration(config.maxAcceleration_Up, upSlot)
@@ -334,7 +334,7 @@ public class Elevator extends SubsystemBase {
                 leaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
                 
             },
-            () -> leaderMotor.getOutputCurrent() >= 20,
+            () -> leaderMotor.getOutputCurrent() >= 30,
             this)
         .withName("Reset Elevator Command");
   }
