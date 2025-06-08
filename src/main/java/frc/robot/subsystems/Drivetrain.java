@@ -20,6 +20,8 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants.ClosedLoopOutputType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerFeedbackType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstantsFactory;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
+import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.commands.PathfindingCommand;
@@ -907,6 +909,7 @@ public class Drivetrain extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> imp
       this.getModule(i).getSteerMotor().setNeutralMode(NeutralModeValue.Brake);
     }
   }
+
 
   public void setAllMotorsCoast() {
     for (int i = 0; i < 4; i++) {
