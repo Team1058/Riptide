@@ -50,7 +50,7 @@ public class Shooter extends SubsystemBase {
 
   public double STOWED = 4;
   // public double HOLD = 0.56;
-  public double HOLD = 20;
+  public double HOLD = 12;
   public double DEPLOYED = 20;
 
   private SparkFlex shooterMotor;
@@ -224,15 +224,15 @@ public class Shooter extends SubsystemBase {
 
   public Command intakeAlgae() {
     return new StartEndCommand(
-      () -> shooterMotor.set(.5),
-      () -> shooterMotor.set(.2),
+      () -> shooterMotor.set(-0.5),
+      () -> shooterMotor.set(-0.2),
       this)
       .withName("Intake Algae");
   }
 
   public Command shootAlgae() {
     return new StartEndCommand(
-            () -> shooterMotor.set(-1),
+            () -> shooterMotor.set(1),
             () -> {
               shooterMotor.disable();
               algaePositionController.setReference(STOWED, ControlType.kPosition);
