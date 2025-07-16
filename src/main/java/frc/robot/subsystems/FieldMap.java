@@ -36,10 +36,10 @@ public class FieldMap extends SubsystemBase {
 
 // old left: -9.75
 //old right: 3.25
-private static double leftReefY = -2.323-2-1+0.5;
+private static double leftReefY = -6;
 
 private static final Transform2d leftReefTransform =
-new Transform2d(Inches.of(12+4+3.5), Inches.of(leftReefY), Rotation2d.k180deg);
+new Transform2d(Inches.of(19.5), Inches.of(leftReefY), Rotation2d.k180deg);
 private static final Transform2d farLeftReefTransform =
 new Transform2d(Inches.of(48), Inches.of(leftReefY), Rotation2d.k180deg);
 
@@ -47,9 +47,9 @@ private static final Transform2d L2L3LeftReefTransform =
 new Transform2d(Inches.of(16), Inches.of(leftReefY), Rotation2d.k180deg);
 
 
-private static double rightReefY = 4.29+2+1-0.25;
+private static double rightReefY = 6;
 private static final Transform2d rightReefTransform =
-new Transform2d(Inches.of(12+4+3.5), Inches.of(rightReefY), Rotation2d.k180deg);
+new Transform2d(Inches.of(19.5), Inches.of(rightReefY), Rotation2d.k180deg);
 private static final Transform2d farRightReefTransform =
 new Transform2d(Inches.of(48), Inches.of(rightReefY), Rotation2d.k180deg);
 private static final Transform2d L2L3RightReefTransform =
