@@ -78,8 +78,8 @@ public class Elevator extends SubsystemBase {
 
   public double LEVELALGAEPROC = 1;
   public double LEVELALGAELOLLIPOP = 1;
-  public double LEVELALGAE1 = 4.6;
-  public double LEVELALGAE2 = 11;
+  public double LEVELALGAE1 = 2.1;
+  public double LEVELALGAE2 = 9.28;
   public double LEVELBARGE = 30.5;
   public double LEVELHP = 0.32;
 

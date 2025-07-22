@@ -18,6 +18,8 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.CommandUtil;
 import com.pathplanner.lib.auto.NamedCommands;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -189,8 +191,6 @@ public class RobotContainer {
             .whileTrue(elevator
             .setRequestedPositionCommand(elevator.LEVELALGAE1)
             .andThen(elevator.goToRequestedPositionCommand())
-            .andThen(
-                new WaitUntilCommand(() -> elevator.currentPositionAtTarget(elevator.LEVELALGAE1)))
             .andThen(shooter.deployAlgaeHookCommand())
             .andThen(shooter.intakeAlgae()))
             .toggleOnFalse(shooter
@@ -203,8 +203,6 @@ public class RobotContainer {
             .whileTrue(elevator
             .setRequestedPositionCommand(elevator.LEVELALGAE2)
             .andThen(elevator.goToRequestedPositionCommand())
-            .andThen(
-                new WaitUntilCommand(() -> elevator.currentPositionAtTarget(elevator.LEVELALGAE2)))
             .andThen(shooter.deployAlgaeHookCommand())
             .andThen(shooter.intakeAlgae()))
             .toggleOnFalse(shooter
@@ -218,10 +216,9 @@ public class RobotContainer {
         .whileTrue(shooter.spitOutCoralCommand())
         .toggleOnFalse(shooter.stowAlgaeHookCommand());
       }
-      operatorController.x()
-      .and(shooter::coralNotDetectedByEitherSensor)
-      .whileTrue(shooter.shootAlgae())
-      .toggleOnFalse(shooter.stowAlgaeHookCommand());
+        operatorController.x()
+        .and(shooter::coralNotDetectedByEitherSensor)
+        .whileTrue(shooter.shootAlgaeAndStow());
   }
  
   private Trigger reefLockEnabledTrigger() {
@@ -259,10 +256,9 @@ public class RobotContainer {
                         * 0.125)) // Drive counterclockwise with negative X (left)
             ));
 
-    driveController.a().toggleOnTrue(new RunCommand(()->reefLockEnabled=!reefLockEnabled));
+    //driveController.a().toggleOnTrue(new RunCommand(()->reefLockEnabled=!reefLockEnabled));
 
-    //driveController.a().whileTrue(drivetrain.applyRequest(() -> reefLock
-    reefLockEnabledTrigger().whileTrue(drivetrain.applyRequest(() -> reefLock
+    driveController.a().whileTrue(drivetrain.applyRequest(() -> reefLock
         .withVelocityX(Drivetrain.MAX_LINEAR_SPEED.times(
             -controllers.getDriverLeftY())) // Drive forward with negative Y (forward)
         .withVelocityY(Drivetrain.MAX_LINEAR_SPEED.times(
@@ -282,103 +278,199 @@ public class RobotContainer {
     driveController.b().and(driveController.leftBumper()).whileTrue(driveToLeftCoralStation);
     driveController.b().and(driveController.rightBumper()).whileTrue(driveToRightCoralStation);
 
-    // driveController
-    //     .pov(0)
-    //     .and(() -> (driveController.leftBumper().getAsBoolean()
-    //         || driveController.rightBumper().getAsBoolean()))
-    //     .whileTrue(Commands.defer(
-    //         () -> {
-    //           ReefPole endReefPole =
-    //               driveController.rightBumper().getAsBoolean() ? ReefPole.Right : ReefPole.Left;
-    //           Pose2d intermediatePose = driveController.rightBumper().getAsBoolean()
-    //               ? fieldMap.coralStationMiddleRightIntermediate
-    //               : fieldMap.coralStationMiddleLeftIntermediate;
-    //           var endPose = fieldMap.getPolePose(ReefFace.One, endReefPole);
-    //           return drivetrain
-    //               .makeGoToPoseCommand(intermediatePose, intermediatePose.getRotation(), 2.0)
-    //               .andThen(drivetrain.makeGoToPoseCommand(
-    //                   endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0));
-    //         },
-    //         Set.of(drivetrain)));
+ driveController
+     .pov(0)
+     .and(() -> (driveController.leftBumper().getAsBoolean()
+         || driveController.rightBumper().getAsBoolean()))
+     .whileTrue(Commands.defer(
+         () -> {
+           ReefPole endReefPole =
+               driveController.rightBumper().getAsBoolean() ? ReefPole.Right : ReefPole.Left;
+           Pose2d intermediatePose = driveController.rightBumper().getAsBoolean()
+               ? fieldMap.coralStationMiddleRightIntermediate
+               : fieldMap.coralStationMiddleLeftIntermediate;
+           var endPose = fieldMap.getPolePose(ReefFace.One, endReefPole);
+           return drivetrain
+               .makeGoToPoseCommand(intermediatePose, intermediatePose.getRotation(), 2.0)
+               .andThen(drivetrain.makeGoToPoseCommand(
+                   endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0));
+         },
+         Set.of(drivetrain)));
 
-    // driveController
-    //     .pov(45)
-    //     .and(() -> (driveController.leftBumper().getAsBoolean()
-    //         || driveController.rightBumper().getAsBoolean()))
-    //     .whileTrue(Commands.defer(
-    //         () -> {
-    //           ReefPole endReefPole =
-    //               driveController.rightBumper().getAsBoolean() ? ReefPole.Right : ReefPole.Left;
-    //           var endPose = fieldMap.getPolePose(ReefFace.Two, endReefPole);
-    //           return drivetrain
-    //               .makeGoToPoseCommand(
-    //                   fieldMap.coralStationRightIntermediate,
-    //                   fieldMap.coralStationRightIntermediate.getRotation(),
-    //                   2.0)
-    //               .andThen(drivetrain.makeGoToPoseCommand(
-    //                   endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0));
-    //         },
-    //         Set.of(drivetrain)));
-    // driveController
-    //     .pov(135)
-    //     .and(() -> (driveController.leftBumper().getAsBoolean()
-    //         || driveController.rightBumper().getAsBoolean()))
-    //     .whileTrue(Commands.defer(
-    //         () -> {
-    //           ReefPole endReefPole =
-    //               driveController.rightBumper().getAsBoolean() ? ReefPole.Right : ReefPole.Left;
-    //           var endPose = fieldMap.getPolePose(ReefFace.Three, endReefPole);
-    //           return drivetrain.makeGoToPoseCommand(
-    //               endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0);
-    //         },
-    //         Set.of(drivetrain)));
+ driveController
+     .pov(45)
+     .and(() -> (driveController.leftBumper().getAsBoolean()
+         || driveController.rightBumper().getAsBoolean()))
+     .whileTrue(Commands.defer(
+         () -> {
+           ReefPole endReefPole =
+               driveController.rightBumper().getAsBoolean() ? ReefPole.Right : ReefPole.Left;
+           var endPose = fieldMap.getPolePose(ReefFace.Two, endReefPole);
+           return drivetrain
+               .makeGoToPoseCommand(
+                   fieldMap.coralStationRightIntermediate,
+                   fieldMap.coralStationRightIntermediate.getRotation(),
+                   2.0)
+               .andThen(drivetrain.makeGoToPoseCommand(
+                   endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0));
+         },
+         Set.of(drivetrain)));
+ driveController
+     .pov(135)
+     .and(() -> (driveController.leftBumper().getAsBoolean()
+         || driveController.rightBumper().getAsBoolean()))
+     .whileTrue(Commands.defer(
+         () -> {
+           ReefPole endReefPole =
+               driveController.rightBumper().getAsBoolean() ? ReefPole.Right : ReefPole.Left;
+           var endPose = fieldMap.getPolePose(ReefFace.Three, endReefPole);
+           return drivetrain.makeGoToPoseCommand(
+               endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0);
+         },
+         Set.of(drivetrain)));
 
-    // driveController
-    //     .pov(180)
-    //     .and(() -> (driveController.leftBumper().getAsBoolean()
-    //         || driveController.rightBumper().getAsBoolean()))
-    //     .whileTrue(Commands.defer(
-    //         () -> {
-    //           ReefPole endReefPole =
-    //               driveController.rightBumper().getAsBoolean() ? ReefPole.Right : ReefPole.Left;
-    //           var endPose = fieldMap.getPolePose(ReefFace.Four, endReefPole);
-    //           return drivetrain.makeGoToPoseCommand(
-    //               endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0);
-    //         },
-    //         Set.of(drivetrain)));
+ driveController
+     .pov(180)
+     .and(() -> (driveController.leftBumper().getAsBoolean()
+         || driveController.rightBumper().getAsBoolean()))
+     .whileTrue(Commands.defer(
+         () -> {
+           ReefPole endReefPole =
+               driveController.rightBumper().getAsBoolean() ? ReefPole.Right : ReefPole.Left;
+           var endPose = fieldMap.getPolePose(ReefFace.Four, endReefPole);
+           return drivetrain.makeGoToPoseCommand(
+               endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0);
+         },
+         Set.of(drivetrain)));
 
-    // driveController
-    //     .pov(225)
-    //     .and(() -> (driveController.leftBumper().getAsBoolean()
-    //         || driveController.rightBumper().getAsBoolean()))
-    //     .whileTrue(Commands.defer(
-    //         () -> {
-    //           ReefPole endReefPole =
-    //               driveController.rightBumper().getAsBoolean() ? ReefPole.Right : ReefPole.Left;
-    //           var endPose = fieldMap.getPolePose(ReefFace.Five, endReefPole);
-    //           return drivetrain.makeGoToPoseCommand(
-    //               endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0);
-    //         },
-    //         Set.of(drivetrain)));
+ driveController
+     .pov(225)
+     .and(() -> (driveController.leftBumper().getAsBoolean()
+         || driveController.rightBumper().getAsBoolean()))
+     .whileTrue(Commands.defer(
+         () -> {
+           ReefPole endReefPole =
+               driveController.rightBumper().getAsBoolean() ? ReefPole.Right : ReefPole.Left;
+           var endPose = fieldMap.getPolePose(ReefFace.Five, endReefPole);
+           return drivetrain.makeGoToPoseCommand(
+               endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0);
+         },
+         Set.of(drivetrain)));
 
-    // driveController
-    //     .pov(315)
-    //     .and(() -> (driveController.leftBumper().getAsBoolean()
-    //         || driveController.rightBumper().getAsBoolean()))
-    //     .whileTrue(Commands.defer(
-    //         () -> {
-    //           ReefPole endReefPole =
-    //               driveController.rightBumper().getAsBoolean() ? ReefPole.Right : ReefPole.Left;
-    //           var endPose = fieldMap.getPolePose(ReefFace.Six, endReefPole);
-    //           return drivetrain
-    //               .makeGoToPoseCommand(
-    //                   fieldMap.coralStationLeftIntermediate,
-    //                   fieldMap.coralStationLeftIntermediate.getRotation(),
-    //                   2.0)
-    //               .andThen(drivetrain.makeGoToPoseCommand(
-    //                   endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0));
-    //         },
-    //         Set.of(drivetrain)));
+ driveController
+      .pov(315)
+      .and(() -> (driveController.leftBumper().getAsBoolean()
+          || driveController.rightBumper().getAsBoolean()))
+      .whileTrue(Commands.defer(
+          () -> {
+            ReefPole endReefPole =
+                driveController.rightBumper().getAsBoolean() ? ReefPole.Right : ReefPole.Left;
+            var endPose = fieldMap.getPolePose(ReefFace.Six, endReefPole);
+            return drivetrain
+                .makeGoToPoseCommand(
+                    fieldMap.coralStationLeftIntermediate,
+                    fieldMap.coralStationLeftIntermediate.getRotation(),
+                    2.0)
+                .andThen(drivetrain.makeGoToPoseCommand(
+                    endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0));
+          },
+          Set.of(drivetrain)));
+
+    /* 
+
+          Maybe auto score algae
+
+    driveController
+    .pov(0)
+    .and(() -> !driveController.leftBumper().getAsBoolean() 
+    && !driveController.rightBumper().getAsBoolean())
+    .whileTrue(Commands.defer(
+        ()-> {
+            ReefPole endReefPole =
+            null;
+            var endPose = fieldMap.getPolePose(ReefFace.One, endReefPole);
+            return drivetrain
+            .makeGoToPoseCommand(
+                endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0);
+        },
+        Set.of(drivetrain)));
+        
+
+    driveController
+        .pov(45)
+        .and(() -> !driveController.leftBumper().getAsBoolean() 
+        && !driveController.rightBumper().getAsBoolean())
+        .whileTrue(Commands.defer(
+            ()-> {
+                ReefPole endReefPole =
+                null;
+                var endPose = fieldMap.getPolePose(ReefFace.One, endReefPole);
+                return drivetrain
+                .makeGoToPoseCommand(
+                    endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0);
+            },
+            Set.of(drivetrain)));
+
+    driveController
+        .pov(135)
+        .and(() -> !driveController.leftBumper().getAsBoolean() 
+        && !driveController.rightBumper().getAsBoolean())
+        .whileTrue(Commands.defer(
+            ()-> {
+                ReefPole endReefPole =
+                null;
+                var endPose = fieldMap.getPolePose(ReefFace.One, endReefPole);
+                return drivetrain
+                .makeGoToPoseCommand(
+                    endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0);
+            },
+            Set.of(drivetrain)));
+
+    driveController
+        .pov(180)
+        .and(() -> !driveController.leftBumper().getAsBoolean() 
+        && !driveController.rightBumper().getAsBoolean())
+        .whileTrue(Commands.defer(
+            ()-> {
+                ReefPole endReefPole =
+                null;
+                var endPose = fieldMap.getPolePose(ReefFace.One, endReefPole);
+                return drivetrain
+                .makeGoToPoseCommand(
+                    endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0);
+            },
+            Set.of(drivetrain)));
+
+    driveController
+        .pov(225)
+        .and(() -> !driveController.leftBumper().getAsBoolean() 
+        && !driveController.rightBumper().getAsBoolean())
+        .whileTrue(Commands.defer(
+            ()-> {
+                ReefPole endReefPole =
+                null;
+                var endPose = fieldMap.getPolePose(ReefFace.One, endReefPole);
+                return drivetrain
+                .makeGoToPoseCommand(
+                    endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0);
+            },
+            Set.of(drivetrain)));
+
+    driveController
+        .pov(315)
+        .and(() -> !driveController.leftBumper().getAsBoolean() 
+        && !driveController.rightBumper().getAsBoolean())
+        .whileTrue(Commands.defer(
+            ()-> {
+                ReefPole endReefPole =
+                null;
+                var endPose = fieldMap.getPolePose(ReefFace.One, endReefPole);
+                return drivetrain
+                .makeGoToPoseCommand(
+                    endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0);
+            },
+            Set.of(drivetrain)));
+            */
 
     driveController.pov(270).and(driveController.rightBumper()).whileTrue(autoScoreL4Right);
     driveController.pov(180).and(driveController.rightBumper()).whileTrue(autoScoreL3Right);
