@@ -34,6 +34,9 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.utils.PidConsumer;
+import frc.robot.utils.TunablePID;
+
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
@@ -93,21 +96,6 @@ public class Elevator extends SubsystemBase {
   private SparkClosedLoopController sparkPIDController;
   protected double requestedPosition;
 
-  private GenericEntry pUpEntry;
-  private GenericEntry iUpEntry;
-  private GenericEntry dUpEntry;
-  private GenericEntry fUpEntry;
-  private GenericEntry maxUpVelocity;
-  private GenericEntry maxUpAcceleration;
-  private GenericEntry allowedErrorUp;
-
-  private GenericEntry pDownEntry;
-  private GenericEntry iDownEntry;
-  private GenericEntry dDownEntry;
-  private GenericEntry fDownEntry;
-  private GenericEntry maxDownVelocity;
-  private GenericEntry maxDownAcceleration;
-  private GenericEntry allowedErrorDown;
 
   private int stallLimit = 90;
   private int freeLimit = 90;
@@ -124,6 +112,7 @@ public class Elevator extends SubsystemBase {
   private static final ClosedLoopSlot downSlot = ClosedLoopSlot.kSlot0;
   private static final ClosedLoopSlot upSlot = ClosedLoopSlot.kSlot1;
 
+  private TunablePID elevatorPidUp, elevatorPidDown;
   public Elevator(Config config) {
 
     this.config = config;
@@ -132,6 +121,8 @@ public class Elevator extends SubsystemBase {
     follower2Config = new SparkFlexConfig();
     leaderMotor = new SparkFlex(config.leaderMotorId, MotorType.kBrushless);
     followerMotor = new SparkFlex(config.followerMotorId, MotorType.kBrushless);
+    elevatorPidUp = new TunablePID("elevatorPID Up", config.kP_Up, config.kI_Up, config.kD_Up, config.kF_Up);
+    elevatorPidDown = new TunablePID("elevatorPID Down", config.kP_Down, config.kI_Down, config.kD_Down, config.kF_Down);
     leaderConfig
         .smartCurrentLimit(stallLimit, freeLimit)
         .inverted(config.invertLeaderMotor)
@@ -190,8 +181,6 @@ public class Elevator extends SubsystemBase {
 
     positionToHoldWhenNotSafeToMoveElevator = null;
 
-    initializeShuffleboardEntries();
-
     sysIdRoutine = new SysIdRoutine(
         new SysIdRoutine.Config(Volts.per(Second).of(1), Volts.of(7), Seconds.of(10)),
         new SysIdRoutine.Mechanism(
@@ -208,65 +197,6 @@ public class Elevator extends SubsystemBase {
             this));
   }
 
-  private void initializeShuffleboardEntries() {
-    pUpEntry = Shuffleboard.getTab("PID")
-        .add("Elevator P Up", config.kP_Up)
-        .withWidget(BuiltInWidgets.kTextView)
-        .getEntry();
-    iUpEntry = Shuffleboard.getTab("PID")
-        .add("Elevator I Up", config.kI_Up)
-        .withWidget(BuiltInWidgets.kTextView)
-        .getEntry();
-    dUpEntry = Shuffleboard.getTab("PID")
-        .add("Elevator D Up", config.kD_Up)
-        .withWidget(BuiltInWidgets.kTextView)
-        .getEntry();
-    fUpEntry = Shuffleboard.getTab("PID")
-        .add("Elevator F Up", config.kF_Up)
-        .withWidget(BuiltInWidgets.kTextView)
-        .getEntry();
-    maxUpVelocity = Shuffleboard.getTab("PID")
-        .add("Elevator MaxVelocity Up", config.maxVelocity_Up)
-        .withWidget(BuiltInWidgets.kTextView)
-        .getEntry();
-    maxUpAcceleration = Shuffleboard.getTab("PID")
-        .add("Elevator MaxAcceleartion Up", config.maxAcceleration_Up)
-        .withWidget(BuiltInWidgets.kTextView)
-        .getEntry();
-    allowedErrorUp = Shuffleboard.getTab("PID")
-        .add("Allowed Error Up", config.allowedError_Up)
-        .withWidget(BuiltInWidgets.kTextView)
-        .getEntry();
-
-    pDownEntry = Shuffleboard.getTab("PID")
-        .add("Elevator P Down", config.kP_Down)
-        .withWidget(BuiltInWidgets.kTextView)
-        .getEntry();
-    iDownEntry = Shuffleboard.getTab("PID")
-        .add("Elevator I Down", config.kI_Down)
-        .withWidget(BuiltInWidgets.kTextView)
-        .getEntry();
-    dDownEntry = Shuffleboard.getTab("PID")
-        .add("Elevator D Down", config.kD_Down)
-        .withWidget(BuiltInWidgets.kTextView)
-        .getEntry();
-    fDownEntry = Shuffleboard.getTab("PID")
-        .add("Elevator F Down", config.kF_Down)
-        .withWidget(BuiltInWidgets.kTextView)
-        .getEntry();
-    maxDownVelocity = Shuffleboard.getTab("PID")
-        .add("Elevator MaxVelocity Down", config.maxVelocity_Down)
-        .withWidget(BuiltInWidgets.kTextView)
-        .getEntry();
-    maxDownAcceleration = Shuffleboard.getTab("PID")
-        .add("Elevator MaxAcceleartion Down", config.maxAcceleration_Down)
-        .withWidget(BuiltInWidgets.kTextView)
-        .getEntry();
-    allowedErrorDown = Shuffleboard.getTab("PID")
-        .add("Allowed Error Down", config.allowedError_Down)
-        .withWidget(BuiltInWidgets.kTextView)
-        .getEntry();
-  }
 
   public void setRequestedPosition(double requested) {
     this.requestedPosition = MathUtil.clamp(requested, config.lowerLimit, config.upperLimit);
@@ -400,82 +330,20 @@ public class Elevator extends SubsystemBase {
   public void holdPosition() {
     setRequestedPosition(getCurrentPosition());
   }
-
-  public void testPeriodic() {
-    double pUpFromShuffleBoard = pUpEntry.getDouble(config.kP_Up);
-    double iUpFromShuffleBoard = iUpEntry.getDouble(config.kI_Up);
-    double dUpFromShuffleBoard = dUpEntry.getDouble(config.kD_Up);
-    double fUpFromShuffleBoard = fUpEntry.getDouble(config.kF_Up);
-    double maxVelocityUpFromShuffleBoard = maxUpVelocity.getDouble(config.maxVelocity_Up);
-    double maxAcclerationUpFromShuffleBoard =
-        maxUpAcceleration.getDouble(config.maxAcceleration_Up);
-    double allowedErrorUpFromShuffleBoard = allowedErrorUp.getDouble(config.allowedError_Up);
-
-    double pDownFromShuffleBoard = pDownEntry.getDouble(config.kP_Down);
-    double iDownFromShuffleBoard = iDownEntry.getDouble(config.kI_Down);
-    double dDownFromShuffleBoard = dDownEntry.getDouble(config.kD_Down);
-    double fDownFromShuffleBoard = fDownEntry.getDouble(config.kF_Down);
-    double maxVelocityDownFromShuffleBoard = maxDownVelocity.getDouble(config.maxVelocity_Down);
-    double maxAcclerationDownFromShuffleBoard =
-        maxDownAcceleration.getDouble(config.maxAcceleration_Down);
-    double allowedErrorDownFromShuffleBoard = allowedErrorDown.getDouble(config.allowedError_Down);
-
-    double currentUpP = leaderMotor.configAccessor.closedLoop.getP(upSlot);
-    double currentUpI = leaderMotor.configAccessor.closedLoop.getI(upSlot);
-    double currentUpD = leaderMotor.configAccessor.closedLoop.getD(upSlot);
-    double currentUpF = config.kF_Up; // leaderMotor.configAccessor.closedLoop.getFF(upSlot);
-    double currentMaxVelocityUp =
-        leaderMotor.configAccessor.closedLoop.maxMotion.getMaxVelocity(upSlot);
-    double currentMaxAccelerationUp =
-        leaderMotor.configAccessor.closedLoop.maxMotion.getMaxAcceleration(upSlot);
-    double currentAllowedErrorUp =
-        leaderMotor.configAccessor.closedLoop.maxMotion.getAllowedClosedLoopError(upSlot);
-
-    double currentDownP = leaderMotor.configAccessor.closedLoop.getP(downSlot);
-    double currentDownI = leaderMotor.configAccessor.closedLoop.getI(downSlot);
-    double currentDownD = leaderMotor.configAccessor.closedLoop.getD(downSlot);
-    double currentDownF = config.kF_Down; // leaderMotor.configAccessor.closedLoop.getFF(downSlot);
-    double currentMaxVelocityDown =
-        leaderMotor.configAccessor.closedLoop.maxMotion.getMaxVelocity(downSlot);
-    double currentMaxAccelerationDown =
-        leaderMotor.configAccessor.closedLoop.maxMotion.getMaxAcceleration(downSlot);
-    double currentAllowedErrorDown =
-        leaderMotor.configAccessor.closedLoop.maxMotion.getAllowedClosedLoopError(downSlot);
-
-    if (valuesActuallyDifferent(pUpFromShuffleBoard, currentUpP)
-        || valuesActuallyDifferent(iUpFromShuffleBoard, currentUpI)
-        || valuesActuallyDifferent(dUpFromShuffleBoard, currentUpD)
-        || valuesActuallyDifferent(fUpFromShuffleBoard, currentUpF)
-        || valuesActuallyDifferent(maxAcclerationUpFromShuffleBoard, currentMaxAccelerationUp)
-        || valuesActuallyDifferent(maxVelocityUpFromShuffleBoard, currentMaxVelocityUp)
-        || valuesActuallyDifferent(allowedErrorUpFromShuffleBoard, currentAllowedErrorUp)
-        || valuesActuallyDifferent(pDownFromShuffleBoard, currentDownP)
-        || valuesActuallyDifferent(iDownFromShuffleBoard, currentDownI)
-        || valuesActuallyDifferent(dDownFromShuffleBoard, currentDownD)
-        || valuesActuallyDifferent(fDownFromShuffleBoard, currentDownF)
-        || valuesActuallyDifferent(maxAcclerationDownFromShuffleBoard, currentMaxAccelerationDown)
-        || valuesActuallyDifferent(maxVelocityDownFromShuffleBoard, currentMaxVelocityDown)
-        || valuesActuallyDifferent(allowedErrorDownFromShuffleBoard, currentAllowedErrorDown)) {
-
-      leaderConfig
-          .closedLoop
-          .pid(pUpFromShuffleBoard, iUpFromShuffleBoard, dUpFromShuffleBoard, upSlot)
-          .pid(pDownFromShuffleBoard, iDownFromShuffleBoard, dDownFromShuffleBoard, downSlot)
-          .maxMotion
-          .maxAcceleration(maxAcclerationUpFromShuffleBoard, upSlot)
-          .maxVelocity(maxVelocityUpFromShuffleBoard, upSlot)
-          .allowedClosedLoopError(allowedErrorUpFromShuffleBoard, upSlot)
-          .maxAcceleration(maxAcclerationDownFromShuffleBoard, downSlot)
-          .maxVelocity(maxVelocityDownFromShuffleBoard, downSlot)
-          .allowedClosedLoopError(allowedErrorDownFromShuffleBoard, downSlot);
-      config.kF_Down = fDownFromShuffleBoard;
-      config.kF_Up = fUpFromShuffleBoard;
-      leaderMotor.configure(
-          leaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    }
+  private void updateElevatorPid(double kP, double kI, double kD, ClosedLoopSlot closedLoop){
+    leaderConfig
+    .closedLoop
+    .pid(kP, kI, kD, closedLoop);
+    leaderMotor.configure(
+      leaderConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
   }
-  // Sparkmax seems to have a bug where if you set PID values to .01 it actually sets .00099999999
-  private boolean valuesActuallyDifferent(double val1, double val2) {
-    return Math.abs(val1 - val2) > .000001;
+  public void testPeriodic() {
+    elevatorPidDown.updatePID((kP, kI, kD) -> updateElevatorPid(kP, kI, kD, downSlot));
+    elevatorPidUp.updatePID((kP, kI, kD) -> updateElevatorPid(kP, kI, kD, upSlot));
+    
+  }
+  public void testInit() {
+    elevatorPidDown.setTuningMode(true);
+    elevatorPidUp.setTuningMode(true);
   }
 }
