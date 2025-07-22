@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj.RobotController;
@@ -45,7 +46,9 @@ public class RobotContainer {
   Vision vision;
 
   CommandXboxController operatorController;
-  CommandXboxController driveController;  
+  CommandXboxController driveController; 
+  CommandGenericHID buttonBoard;
+
 
   FieldMap fieldMap;
   SwerveRequest.FieldCentric drive;
@@ -87,6 +90,8 @@ public class RobotContainer {
     robotConfig = RobotConfig.lookupConfig(roboRio);
     driveController = new CommandXboxController(robotConfig.driverControllerPort);
     operatorController = new CommandXboxController(robotConfig.operatorControllerPort);
+    buttonBoard = new CommandGenericHID(3);
+
     climber = new Climber(robotConfig.climberConfig);
     elevator = new Elevator(robotConfig.elevatorConfig);
     shooter = new Shooter(robotConfig.shooterConfig);
@@ -126,6 +131,10 @@ public class RobotContainer {
       .debounce(.25)
       .and(operatorController.back().negate())
       .onTrue(elevator.resetElevatorCommand());
+
+      buttonBoard
+      .button(10)
+      .onTrue(elevator.resetElevatorCommand()); 
       
       if (robotConfig.hasShooter) {
         operatorController.a()
