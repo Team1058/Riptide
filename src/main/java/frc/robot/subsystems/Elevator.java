@@ -121,8 +121,8 @@ public class Elevator extends SubsystemBase {
     follower2Config = new SparkFlexConfig();
     leaderMotor = new SparkFlex(config.leaderMotorId, MotorType.kBrushless);
     followerMotor = new SparkFlex(config.followerMotorId, MotorType.kBrushless);
-    elevatorPidUp = new TunablePID("elevatorPID Up", config.kP_Up, config.kI_Up, config.kD_Up, config.kF_Up);
-    elevatorPidDown = new TunablePID("elevatorPID Down", config.kP_Down, config.kI_Down, config.kD_Down, config.kF_Down);
+    elevatorPidUp = new TunablePID("elevatorPID_Up", config.kP_Up, config.kI_Up, config.kD_Up, config.kF_Up);
+    elevatorPidDown = new TunablePID("elevatorPID_Down", config.kP_Down, config.kI_Down, config.kD_Down, config.kF_Down);
     leaderConfig
         .smartCurrentLimit(stallLimit, freeLimit)
         .inverted(config.invertLeaderMotor)
@@ -292,13 +292,14 @@ public class Elevator extends SubsystemBase {
 
           // if (requested- getCurrentPosition() < 0.1)
           if (requested > getCurrentPosition()) {
-            sparkPIDController.setReference(requested, ControlType.kPosition, upSlot, config.kF_Up);
+            sparkPIDController.setReference(requested, ControlType.kPosition, upSlot, elevatorPidUp.getKF());
           } else {
             sparkPIDController.setReference(
-                requested, ControlType.kPosition, downSlot, config.kF_Down);
+                requested, ControlType.kPosition, downSlot, elevatorPidDown.getKF());
           }
         })
         .withName("goToRequestedPosition");
+
   }
 
   public double getRequestedPosition() {

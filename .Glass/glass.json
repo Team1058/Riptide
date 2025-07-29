@@ -15,12 +15,22 @@
           "open": true
         },
         "open": true
+      },
+      "TunableNumbers": {
+        "elevatorPID Down": {
+          "open": true
+        },
+        "elevatorPID Up": {
+          "open": true
+        },
+        "open": true
       }
     },
     "types": {
       "/AdvantageKit/RealOutputs/Alerts": "Alerts",
       "/AdvantageKit/RealOutputs/PhotonAlerts": "Alerts",
       "/FMSInfo": "FMSInfo",
+      "/Shuffleboard/Autos/Auto Chooser": "String Chooser",
       "/Shuffleboard/SysID/Routine": "String Chooser",
       "/Shuffleboard/SysID/Test": "String Chooser",
       "/SmartDashboard/Alerts": "Alerts",
@@ -29,10 +39,19 @@
     }
   },
   "NetworkTables Info": {
-    "Server": {
+    "Clients": {
+      "open": true
+    },
+    "Elastic@1": {
       "Publishers": {
         "open": true
       },
+      "Subscribers": {
+        "open": true
+      },
+      "open": true
+    },
+    "glass@2": {
       "open": true
     },
     "visible": true
