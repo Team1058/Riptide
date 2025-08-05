@@ -146,8 +146,26 @@ public class RobotContainer {
       buttonBoard
       .button(8)
       .onTrue(elevator.setRequestedPositionCommand(elevator.LEVELALGAEPROC));
+
+      buttonBoard
+      .button(14)
+      .onTrue(elevator.setRequestedPositionCommand(elevator.LEVEL2));
+
+      buttonBoard
+      .button(12)
+      .onTrue(elevator.setRequestedPositionCommand(elevator.LEVEL3));
+
+      buttonBoard
+      .button(11)
+      .onTrue(elevator.setRequestedPositionCommand(elevator.LEVEL4));
       
       if (robotConfig.hasShooter) {
+        buttonBoard
+        .button(9)
+        .whileTrue(elevator.setRequestedPositionCommand(elevator.LEVELHP)
+        .andThen(elevator.goToRequestedPositionCommand())
+        .andThen(shooter.intakeCoralCommand()));
+
         operatorController.a()
         .whileTrue(elevator.setRequestedPositionCommand(elevator.LEVELHP)
         .andThen(elevator.goToRequestedPositionCommand())
