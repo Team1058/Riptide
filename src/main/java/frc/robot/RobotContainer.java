@@ -553,6 +553,8 @@ public class RobotContainer {
 
     if (drivetrain != null) {
       drive = new SwerveRequest.FieldCentric()
+      .withRotationalDeadband(drivetrain.getMaxAngularVelocity()
+      .times(0.1))
           .withDriveRequestType(
               DriveRequestType.Velocity); // Use open-loop control for drive motors
 
@@ -578,8 +580,8 @@ public class RobotContainer {
                   .withRotationalRate(drivetrain
                       .getMaxAngularVelocity()
                       .times(
-                          -controllers
-                              .getDriverRightX())) // Drive counterclockwise with negative X (left)
+                        -controllers
+                        .getDriverRightX())) // Drive counterclockwise with negative X (left)
               ));
 
  driveToNearestLeftPole = Commands.defer(
