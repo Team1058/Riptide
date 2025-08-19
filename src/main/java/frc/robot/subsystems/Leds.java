@@ -10,35 +10,34 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.util.Color;
 
 public class Leds {
-    private static final int ledPort = 0;
-    private static final int ledLangth = 60;
+  private static final int ledPort = 0;
+  private static final int ledLangth = 60;
 
-    private final AddressableLED ledStrip;
-    private final AddressableLEDBuffer ledBuffer;
-    private final AddressableLEDBufferView leftLedBuffer;
-    private final AddressableLEDBufferView middleLedBuffer;
-    private final AddressableLEDBufferView rightLedBuffer;
+  private final AddressableLED ledStrip;
+  private final AddressableLEDBuffer ledBuffer;
+  private final AddressableLEDBufferView leftLedBuffer;
+  private final AddressableLEDBufferView middleLedBuffer;
+  private final AddressableLEDBufferView rightLedBuffer;
 
-    public LEDPattern leftPattern;
-    public LEDPattern middlePattern;
-    public LEDPattern rightPattern;
-    
-    public LEDPattern elevatorProgressMask;
-    public LEDPattern redOrangeBase;
-    public LEDPattern redOrangeBlinkWithRsl;
-    public LEDPattern redBase;
-    public LEDPattern redProgressMaskWithElevator;
-    public LEDPattern redSlowBlink;
-    public LEDPattern greenBase;
-    public LEDPattern lightGreenBase;
-    public LEDPattern blueBase;
-    public LEDPattern blueBlink;
-    public LEDPattern blueProgressMaskWithElevator;
-    public LEDPattern whiteBase;
-    public LEDPattern whiteBlink;
-    public LEDPattern brownBase;
-    public LEDPattern yellowBase;
+  public LEDPattern leftPattern;
+  public LEDPattern middlePattern;
+  public LEDPattern rightPattern;
 
+  public LEDPattern elevatorProgressMask;
+  public LEDPattern redOrangeBase;
+  public LEDPattern redOrangeBlinkWithRsl;
+  public LEDPattern redBase;
+  public LEDPattern redProgressMaskWithElevator;
+  public LEDPattern redSlowBlink;
+  public LEDPattern greenBase;
+  public LEDPattern lightGreenBase;
+  public LEDPattern blueBase;
+  public LEDPattern blueBlink;
+  public LEDPattern blueProgressMaskWithElevator;
+  public LEDPattern whiteBase;
+  public LEDPattern whiteBlink;
+  public LEDPattern brownBase;
+  public LEDPattern yellowBase;
 
   public Leds(Elevator elevator) {
     ledStrip = new AddressableLED(ledPort);
@@ -49,8 +48,8 @@ public class Leds {
     leftLedBuffer = ledBuffer.createView(40, 59);
     ledStrip.start();
 
-    elevatorProgressMask = LEDPattern.progressMaskLayer(
-      () -> elevator.getCurrentPosition() / elevator.LEVELBARGE);
+    elevatorProgressMask =
+        LEDPattern.progressMaskLayer(() -> elevator.getCurrentPosition() / elevator.LEVELBARGE);
 
     redOrangeBase = LEDPattern.solid(Color.kOrangeRed);
     redOrangeBlinkWithRsl = redOrangeBase.synchronizedBlink(RobotController::getRSLState);
@@ -77,17 +76,14 @@ public class Leds {
     leftPattern = redOrangeBlinkWithRsl;
     middlePattern = redOrangeBlinkWithRsl;
     rightPattern = redOrangeBlinkWithRsl;
-
-
   }
 
-  public void applyPatternsToStrips(){
+  public void applyPatternsToStrips() {
     leftPattern.applyTo(leftLedBuffer);
     middlePattern.applyTo(middleLedBuffer);
     rightPattern.applyTo(rightLedBuffer);
     ledStrip.setData(ledBuffer);
   }
-  
 }
 /*p order for left leds
  * defalt blink with rsl
@@ -95,12 +91,12 @@ public class Leds {
  * Second priority algae mech Deployed(blinkingblue)
  * third priority deep climber out (white)
  * forth priority to be determind
- * 
+ *
  *  order for middle leds: used for detecting errors
- * defalt light green 
+ * defalt light green
  * first priority overheating CPU: above 85 celsius
  * second priority comms error
  * last priority battery voltage low (yellow), browning out (brown)
- * 
+ *
  * right leds are a progress mark of elevator height (red)
  */
