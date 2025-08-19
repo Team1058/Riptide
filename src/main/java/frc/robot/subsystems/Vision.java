@@ -13,7 +13,6 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.List;
 import java.util.Objects;
@@ -39,7 +38,7 @@ public class Vision extends SubsystemBase {
 
   VisionProcessing leftVision;
   VisionProcessing rightVision;
-  
+
   private long lastLogTime;
   private Alliance alliance;
   public Pose2d coralStationLeft;
@@ -223,7 +222,7 @@ public class Vision extends SubsystemBase {
     return latest_reef_tag_yaw_left_cam;
   }
 
-  //Isn't this more like "getAveragePoseFromBothCameras"? - Ben
+  // Isn't this more like "getAveragePoseFromBothCameras"? - Ben
   public StampedPose2d chooseBestPoseBetweenCameras(
       StampedPose2d backLeftCameraPose, StampedPose2d backRightCameraPose) {
     Translation2d averageTranslation = backLeftCameraPose
@@ -306,8 +305,7 @@ public class Vision extends SubsystemBase {
       if (leftRobotPose.isPresent() && rightRobotPose.isPresent()) {
         updatePoseCallback
             .get()
-            .accept(chooseBestPoseBetweenCameras(
-                leftRobotPose.get(), rightRobotPose.get()));
+            .accept(chooseBestPoseBetweenCameras(leftRobotPose.get(), rightRobotPose.get()));
       } else if (leftRobotPose.isPresent()) {
         updatePoseCallback.get().accept((leftRobotPose.get()));
       } else if (rightRobotPose.isPresent()) {

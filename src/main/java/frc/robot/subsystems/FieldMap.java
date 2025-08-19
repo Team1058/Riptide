@@ -30,31 +30,29 @@ public class FieldMap extends SubsystemBase {
   double angleToReef = 0;
   double angleToTag = 0;
 
-  //These are old and will need to be updated for Riptide
+  // These are old and will need to be updated for Riptide
   private static final Transform2d coralStationTransform =
       new Transform2d(Inches.of(17.5), Inches.of(12.628), Rotation2d.k180deg);
 
-// old left: -9.75
-//old right: 3.25
-private static double leftReefY = -6;
+  // old left: -9.75
+  // old right: 3.25
+  private static double leftReefY = -6;
 
-private static final Transform2d leftReefTransform =
-new Transform2d(Inches.of(19.5), Inches.of(leftReefY), Rotation2d.k180deg);
-private static final Transform2d farLeftReefTransform =
-new Transform2d(Inches.of(48), Inches.of(leftReefY), Rotation2d.k180deg);
+  private static final Transform2d leftReefTransform =
+      new Transform2d(Inches.of(19.5), Inches.of(leftReefY), Rotation2d.k180deg);
+  private static final Transform2d farLeftReefTransform =
+      new Transform2d(Inches.of(48), Inches.of(leftReefY), Rotation2d.k180deg);
 
-private static final Transform2d L2L3LeftReefTransform =
-new Transform2d(Inches.of(16), Inches.of(leftReefY), Rotation2d.k180deg);
+  private static final Transform2d L2L3LeftReefTransform =
+      new Transform2d(Inches.of(16), Inches.of(leftReefY), Rotation2d.k180deg);
 
-
-private static double rightReefY = 6;
-private static final Transform2d rightReefTransform =
-new Transform2d(Inches.of(19.5), Inches.of(rightReefY), Rotation2d.k180deg);
-private static final Transform2d farRightReefTransform =
-new Transform2d(Inches.of(48), Inches.of(rightReefY), Rotation2d.k180deg);
-private static final Transform2d L2L3RightReefTransform =
-new Transform2d(Inches.of(16), Inches.of(rightReefY), Rotation2d.k180deg);
-
+  private static double rightReefY = 6;
+  private static final Transform2d rightReefTransform =
+      new Transform2d(Inches.of(19.5), Inches.of(rightReefY), Rotation2d.k180deg);
+  private static final Transform2d farRightReefTransform =
+      new Transform2d(Inches.of(48), Inches.of(rightReefY), Rotation2d.k180deg);
+  private static final Transform2d L2L3RightReefTransform =
+      new Transform2d(Inches.of(16), Inches.of(rightReefY), Rotation2d.k180deg);
 
   private static final double leftPolePitch = 2.5;
   private static final double leftPoleYaw = 31.5;
@@ -72,14 +70,15 @@ new Transform2d(Inches.of(16), Inches.of(rightReefY), Rotation2d.k180deg);
       coralStationLeftIntermediate = new Pose2d(Meters.of(13.8), Meters.of(1.5), Rotation2d.kZero);
       coralStationRightIntermediate = new Pose2d(Meters.of(13.8), Meters.of(6.5), Rotation2d.kZero);
 
+      // leftrelativeX = new Pose2d(Meters.of(12.44), Meters.of(5.21), new
+      // Rotation2d(Degrees.of(-60))).relativeTo(ReefFace.Two.redPose).getX();
+      // leftRelativeY = new Pose2d(Meters.of(12.44), Meters.of(5.21), new
+      // Rotation2d(Degrees.of(-60))).relativeTo(ReefFace.Two.redPose).getY();
 
-
-      // leftrelativeX = new Pose2d(Meters.of(12.44), Meters.of(5.21), new Rotation2d(Degrees.of(-60))).relativeTo(ReefFace.Two.redPose).getX();
-      // leftRelativeY = new Pose2d(Meters.of(12.44), Meters.of(5.21), new Rotation2d(Degrees.of(-60))).relativeTo(ReefFace.Two.redPose).getY();
-
-      // rightrelativeX = new Pose2d(Meters.of(12.31), Meters.of(5.10), new Rotation2d(Degrees.of(-60))).relativeTo(ReefFace.Two.redPose).getX();
-      // rightRelativeY = new Pose2d(Meters.of(12.31), Meters.of(5.10), new Rotation2d(Degrees.of(-60))).relativeTo(ReefFace.Two.redPose).getY();
-
+      // rightrelativeX = new Pose2d(Meters.of(12.31), Meters.of(5.10), new
+      // Rotation2d(Degrees.of(-60))).relativeTo(ReefFace.Two.redPose).getX();
+      // rightRelativeY = new Pose2d(Meters.of(12.31), Meters.of(5.10), new
+      // Rotation2d(Degrees.of(-60))).relativeTo(ReefFace.Two.redPose).getY();
 
       coralStationMiddleRightIntermediate =
           new Pose2d(Meters.of(12.72), Meters.of(5.915), Rotation2d.fromDegrees(50));
@@ -171,22 +170,22 @@ new Transform2d(Inches.of(16), Inches.of(rightReefY), Rotation2d.k180deg);
     Logger.recordOutput("AngleToReef", angleToReef);
     if (angleToReef > (2 * Math.PI) / 3) {
       return ReefFace.Four;
-        // return ReefFace.One;
+      // return ReefFace.One;
     } else if (angleToReef > (Math.PI) / 3) {
       return ReefFace.Five;
-        // return ReefFace.Two;
+      // return ReefFace.Two;
     } else if (angleToReef > 0) {
       return ReefFace.Six;
-        // return ReefFace.Three;
+      // return ReefFace.Three;
     } else if (angleToReef > (-Math.PI / 3)) {
       return ReefFace.One;
-    // return ReefFace.Four;
+      // return ReefFace.Four;
     } else if (angleToReef > ((-Math.PI * 2) / 3)) {
       return ReefFace.Two;
-    // return ReefFace.Five;
+      // return ReefFace.Five;
     } else {
       return ReefFace.Three;
-    // return ReefFace.Six;
+      // return ReefFace.Six;
     }
   }
 
