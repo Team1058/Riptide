@@ -326,6 +326,11 @@ public class Shooter extends SubsystemBase {
     Logger.recordOutput("Algae position", algaeEncoder.getPosition());
   }
 
+
+  public void initTuneables() {
+    
+  }
+
   public void testPeriodic() {
     double pFromShuffleBoard = pEntry.getDouble(config.algaeKP);
     double iFromShuffleBoard = iEntry.getDouble(config.algaeKI);

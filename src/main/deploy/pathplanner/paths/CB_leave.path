@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.960980756199659,
-        "y": 4.07408020312503
+        "x": 5.960530313992358,
+        "y": 4.04
       },
       "isLocked": false,
       "linkedName": "CB"
@@ -45,7 +45,7 @@
     "rotation": 180.0
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Center_Paths",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0

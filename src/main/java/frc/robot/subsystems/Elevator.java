@@ -31,12 +31,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.utils.PidConsumer;
 import frc.robot.utils.TunablePID;
 
+import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
@@ -78,6 +80,7 @@ public class Elevator extends SubsystemBase {
   //15.6
   public double LEVEL4 = 27.5;
   //26.9
+  public double LEVELRELEASEREEFL4 = LEVEL4 + 3;
 
   public double LEVELALGAEPROC = 1;
   public double LEVELALGAELOLLIPOP = 1;
@@ -85,6 +88,8 @@ public class Elevator extends SubsystemBase {
   public double LEVELALGAE2 = 11;
   public double LEVELBARGE = 30.5;
   public double LEVELHP = 0.32;
+
+  private double defaultAllowedError = 0.2;
 
   private final SparkFlex leaderMotor;
   private final SparkFlex followerMotor;
@@ -207,7 +212,7 @@ public class Elevator extends SubsystemBase {
   }
 
   public boolean currentPositionAtTarget(double target) {
-    return Math.abs(this.getCurrentPosition() - target) < 0.2;
+    return Math.abs(this.getCurrentPosition() - target) < defaultAllowedError;
   }
 
   public Command runSysIdRoutine() {
@@ -269,6 +274,15 @@ public class Elevator extends SubsystemBase {
         .withName("Reset Elevator Command");
   }
 
+  public Command detachFromReef() {
+      return Commands.defer(
+    () -> { if (getCurrentPosition() > LEVEL4 - 2) {
+          return setRequestedPositionCommand(LEVELRELEASEREEFL4);
+      } else {
+        return Commands.none();
+      }
+  }, Set.of(this)); 
+}
   public boolean isAtPosition(double position) {
     return Math.abs(getCurrentPosition() - position) < config.allowedError_Up;
   }
@@ -300,6 +314,13 @@ public class Elevator extends SubsystemBase {
         })
         .withName("goToRequestedPosition");
 
+  }
+/**
+ * 
+ * @return new WaitCommand which exits when elevator is at position or after 2 seconds
+ */
+  public Command getWaitUntilCorrectPositionCommand() {
+    return new WaitUntilCommand(()-> isAtPosition(getRequestedPosition())).withTimeout(2);
   }
 
   public double getRequestedPosition() {

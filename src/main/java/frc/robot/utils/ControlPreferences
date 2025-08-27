@@ -1,0 +1,47 @@
+
+Driver Controller
+
+Sticks - Field Centric Drive (Translation and Rotation)
+
+A - Reef Lock and Auto 
+B - Drive to Coral Station
+X - Auto Pickup Algae
+Y - Slowly Drive into Reef
+
+DPAD - Autoscore with Bumper choosing L/R
+
+UP - L1
+RIGHT - L2
+DOWN - L3
+LEFT - L4
+
+RT - Slow Drive
+LT - Intake
+
+RB + Letter Button - Various Pathfinding Commands to Right Pole
+LB + Letter Button - Various Pathfinding Commands to Left Pole
+
+Left Middle Button (Squares) - Hold to Reset Orientation
+
+
+Operator Controller
+
+Right Stick - Unintake
+
+A - Intake
+B - Low Algae
+X - Spit Algae
+Y - High Algae
+
+RT - Climb
+LT - Deploy Climber
+
+RB + Letter Button - Various Pathfinding Commands to Right Pole
+LB + Letter Button 
+
+Menu Button - Hold to Reset Elevator
+
+
+Both 
+
+Squares + Menu - Swap Controllers

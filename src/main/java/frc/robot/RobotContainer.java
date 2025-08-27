@@ -6,7 +6,9 @@ import frc.robot.subsystems.FieldMap.ReefPole;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -45,7 +47,7 @@ public class RobotContainer {
   Vision vision;
 
   CommandXboxController operatorController;
-  CommandXboxController driveController;  
+  CommandXboxController driverController;  
 
   FieldMap fieldMap;
   SwerveRequest.FieldCentric drive;
@@ -58,24 +60,17 @@ public class RobotContainer {
   private Command driveToLeftCoralStation;
   private Command driveToRightCoralStation;
 
-  private Command driveSlowlyToNearestLeftPole;
-  private Command driveSlowlyToNearestRightPole;
+  private Command driveSlowlyToNearestLeftPole, driveSlowlyToNearestRightPole;
+  private Command driveNearLeftPole, driveNearRightPole;
+  private Command driveNearLeftPoleForLowerL, driveNearRightPoleForLowerL;
 
-  private Command driveNearLeftPole;
-  private Command driveNearRightPole;
-
-  private Command driveNearLeftPoleForLowerL;
-  private Command driveNearRightPoleForLowerL;
-
-  private Command autoScoreL2Left;
-  private Command autoScoreL3Left;
-  private Command autoScoreL4Left;
-  private Command autoScoreL2Right;
-  private Command autoScoreL3Right;
-  private Command autoScoreL4Right;
+  private Command autoScoreL2Left, autoScoreL3Left, autoScoreL4Left;
+  private Command autoScoreL2Right, autoScoreL3Right, autoScoreL4Right;
   
   private double moveIntoReefSpeed = 1;
   private boolean reefLockEnabled = false;
+
+  public final boolean riptideOnly = false;
   
   SendableChooser<Command> autoChooser;
   private ShuffleboardTab autosTab;
@@ -85,12 +80,12 @@ public class RobotContainer {
     String serialNumber = System.getenv("serialnum");
     RoboRio roboRio = RoboRio.lookupBySerialNumber(serialNumber);
     robotConfig = RobotConfig.lookupConfig(roboRio);
-    driveController = new CommandXboxController(robotConfig.driverControllerPort);
+    driverController = new CommandXboxController(robotConfig.driverControllerPort);
     operatorController = new CommandXboxController(robotConfig.operatorControllerPort);
     climber = new Climber(robotConfig.climberConfig);
     elevator = new Elevator(robotConfig.elevatorConfig);
     shooter = new Shooter(robotConfig.shooterConfig);
-    controllers = new Controllers(driveController, operatorController);
+    controllers = new Controllers(driverController, operatorController);
     leds = new Leds(elevator);
     fieldMap = new FieldMap(Alliance.Red);
     initDrivetrain(robotConfig.drivetrainConfig);
@@ -219,8 +214,9 @@ public class RobotContainer {
         // Shoots the coral and algae out of the shooter and stow algae mech if it is deployed
         operatorController.x()
         .and(shooter::coralDetectedByEitherSensor)
-        .whileTrue(shooter.spitOutCoralCommand())
+        .whileTrue((shooter.timedSpitCoralCommand(0.1).andThen(elevator.detachFromReef())))
         .toggleOnFalse(shooter.stowAlgaeHookCommand());
+        
       }
       operatorController.x()
       .and(shooter::coralNotDetectedByEitherSensor)
@@ -233,23 +229,25 @@ public class RobotContainer {
   }
 
   private void configureDriverBindings(Drivetrain.Config config) {
-    driveController
+    driverController
         .back()
-        .and(driveController.start())
+        .and(driverController.start())
         .onTrue(new RunCommand(() -> swapControllers(), controllers)
             .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
-    // driveController
+    // driverController
     //     .back()
     //     .debounce(.25)
-    //     .and(driveController.start().negate())
+    //     .and(driverController.start().negate())
     //     .onTrue(cameraCalibrator.runCameraCalibration());
-    driveController
+    driverController
         .start()
         .debounce(.25)
-        .and(driveController.back().negate())
+        .and(driverController.back().negate())
         .onTrue(drivetrain.resetPerspective());
 
-    driveController
+    
+
+    driverController
         .rightTrigger(.5)
         .whileTrue(drivetrain.applyRequest(
             () -> drive
@@ -263,9 +261,13 @@ public class RobotContainer {
                         * 0.125)) // Drive counterclockwise with negative X (left)
             ));
 
-    // driveController.a().toggleOnTrue(new RunCommand(()->reefLockEnabled=!reefLockEnabled));
+    driverController.leftTrigger(0.5)
+        .whileTrue(elevator.setRequestedPositionCommand(elevator.LEVELHP)
+        .andThen(elevator.goToRequestedPositionCommand())
+        .andThen(shooter.intakeCoralCommand()));
+    driverController.a().toggleOnTrue(new RunCommand(()->reefLockEnabled=!reefLockEnabled));
 
-    driveController.a().whileTrue(drivetrain.applyRequest(() -> reefLock.withVelocityX(Drivetrain.MAX_LINEAR_SPEED.times(
+    driverController.a().whileTrue(drivetrain.applyRequest(() -> reefLock.withVelocityX(Drivetrain.MAX_LINEAR_SPEED.times(
                -controllers.getDriverLeftY())) // Drive forward with negative Y (forward)
              .withVelocityY(Drivetrain.MAX_LINEAR_SPEED.times(
                  -controllers.getDriverLeftX())) // Drive left with negative X (left)
@@ -280,125 +282,30 @@ public class RobotContainer {
     //     .withTargetDirection(
     //         fieldMap.getLockedReefFaceAngle(fieldMap.getLockedReefFace(drivetrain.getPose())))));
 
-    driveController.x().whileTrue(drivetrain.applyRequest(() -> brake));
+    driverController.x().whileTrue(drivetrain.applyRequest(() -> brake));
 
-    driveController.a().and(driveController.leftBumper()).whileTrue(driveToNearestLeftPole);
-    driveController.a().and(driveController.rightBumper()).whileTrue(driveToNearestRightPole);
+    // Get close to but not too close to the reef so that the robot can go up to L4 without crashing
+    driverController.a().and(driverController.leftBumper()).whileTrue(driveToNearestLeftPole);
+    driverController.a().and(driverController.rightBumper()).whileTrue(driveToNearestRightPole);
 
+    // Slowly get close enough to reef to score 
+    driverController.y().and(driverController.leftBumper()).whileTrue(driveNearLeftPoleForLowerL);
+    driverController.y().and(driverController.rightBumper()).whileTrue(driveNearRightPoleForLowerL);
 
-    driveController.y().and(driveController.leftBumper()).whileTrue(driveNearLeftPoleForLowerL);
-    driveController.y().and(driveController.rightBumper()).whileTrue(driveNearRightPoleForLowerL);
+    // Drive to coral stations - generally slower than manual drive
+    driverController.b().and(driverController.leftBumper()).whileTrue(driveToLeftCoralStation);
+    driverController.b().and(driverController.rightBumper()).whileTrue(driveToRightCoralStation);
 
-    driveController.b().and(driveController.leftBumper()).whileTrue(driveToLeftCoralStation);
-    driveController.b().and(driveController.rightBumper()).whileTrue(driveToRightCoralStation);
+    // Auto Score Commands - not 100% accurate
+    driverController.pov(270).and(driverController.rightBumper()).whileTrue(autoScoreL4Right);
+    driverController.pov(180).and(driverController.rightBumper()).whileTrue(autoScoreL3Right);
+    driverController.pov(90).and(driverController.rightBumper()).whileTrue(autoScoreL2Right);
 
-    // driveController
-    //     .pov(0)
-    //     .and(() -> (driveController.leftBumper().getAsBoolean()
-    //         || driveController.rightBumper().getAsBoolean()))
-    //     .whileTrue(Commands.defer(
-    //         () -> {
-    //           ReefPole endReefPole =
-    //               driveController.rightBumper().getAsBoolean() ? ReefPole.Right : ReefPole.Left;
-    //           Pose2d intermediatePose = driveController.rightBumper().getAsBoolean()
-    //               ? fieldMap.coralStationMiddleRightIntermediate
-    //               : fieldMap.coralStationMiddleLeftIntermediate;
-    //           var endPose = fieldMap.getPolePose(ReefFace.One, endReefPole);
-    //           return drivetrain
-    //               .makeGoToPoseCommand(intermediatePose, intermediatePose.getRotation(), 2.0)
-    //               .andThen(drivetrain.makeGoToPoseCommand(
-    //                   endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0));
-    //         },
-    //         Set.of(drivetrain)));
-
-    // driveController
-    //     .pov(45)
-    //     .and(() -> (driveController.leftBumper().getAsBoolean()
-    //         || driveController.rightBumper().getAsBoolean()))
-    //     .whileTrue(Commands.defer(
-    //         () -> {
-    //           ReefPole endReefPole =
-    //               driveController.rightBumper().getAsBoolean() ? ReefPole.Right : ReefPole.Left;
-    //           var endPose = fieldMap.getPolePose(ReefFace.Two, endReefPole);
-    //           return drivetrain
-    //               .makeGoToPoseCommand(
-    //                   fieldMap.coralStationRightIntermediate,
-    //                   fieldMap.coralStationRightIntermediate.getRotation(),
-    //                   2.0)
-    //               .andThen(drivetrain.makeGoToPoseCommand(
-    //                   endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0));
-    //         },
-    //         Set.of(drivetrain)));
-    // driveController
-    //     .pov(135)
-    //     .and(() -> (driveController.leftBumper().getAsBoolean()
-    //         || driveController.rightBumper().getAsBoolean()))
-    //     .whileTrue(Commands.defer(
-    //         () -> {
-    //           ReefPole endReefPole =
-    //               driveController.rightBumper().getAsBoolean() ? ReefPole.Right : ReefPole.Left;
-    //           var endPose = fieldMap.getPolePose(ReefFace.Three, endReefPole);
-    //           return drivetrain.makeGoToPoseCommand(
-    //               endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0);
-    //         },
-    //         Set.of(drivetrain)));
-
-    // driveController
-    //     .pov(180)
-    //     .and(() -> (driveController.leftBumper().getAsBoolean()
-    //         || driveController.rightBumper().getAsBoolean()))
-    //     .whileTrue(Commands.defer(
-    //         () -> {
-    //           ReefPole endReefPole =
-    //               driveController.rightBumper().getAsBoolean() ? ReefPole.Right : ReefPole.Left;
-    //           var endPose = fieldMap.getPolePose(ReefFace.Four, endReefPole);
-    //           return drivetrain.makeGoToPoseCommand(
-    //               endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0);
-    //         },
-    //         Set.of(drivetrain)));
-
-    // driveController
-    //     .pov(225)
-    //     .and(() -> (driveController.leftBumper().getAsBoolean()
-    //         || driveController.rightBumper().getAsBoolean()))
-    //     .whileTrue(Commands.defer(
-    //         () -> {
-    //           ReefPole endReefPole =
-    //               driveController.rightBumper().getAsBoolean() ? ReefPole.Right : ReefPole.Left;
-    //           var endPose = fieldMap.getPolePose(ReefFace.Five, endReefPole);
-    //           return drivetrain.makeGoToPoseCommand(
-    //               endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0);
-    //         },
-    //         Set.of(drivetrain)));
-
-    // driveController
-    //     .pov(315)
-    //     .and(() -> (driveController.leftBumper().getAsBoolean()
-    //         || driveController.rightBumper().getAsBoolean()))
-    //     .whileTrue(Commands.defer(
-    //         () -> {
-    //           ReefPole endReefPole =
-    //               driveController.rightBumper().getAsBoolean() ? ReefPole.Right : ReefPole.Left;
-    //           var endPose = fieldMap.getPolePose(ReefFace.Six, endReefPole);
-    //           return drivetrain
-    //               .makeGoToPoseCommand(
-    //                   fieldMap.coralStationLeftIntermediate,
-    //                   fieldMap.coralStationLeftIntermediate.getRotation(),
-    //                   2.0)
-    //               .andThen(drivetrain.makeGoToPoseCommand(
-    //                   endPose, endPose.getRotation().rotateBy(Rotation2d.k180deg), 0.0));
-    //         },
-    //         Set.of(drivetrain)));
-
-    driveController.pov(270).and(driveController.rightBumper()).whileTrue(autoScoreL4Right);
-    driveController.pov(180).and(driveController.rightBumper()).whileTrue(autoScoreL3Right);
-    driveController.pov(90).and(driveController.rightBumper()).whileTrue(autoScoreL2Right);
-
-    driveController.pov(270).and(driveController.leftBumper()).whileTrue(autoScoreL4Left);
-    driveController.pov(180).and(driveController.leftBumper()).whileTrue(autoScoreL3Left);
-    driveController.pov(90).and(driveController.leftBumper()).whileTrue(autoScoreL2Left);
+    driverController.pov(270).and(driverController.leftBumper()).whileTrue(autoScoreL4Left);
+    driverController.pov(180).and(driverController.leftBumper()).whileTrue(autoScoreL3Left);
+    driverController.pov(90).and(driverController.leftBumper()).whileTrue(autoScoreL2Left);
     
-    driveController
+    driverController
         .rightTrigger(.5)
         .whileTrue(drivetrain.applyRequest(
             () -> drive
@@ -430,9 +337,9 @@ public class RobotContainer {
         int tempDriverPort = driverPort;
         driverPort = operatorPort;
         operatorPort = tempDriverPort;
-        driveController = new CommandXboxController(driverPort);
+        driverController = new CommandXboxController(driverPort);
         operatorController = new CommandXboxController(operatorPort);
-        controllers = new Controllers(driveController, operatorController);
+        controllers = new Controllers(driverController, operatorController);
         CommandScheduler.getInstance().disable();
         CommandScheduler.getInstance().cancelAll();
         CommandScheduler.getInstance().getDefaultButtonLoop().clear();
@@ -500,7 +407,8 @@ public class RobotContainer {
                               .getDriverRightX())) // Drive counterclockwise with negative X (left)
               ));
 
- driveToNearestLeftPole = Commands.defer(
+    
+    driveToNearestLeftPole = Commands.defer(
           () -> {
             var reefFace = fieldMap.getLockedReefFace(drivetrain.getPose());
             var approachPose = fieldMap.getPolePose(reefFace, ReefPole.FarLeft);
@@ -682,6 +590,7 @@ driveSlowlyToNearestLeftPole = Commands.defer(
     autoScoreL4Right = Commands.defer(()-> CommandUtil.wrappedEventCommand(driveNearRightPole)
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL4))
         .andThen(elevator.goToRequestedPositionCommand())
+        .andThen(elevator.getWaitUntilCorrectPositionCommand())
         .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestRightPole))
         .andThen(shooter.timedSpitCoralCommand(0.25))
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL4+2.5))
@@ -694,6 +603,7 @@ driveSlowlyToNearestLeftPole = Commands.defer(
     autoScoreL4Left = Commands.defer(()-> CommandUtil.wrappedEventCommand(driveNearLeftPole)
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL4))
         .andThen(elevator.goToRequestedPositionCommand())
+        .andThen(elevator.getWaitUntilCorrectPositionCommand())
         .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestLeftPole))
         .andThen(shooter.timedSpitCoralCommand(0.25))
         .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL4+2.5))
@@ -770,8 +680,9 @@ public void initNamedCommands() {
   }
 
    public void initAuto() {
-    autoChooser = AutoBuilder.buildAutoChooser();
+    autoChooser = AutoBuilder.buildAutoChooserWithOptionsModifier((stream) -> riptideOnly ? stream.filter((s1) -> s1.getName().contains("riptide")) : stream);
     autoChooser.setDefaultOption("None", Commands.none());
+
     autosTab = Shuffleboard.getTab("Autos");
     autosTab.add("Auto Chooser", autoChooser).withWidget(BuiltInWidgets.kComboBoxChooser);
   }

@@ -76,7 +76,6 @@ new Transform2d(Inches.of(16), Inches.of(rightReefY), Rotation2d.k180deg);
 
       // leftrelativeX = new Pose2d(Meters.of(12.44), Meters.of(5.21), new Rotation2d(Degrees.of(-60))).relativeTo(ReefFace.Two.redPose).getX();
       // leftRelativeY = new Pose2d(Meters.of(12.44), Meters.of(5.21), new Rotation2d(Degrees.of(-60))).relativeTo(ReefFace.Two.redPose).getY();
-
       // rightrelativeX = new Pose2d(Meters.of(12.31), Meters.of(5.10), new Rotation2d(Degrees.of(-60))).relativeTo(ReefFace.Two.redPose).getX();
       // rightRelativeY = new Pose2d(Meters.of(12.31), Meters.of(5.10), new Rotation2d(Degrees.of(-60))).relativeTo(ReefFace.Two.redPose).getY();
 
@@ -142,12 +141,40 @@ new Transform2d(Inches.of(16), Inches.of(rightReefY), Rotation2d.k180deg);
     }
   }
 
+  /*
+   * Left/Right - 19.5 inches off - Scores L4
+   * Far Left/Right - 48 inches off - approach pose
+   * L2L3 left/Right - 16 inches off
+   */
   public enum ReefPole {
+
+    /**
+     * Scores L4
+     */
     Right(rightReefTransform),
-    FarRight(farRightReefTransform),
+
+    /**
+     * Scores L4
+     */
     Left(leftReefTransform),
+
+    /**
+     * Approach Pose
+     */
+    FarRight(farRightReefTransform),
+    /**
+     * Approach Pose
+     */
     FarLeft(farLeftReefTransform),
+
+    /**
+     * Scores L2/L3 - Safe to move elevator (max L3) here
+     */
     L2L3Left(L2L3LeftReefTransform),
+
+    /**
+     * Scores L2/L3 - Safe to move elevator (max L3) here
+     */
     L2L3Right(L2L3RightReefTransform);
 
     public final Transform2d reefPoleTransform;
