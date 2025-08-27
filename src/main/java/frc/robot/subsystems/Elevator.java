@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.sim.SparkFlexSim;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -20,6 +21,7 @@ import com.revrobotics.spark.config.LimitSwitchConfig.Type;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.measure.MutAngle;
 import edu.wpi.first.units.measure.MutAngularVelocity;
@@ -27,6 +29,7 @@ import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
@@ -37,6 +40,12 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 
 public class Elevator extends SubsystemBase {
 
@@ -124,6 +133,17 @@ public class Elevator extends SubsystemBase {
   private static final ClosedLoopSlot downSlot = ClosedLoopSlot.kSlot0;
   private static final ClosedLoopSlot upSlot = ClosedLoopSlot.kSlot1;
 
+  MechanismLigament2d m_elevator;
+  MechanismLigament2d m_wrist;
+  DCMotor elevatorMotors;
+  SparkFlexSim elevatorMotorsSim;
+  ElevatorSim elevatorSim;
+  double kElevatorGearing = 25; // 25:1
+  double kCarriageMass = 4.3 + 3.15 + 0.151; // Kg, arm + elevator stage + chain
+  double kElevatorDrumRadius = 0.0328 / 2.0;
+  double kMinElevatorHeightMeters = 0.922;
+  double kMaxElevatorHeightMeters = 1.62;
+
   public Elevator(Config config) {
 
     this.config = config;
@@ -206,6 +226,32 @@ public class Elevator extends SubsystemBase {
                       m_velocity.mut_replace(elevatorEncoder.getVelocity(), RotationsPerSecond));
             },
             this));
+
+      elevatorMotors = DCMotor.getNeoVortex(3);
+      elevatorMotorsSim = new SparkFlexSim(leaderMotor, elevatorMotors);
+      elevatorSim = new ElevatorSim(
+          elevatorMotors,
+          kElevatorGearing,
+          kCarriageMass,
+          kElevatorDrumRadius,
+          kMinElevatorHeightMeters,
+          kMaxElevatorHeightMeters,
+          true,
+          kMinElevatorHeightMeters,
+          0.0,
+          0.0);
+
+      // the main mechanism object
+      Mechanism2d mech = new Mechanism2d(3, 3);
+      // the mechanism root node
+       MechanismRoot2d root = mech.getRoot("elevator", 1.5, 0 );
+      
+    Color8Bit red = new Color8Bit(Color.kRed);
+
+    m_elevator = root.append(new MechanismLigament2d("elevatorLigament", 4, 90, 5, red ));
+
+    // post the mechanism to the dashboard
+    SmartDashboard.putData("Mech2d", mech);
   }
 
   private void initializeShuffleboardEntries() {
@@ -382,6 +428,7 @@ public class Elevator extends SubsystemBase {
     Logger.recordOutput("Leader Motor Output", leaderMotor.getAppliedOutput());
     Logger.recordOutput("Elevator Speed", leaderMotor.getEncoder().getVelocity());
     Logger.recordOutput("Elevator Current", leaderMotor.getOutputCurrent());
+    m_elevator.setLength(getCurrentPosition() / 15.6);
   }
 
   public Command setRequestedPositionCommand(double position) {
@@ -477,5 +524,22 @@ public class Elevator extends SubsystemBase {
   // Sparkmax seems to have a bug where if you set PID values to .01 it actually sets .00099999999
   private boolean valuesActuallyDifferent(double val1, double val2) {
     return Math.abs(val1 - val2) > .000001;
+  }
+  @Override
+  public void simulationPeriodic() {
+    // In this method, we update our simulation of what our elevator is doing
+    // First, we set our "inputs" (voltages)
+    elevatorSim.setInput(leaderMotor.getAppliedOutput() * RobotController.getBatteryVoltage());
+
+    elevatorSim.update(0.020);
+
+    // Iterate the elevator and arm SPARK simulations
+    elevatorMotorsSim.iterate(
+        ((elevatorSim.getVelocityMetersPerSecond()
+                    / (kElevatorDrumRadius * 2.0 * Math.PI))
+                * kElevatorGearing)
+            * 60.0,
+        RobotController.getBatteryVoltage(),
+        0.02);
   }
 }
