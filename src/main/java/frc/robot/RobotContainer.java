@@ -50,6 +50,7 @@ public class RobotContainer {
 
   CommandXboxController operatorController;
   CommandXboxController driveController;  
+  CommandXboxController overrideController;
 
   FieldMap fieldMap;
   SwerveRequest.FieldCentric drive;
@@ -85,6 +86,7 @@ public class RobotContainer {
     robotConfig = RobotConfig.lookupConfig(roboRio);
     driveController = new CommandXboxController(robotConfig.driverControllerPort);
     operatorController = new CommandXboxController(robotConfig.operatorControllerPort);
+    overrideController = new CommandXboxController(robotConfig.overrideControllerPort);
     climber = new Climber(robotConfig.climberConfig);
     elevator = new Elevator(robotConfig.elevatorConfig);
     shooter = new Shooter(robotConfig.shooterConfig);
@@ -98,6 +100,10 @@ public class RobotContainer {
     configureDriverBindings(robotConfig.drivetrainConfig);
     configureOperatorBindings();
     initAuto();
+
+    shooter.inLimitSwitchOverride = overrideController.x()::getAsBoolean;
+    shooter.outLimitSwitchOverride = overrideController.b()::getAsBoolean;
+
 }
 
 
@@ -258,7 +264,7 @@ public class RobotContainer {
 
     //driveController.a().toggleOnTrue(new RunCommand(()->reefLockEnabled=!reefLockEnabled));
 
-    driveController.a().whileTrue(drivetrain.applyRequest(() -> reefLock
+    driveController.a().and((driveController.rightBumper().or(driveController.leftBumper())).negate()).whileTrue(drivetrain.applyRequest(() -> reefLock
         .withVelocityX(Drivetrain.MAX_LINEAR_SPEED.times(
             -controllers.getDriverLeftY())) // Drive forward with negative Y (forward)
         .withVelocityY(Drivetrain.MAX_LINEAR_SPEED.times(
@@ -844,6 +850,9 @@ driveSlowlyToNearestLeftPole = Commands.defer(
     NamedCommands.registerCommand("setRequestedPositionHP", elevator.setRequestedPositionCommand(elevator.LEVELHP));
     NamedCommands.registerCommand("goToRequestedPosition", elevator.goToRequestedPositionCommand());
     NamedCommands.registerCommand("spitOutCoral", shooter.timedSpitCoralCommand(1));
+    NamedCommands.registerCommand("runShooterUntilEitherSensorHit", shooter.runShooterInSlowUntilCoralDetectedByEitherSensor());
+    NamedCommands.registerCommand("goToHPRight", driveToRightCoralStation);
+    NamedCommands.registerCommand("goToHPLeft", driveToLeftCoralStation);
     
 
   }

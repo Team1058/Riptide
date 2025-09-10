@@ -24,6 +24,8 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -67,6 +69,9 @@ public class Shooter extends SubsystemBase {
   private GenericEntry iEntry;
   private GenericEntry dEntry;
   private GenericEntry fEntry;
+
+  public BooleanSupplier inLimitSwitchOverride = ()->false;
+  public BooleanSupplier outLimitSwitchOverride = ()->false;
 
   public Shooter(Config config) {
     this.config = config;
@@ -145,19 +150,19 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean coralNotDetectedByEitherSensor() {
-    return !inLimitSwitch.isPressed() && !outLimitSwitch.isPressed();
+    return !coralDetectedByInSensor() && !coralDetectedByOutSensor();
   }
 
   public boolean coralDetectedByEitherSensor() {
-    return inLimitSwitch.isPressed() || outLimitSwitch.isPressed();
+    return coralDetectedByInSensor() || coralDetectedByOutSensor();
   }
 
   public boolean coralDetectedByOutSensor() {
-    return outLimitSwitch.isPressed();
+    return outLimitSwitch.isPressed() || outLimitSwitchOverride.getAsBoolean();
   }
 
   public boolean coralDetectedByInSensor() {
-    return inLimitSwitch.isPressed();
+    return inLimitSwitch.isPressed() || inLimitSwitchOverride.getAsBoolean();
   }
 //needs fixing
   public boolean algaeMechDeployed(){
@@ -165,11 +170,11 @@ public class Shooter extends SubsystemBase {
   }
   // and provide commands to set rumble state
   public Trigger bothSensorsDetectCoral() {
-    return new Trigger(() -> inLimitSwitch.isPressed() && outLimitSwitch.isPressed());
+    return new Trigger(() -> coralDetectedByInSensor() && coralDetectedByOutSensor());
   }
 
   public Trigger coralDetectedByInSensorOnly() {
-    return new Trigger(() -> inLimitSwitch.isPressed() && !outLimitSwitch.isPressed());
+    return new Trigger(() -> coralDetectedByInSensor() && !coralDetectedByOutSensor());
   }
 
   public Command manualShootCommand(DoubleSupplier supplier) {
@@ -259,7 +264,7 @@ public class Shooter extends SubsystemBase {
       ()-> shooterMotor.set(-0.1),
       ()-> {},
       interupted -> shooterMotor.disable(),
-      ()-> outLimitSwitch.isPressed(),
+      ()-> coralDetectedByOutSensor(),
       this).withName("Runs shooter fast til' the in and out limit switch is triggered.");
   }
 
@@ -269,7 +274,7 @@ public class Shooter extends SubsystemBase {
       ()-> shooterMotor.set(-0.1),
       ()-> {},
       interrupted -> shooterMotor.disable(),
-      ()-> outLimitSwitch.isPressed() && !inLimitSwitch.isPressed(),
+      ()-> coralDetectedByOutSensor() && !coralDetectedByInSensor(),
       this).withName("Runs shooter in slow until the out limit switch is triggered.");
   }
 
@@ -278,7 +283,7 @@ public class Shooter extends SubsystemBase {
       ()-> shooterMotor.set(0.15),
       ()-> {},
       interrupted -> shooterMotor.disable(),
-      ()-> inLimitSwitch.isPressed() && outLimitSwitch.isPressed(),
+      ()-> coralDetectedByInSensor() && coralDetectedByOutSensor(),
       this).withName("Runs the shooter in slow until the in and out limit switch is triggered then stop the shooter.");
   }
 
@@ -286,6 +291,14 @@ public class Shooter extends SubsystemBase {
     return runShooterInFastUntilInLimitTriggered()
       .andThen(runShooterOutSlowUntilInAndOutLimitTriggeredThenStop())
       .withName("Coral intake command");
+  }
+  public Command runShooterInSlowUntilCoralDetectedByEitherSensor() {
+    return new FunctionalCommand(
+      ()-> shooterMotor.set(-0.25),
+      ()-> {},
+      interrupted -> shooterMotor.disable(),
+      ()-> coralDetectedByInSensor() || coralDetectedByOutSensor(),
+       this);
   }
 
   public Command openSesameCommand() {
@@ -334,8 +347,8 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    Logger.recordOutput("Shooter In Limit Switch", inLimitSwitch.isPressed());
-    Logger.recordOutput("Shooter Out Limit Switch", outLimitSwitch.isPressed());
+    Logger.recordOutput("Shooter In Limit Switch", coralDetectedByInSensor());
+    Logger.recordOutput("Shooter Out Limit Switch", coralDetectedByOutSensor());
     Logger.recordOutput("Algae position", algaeEncoder.getPosition());
   }
 

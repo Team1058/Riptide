@@ -133,8 +133,8 @@ public class Elevator extends SubsystemBase {
   private static final ClosedLoopSlot downSlot = ClosedLoopSlot.kSlot0;
   private static final ClosedLoopSlot upSlot = ClosedLoopSlot.kSlot1;
 
-  MechanismLigament2d m_elevator;
-  MechanismLigament2d m_wrist;
+  MechanismLigament2d m_elevatorL;
+  MechanismLigament2d m_elevatorR;
   DCMotor elevatorMotors;
   SparkFlexSim elevatorMotorsSim;
   ElevatorSim elevatorSim;
@@ -242,16 +242,21 @@ public class Elevator extends SubsystemBase {
           0.0);
 
       // the main mechanism object
-      Mechanism2d mech = new Mechanism2d(3, 3);
+      Mechanism2d elevatorL = new Mechanism2d(3, 3);
+      Mechanism2d elevatorR = new Mechanism2d(3, 3);
       // the mechanism root node
-       MechanismRoot2d root = mech.getRoot("elevator", 1.5, 0 );
+       MechanismRoot2d rootL = elevatorL.getRoot("elevatorL", 1.25, 0 );
+       MechanismRoot2d rootR = elevatorR.getRoot("elevatorR", 1.75, -0);
+
       
     Color8Bit red = new Color8Bit(Color.kRed);
 
-    m_elevator = root.append(new MechanismLigament2d("elevatorLigament", 4, 90, 5, red ));
+    m_elevatorL = rootL.append(new MechanismLigament2d("elevatorLigamentL", 4, 80, 5, red ));
+    m_elevatorR = rootR.append(new MechanismLigament2d("elevatorLigamentR", 4, 80, 5, red ));
 
     // post the mechanism to the dashboard
-    SmartDashboard.putData("Mech2d", mech);
+    SmartDashboard.putData("Mech2d", elevatorL);
+    SmartDashboard.putData("Mech2d", elevatorR);
   }
 
   private void initializeShuffleboardEntries() {
@@ -428,7 +433,9 @@ public class Elevator extends SubsystemBase {
     Logger.recordOutput("Leader Motor Output", leaderMotor.getAppliedOutput());
     Logger.recordOutput("Elevator Speed", leaderMotor.getEncoder().getVelocity());
     Logger.recordOutput("Elevator Current", leaderMotor.getOutputCurrent());
-    m_elevator.setLength(getCurrentPosition() / 15.6);
+    double lineLength = 2.449409 + (0.07223737 - 2.449409)/(1 + Math.pow(this.getCurrentPosition() / 15.07998, 1.825347));
+    m_elevatorL.setLength(lineLength);
+    m_elevatorR.setLength(lineLength);
   }
 
   public Command setRequestedPositionCommand(double position) {

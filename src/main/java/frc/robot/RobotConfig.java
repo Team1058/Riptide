@@ -18,6 +18,7 @@ public class RobotConfig {
   String name;
   int driverControllerPort;
   int operatorControllerPort;
+  int overrideControllerPort;
   boolean hasSubsystems;
   boolean hasClimber;
   boolean hasShooter;
@@ -53,6 +54,7 @@ public class RobotConfig {
     common.climberConfig = new Climber.Config();
     common.driverControllerPort = 0;
     common.operatorControllerPort = 1;
+    common.overrideControllerPort = 5;
     common.elevatorConfig.hasFollowerMotor2 = false;
     common.shooterConfig.hasAlgaeMotor = false;
 

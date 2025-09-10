@@ -1,0 +1,85 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "goToHP"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "runShooterUntilEitherSensorHit"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoScoreL4Left"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "goToHPRight"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "runShooterUntilEitherSensorHit"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoScoreL4Right"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "goToHPRight"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "runShooterUntilEitherSensorHit"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoScoreL3Left"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "goToHPRight"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "runShooterUntilEitherSensorHit"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoScoreL3Right"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": false,
+  "folder": "WPI_Autos",
+  "choreoAuto": false
+}

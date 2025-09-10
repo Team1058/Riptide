@@ -4,14 +4,37 @@
       "AdvantageKit": {
         "RealOutputs": {
           "open": true
-        },
-        "open": true
+        }
       },
       "LiveWindow": {
         "open": true
       },
       "Shuffleboard": {
-        "PID": {
+        "open": true
+      },
+      "SmartDashboard": {
+        "Mech2d": {
+          "climber": {
+            "elevator": {
+              "open": true
+            },
+            "open": true
+          },
+          "double[]##v_/SmartDashboard/Mech2d/dims": {
+            "open": true
+          },
+          "elevatorL": {
+            "elevatorLigamentL": {
+              "open": true
+            },
+            "open": true
+          },
+          "elevatorR": {
+            "elevatorLigamentR": {
+              "open": true
+            },
+            "open": true
+          },
           "open": true
         },
         "open": true
@@ -21,10 +44,12 @@
       "/AdvantageKit/RealOutputs/Alerts": "Alerts",
       "/AdvantageKit/RealOutputs/PhotonAlerts": "Alerts",
       "/FMSInfo": "FMSInfo",
+      "/Shuffleboard/Autos/Auto Chooser": "String Chooser",
       "/Shuffleboard/SysID/Routine": "String Chooser",
       "/Shuffleboard/SysID/Test": "String Chooser",
       "/SmartDashboard/Alerts": "Alerts",
       "/SmartDashboard/Field": "Field2d",
+      "/SmartDashboard/Mech2d": "Mechanism2d",
       "/SmartDashboard/PhotonAlerts": "Alerts"
     }
   },
