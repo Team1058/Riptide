@@ -571,6 +571,9 @@ public class RobotContainer {
       reefLock.HeadingController.setP(4);
       reefLock.HeadingController.setI(0);
       reefLock.HeadingController.setD(0);
+      reefLock.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
+      reefLock.HeadingController.setTolerance(0.1);
+      reefLock.withRotationalDeadband(drivetrain.getMaxAngularVelocity().times(0.01));
 
       
     }

@@ -363,8 +363,8 @@ public class Drivetrain extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> imp
             // controller for holonomic drive trains
             // new PIDConstants(1.0, 0.0, 0.0), // Translation PID constants
             // new PIDConstants(1.0, 0.0, 0.0) // Rotation PID constants
-            new PIDConstants(0.1, 0.0, 0.0), // Translation PID constants
-            new PIDConstants(0.1, 0.0, 0.0) // Rotation PID constants
+            new PIDConstants(4, 0.0, 0.0), // Translation PID constants
+            new PIDConstants(4, 0.0, 0.0) // Rotation PID constants
 
             );
     pathConstraints = new PathConstraints(
