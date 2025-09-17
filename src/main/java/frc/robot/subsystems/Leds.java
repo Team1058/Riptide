@@ -50,7 +50,7 @@ public class Leds {
     ledStrip.start();
 
     elevatorProgressMask = LEDPattern.progressMaskLayer(
-      () -> elevator.getCurrentPosition() / elevator.LEVELBARGE);
+      () -> elevator.getCurrentPosition() / elevator.LEVELBARGE.getAndUpdate());
 
     redOrangeBase = LEDPattern.solid(Color.kOrangeRed);
     redOrangeBlinkWithRsl = redOrangeBase.synchronizedBlink(RobotController::getRSLState);

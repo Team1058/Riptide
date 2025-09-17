@@ -35,6 +35,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.utils.PidConsumer;
+import frc.robot.utils.TunableConstant;
 import frc.robot.utils.TunablePID;
 
 import java.util.function.BooleanSupplier;
@@ -70,21 +71,19 @@ public class Elevator extends SubsystemBase {
     public double lowerLimit;
   }
   //DON'T go beyond 31.25
-  public double LEVEL1 = 4.75;
-  //4.75
-  public double LEVEL2 = 8.7;
-  //8.7
-  public double LEVEL3 = 15.6;
-  //15.6
-  public double LEVEL4 = 27.5;
-  //26.9
 
-  public double LEVELALGAEPROC = 1;
-  public double LEVELALGAELOLLIPOP = 1;
-  public double LEVELALGAE1 = 4.6;
-  public double LEVELALGAE2 = 11;
-  public double LEVELBARGE = 30.5;
-  public double LEVELHP = 0.32;
+  public TunableConstant LEVEL1;
+  public TunableConstant LEVEL2;
+  public TunableConstant LEVEL3;
+  public TunableConstant LEVEL4;
+  public TunableConstant LEVEL4CORALDISENGAGE;
+
+  public TunableConstant LEVELALGAEPROC;
+  public TunableConstant LEVELALGAELOLLIPOP;
+  public TunableConstant LEVELALGAE1;
+  public TunableConstant LEVELALGAE2;
+  public TunableConstant LEVELBARGE;
+  public TunableConstant LEVELHP;
 
   private final SparkFlex leaderMotor;
   private final SparkFlex followerMotor;
@@ -123,6 +122,17 @@ public class Elevator extends SubsystemBase {
     followerMotor = new SparkFlex(config.followerMotorId, MotorType.kBrushless);
     elevatorPidUp = new TunablePID("elevatorPID_Up", config.kP_Up, config.kI_Up, config.kD_Up, config.kF_Up);
     elevatorPidDown = new TunablePID("elevatorPID_Down", config.kP_Down, config.kI_Down, config.kD_Down, config.kF_Down);
+    LEVELALGAEPROC = new TunableConstant("/ElevatorLevels/AlgaeProcessor",1);
+    LEVELALGAELOLLIPOP = new TunableConstant("/ElevatorLevel/AlgaeLollipop",1);
+    LEVELALGAE1 = new TunableConstant( "/ElevatorLevels/AlgaeLevel1", 4.6);
+    LEVELALGAE2 = new TunableConstant("/ElevatorLevels/AlgaeLevel2", 11);
+    LEVELBARGE = new TunableConstant("/ElevatorLevels/AlgaeBarge", 30.5);
+    LEVELHP = new TunableConstant("/ElevatorLevels/CoralHP", 0.32);
+    LEVEL1 = new TunableConstant("/ElevatorLevels/CoralLevel1", 4.75);
+    LEVEL2 = new TunableConstant("/ElevatorLevels/CoralLevel2", 8.7);
+    LEVEL3 = new TunableConstant("/ElevatorLevels/CoralLevel3", 15.6);
+    LEVEL4 = new TunableConstant("/ElevatorLevels/CoralLevel4", 27.5);
+    LEVEL4CORALDISENGAGE = new TunableConstant("/ElevatorLevels/CoralLevel4CoralDisengage", 29.5);
     leaderConfig
         .smartCurrentLimit(stallLimit, freeLimit)
         .inverted(config.invertLeaderMotor)
@@ -198,12 +208,12 @@ public class Elevator extends SubsystemBase {
   }
 
 
-  public void setRequestedPosition(double requested) {
-    this.requestedPosition = MathUtil.clamp(requested, config.lowerLimit, config.upperLimit);
+  public void setRequestedPosition(DoubleSupplier requested) {
+    this.requestedPosition = MathUtil.clamp(requested.getAsDouble(), config.lowerLimit, config.upperLimit);
   }
 
   public void setRequestedPositionToCurrentPosition() {
-    this.setRequestedPosition(this.getCurrentPosition());
+    this.setRequestedPosition(this::getCurrentPosition);
   }
 
   public boolean currentPositionAtTarget(double target) {
@@ -227,22 +237,22 @@ public class Elevator extends SubsystemBase {
         .withName(" Run Sys Id Rountine");
   }
 
-  public Command manualDriveCommand(DoubleSupplier speedSupplier) {
-    return run(() -> {
-          double positionDelta = (speedSupplier.getAsDouble() * -1) * 2;
-          double requested = this.getCurrentPosition() + positionDelta;
-          this.setRequestedPosition(requested);
+  // public Command manualDriveCommand(DoubleSupplier speedSupplier) {
+  //   return run(() -> {
+  //         double positionDelta = (speedSupplier.getAsDouble() * -1) * 2;
+  //         double requested = this.getCurrentPosition() + positionDelta;
+  //         this.setRequestedPosition(requested);
 
-          if (requested > getCurrentPosition()) {
-            sparkPIDController.setReference(requested, ControlType.kPosition, upSlot, config.kF_Up);
-          } else {
-            sparkPIDController.setReference(
-                requested, ControlType.kPosition, downSlot, config.kD_Down);
-          }
-        })
-        .withName("manualDrive")
-        .withName("Manul Drive Command");
-  }
+  //         if (requested > getCurrentPosition()) {
+  //           sparkPIDController.setReference(requested, ControlType.kPosition, upSlot, config.kF_Up);
+  //         } else {
+  //           sparkPIDController.setReference(
+  //               requested, ControlType.kPosition, downSlot, config.kD_Down);
+  //         }
+  //       })
+  //       .withName("manualDrive")
+  //       .withName("Manul Drive Command");
+  // }
 
   public Command resetElevatorCommand() {
     return new FunctionalCommand(
@@ -257,7 +267,7 @@ public class Elevator extends SubsystemBase {
                 leaderMotor.set(0);
                 elevatorEncoder.setPosition(0);
                 requestedPosition = 0;
-                setRequestedPosition(LEVELHP);
+                setRequestedPosition(LEVELHP::getAndUpdate);
               }
               leaderConfig.softLimit.reverseSoftLimitEnabled(true);
               leaderMotor.configure(
@@ -315,7 +325,7 @@ public class Elevator extends SubsystemBase {
     Logger.recordOutput("Elevator Current", leaderMotor.getOutputCurrent());
   }
 
-  public Command setRequestedPositionCommand(double position) {
+  public Command setRequestedPositionCommand(DoubleSupplier position) {
     return runOnce(
       () -> this.setRequestedPosition(position))
     .withName("setRequestedPosition")
@@ -329,7 +339,7 @@ public class Elevator extends SubsystemBase {
   }
 
   public void holdPosition() {
-    setRequestedPosition(getCurrentPosition());
+    setRequestedPosition(this::getCurrentPosition);
   }
   private void updateElevatorPid(double kP, double kI, double kD, ClosedLoopSlot closedLoop){
     leaderConfig
@@ -346,5 +356,15 @@ public class Elevator extends SubsystemBase {
   public void testInit() {
     elevatorPidDown.setTuningMode(true);
     elevatorPidUp.setTuningMode(true);
+    LEVELALGAELOLLIPOP.setTuningMode(true);
+    LEVELALGAEPROC.setTuningMode(true);
+    LEVELALGAE1.setTuningMode(true);
+    LEVELALGAE2.setTuningMode(true);
+    LEVELBARGE.setTuningMode(true);
+    LEVELHP.setTuningMode(true);
+    LEVEL1.setTuningMode(true);
+    LEVEL2.setTuningMode(true);
+    LEVEL3.setTuningMode(true);
+    LEVEL4.setTuningMode(true);
   }
 }
