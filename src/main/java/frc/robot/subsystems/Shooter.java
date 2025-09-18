@@ -195,6 +195,12 @@ public class Shooter extends SubsystemBase {
         .withName("Deploy Algae Hook Command");
   }
 
+  public Command deployAlgaeHookFloorCommand() {
+    return runOnce(
+      () -> algaePositionController.setReference(DEPLOYEDFLOOR.getAndUpdate(), ControlType.kPosition))
+        .withName("Deploy Algae Hook Floor Command");
+  }
+
   public Command holdAlgaeHookCommand() {
     return runOnce(
       () -> algaePositionController.setReference(HOLD.getAndUpdate(), ControlType.kPosition))
@@ -203,7 +209,7 @@ public class Shooter extends SubsystemBase {
 
   public Command stowAlgaeHookCommand() {
     return runOnce(
-      () -> algaePositionController.setReference(-7, ControlType.kPosition))
+      () -> algaePositionController.setReference(STOWED.getAndUpdate(), ControlType.kPosition))
         .withName("Stow Algae Hook Command");
   }
 
@@ -213,15 +219,15 @@ public class Shooter extends SubsystemBase {
 
   public Command intakeAlgae() {
     return new StartEndCommand(
-      () -> shooterMotor.set(.5),
-      () -> shooterMotor.set(.2),
+      () -> shooterMotor.set(-.5),
+      () -> shooterMotor.set(-.2),
       this)
       .withName("Intake Algae");
   }
 
   public Command shootAlgae() {
     return new StartEndCommand(
-            () -> shooterMotor.set(-1),
+            () -> shooterMotor.set(1),
             () -> {
               shooterMotor.disable();
               algaePositionController.setReference(STOWED.getAndUpdate(), ControlType.kPosition);

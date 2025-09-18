@@ -79,6 +79,7 @@ public class Elevator extends SubsystemBase {
   public TunableConstant LEVEL4CORALDISENGAGE;
 
   public TunableConstant LEVELALGAEPROC;
+  public TunableConstant LEVELALGAEFLOOR;
   public TunableConstant LEVELALGAELOLLIPOP;
   public TunableConstant LEVELALGAE1;
   public TunableConstant LEVELALGAE2;
@@ -124,6 +125,7 @@ public class Elevator extends SubsystemBase {
     elevatorPidDown = new TunablePID("elevatorPID_Down", config.kP_Down, config.kI_Down, config.kD_Down, config.kF_Down);
     LEVELALGAEPROC = new TunableConstant("/ElevatorLevels/AlgaeProcessor",1);
     LEVELALGAELOLLIPOP = new TunableConstant("/ElevatorLevel/AlgaeLollipop",1);
+    LEVELALGAEFLOOR = new TunableConstant("/ElevatorLevel/AlgaeFloor",0.1);
     LEVELALGAE1 = new TunableConstant( "/ElevatorLevels/AlgaeLevel1", 4.6);
     LEVELALGAE2 = new TunableConstant("/ElevatorLevels/AlgaeLevel2", 11);
     LEVELBARGE = new TunableConstant("/ElevatorLevels/AlgaeBarge", 30.5);
@@ -358,6 +360,7 @@ public class Elevator extends SubsystemBase {
     elevatorPidUp.setTuningMode(true);
     LEVELALGAELOLLIPOP.setTuningMode(true);
     LEVELALGAEPROC.setTuningMode(true);
+    LEVELALGAEFLOOR.setTuningMode(true);
     LEVELALGAE1.setTuningMode(true);
     LEVELALGAE2.setTuningMode(true);
     LEVELBARGE.setTuningMode(true);
