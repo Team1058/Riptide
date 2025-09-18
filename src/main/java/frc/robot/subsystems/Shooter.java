@@ -170,7 +170,7 @@ public class Shooter extends SubsystemBase {
 
   public Command spitOutCoralCommand() {
     return new StartEndCommand(
-      () -> shooterMotor.set(-0.3),
+      () -> shooterMotor.set(-0.9),
       () -> shooterMotor.disable(),
       this)
       .withName("Spit Out Coral Command");
@@ -219,8 +219,8 @@ public class Shooter extends SubsystemBase {
 
   public Command intakeAlgae() {
     return new StartEndCommand(
-      () -> shooterMotor.set(-.5),
-      () -> shooterMotor.set(-.2),
+      () -> shooterMotor.set(-1),
+      () -> shooterMotor.set(-.3),
       this)
       .withName("Intake Algae");
   }
@@ -238,7 +238,7 @@ public class Shooter extends SubsystemBase {
 
   public Command runShooterInFastUntilInLimitTriggered() {
     return new FunctionalCommand(
-      ()-> shooterMotor.set(-0.1),
+      ()-> shooterMotor.set(-0.5),
       ()-> {},
       interupted -> shooterMotor.disable(),
       ()-> outLimitSwitch.isPressed(),
@@ -257,7 +257,7 @@ public class Shooter extends SubsystemBase {
 
   public Command runShooterOutSlowUntilOutLimitTriggeredThenStop() {
     return new FunctionalCommand(
-      ()-> shooterMotor.set(0.15),
+      ()-> shooterMotor.set(0.3),
       ()-> {},
       interrupted -> shooterMotor.disable(),
       ()-> outLimitSwitch.isPressed(),

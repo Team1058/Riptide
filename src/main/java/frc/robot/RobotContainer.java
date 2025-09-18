@@ -152,7 +152,7 @@ public class RobotContainer {
             .and(() -> shooter.coralNotDetectedByEitherSensor()
                 || operatorController.leftBumper().getAsBoolean())
                 .and(operatorController.rightBumper().negate())
-            .onTrue(elevator
+            .whileTrue(elevator
                 .setRequestedPositionCommand(elevator.LEVELALGAEFLOOR::getAndUpdate)
                 .alongWith(shooter.deployAlgaeHookFloorCommand())
                 .andThen(shooter.intakeAlgae()))
