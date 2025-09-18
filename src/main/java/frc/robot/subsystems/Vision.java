@@ -91,7 +91,7 @@ public class Vision extends SubsystemBase {
             cameraToRobot);
 
         secondaryPoseEstimator = new PhotonPoseEstimator(
-            fieldLayout, PhotonPoseEstimator.PoseStrategy.LOWEST_AMBIGUITY, cameraToRobot);
+            fieldLayout, PhotonPoseEstimator.PoseStrategy.CLOSEST_TO_LAST_POSE, cameraToRobot);
 
       } catch (Exception e) {
         e.printStackTrace();
@@ -139,22 +139,6 @@ public class Vision extends SubsystemBase {
 
       PhotonPipelineResult result = resultList.get(resultList.size() - 1);
 
-      if (this.camera.getName() == "right" && result.hasTargets()) {
-        latest_reef_tag_pitch_right_cam = result.getBestTarget().getPitch();
-        latest_reef_tag_yaw_right_cam = result.getBestTarget().getYaw();
-      } else if (this.camera.getName() == "right") {
-        latest_reef_tag_pitch_right_cam = 1058.0;
-        latest_reef_tag_yaw_right_cam = 1058.0;
-      }
-
-      if (this.camera.getName() == "left" && result.hasTargets()) {
-        latest_reef_tag_pitch_left_cam = result.getBestTarget().getPitch();
-        latest_reef_tag_yaw_left_cam = result.getBestTarget().getYaw();
-      } else if (this.camera.getName() == "left") {
-        latest_reef_tag_pitch_left_cam = 1058.0;
-        latest_reef_tag_yaw_left_cam = 1058.0;
-      }
-
       if (result.hasTargets()) {
         // Update the pose estimator with the latest camera data
         EstimatedRobotPose estimatedPose = primaryPoseEstimator.update(result).orElse(null);
@@ -162,7 +146,20 @@ public class Vision extends SubsystemBase {
         if (estimatedPose == null) {
           estimatedPose = secondaryPoseEstimator.update(result).orElse(null);
           poseAmbiguity = result.getBestTarget().poseAmbiguity;
-          if (estimatedPose == null || poseAmbiguity > 0.3) {
+          if (estimatedPose == null || poseAmbiguity > 0.18) {
+            return Optional.empty();
+          }
+        } else {
+          poseAmbiguity = result.getBestTarget().poseAmbiguity;
+          if (poseAmbiguity > 0.28) {
+            return Optional.empty();
+          }
+        }
+
+        if (this.robotPose.isPresent()) {
+          if (Math.abs(this.robotPose.get().pose.getX() - estimatedPose.estimatedPose.getX()) > 0.1
+              || Math.abs(this.robotPose.get().pose.getY() - estimatedPose.estimatedPose.getY())
+                  > 0.1) {
             return Optional.empty();
           }
         }
