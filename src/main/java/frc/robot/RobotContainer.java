@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -158,8 +159,11 @@ public class RobotContainer {
           .whileTrue(elevator
               .setRequestedPositionCommand(elevator.LEVELALGAEFLOOR::getAndUpdate)
               .alongWith(shooter.deployAlgaeHookFloorCommand())
-              .andThen(shooter.intakeAlgae()))
-          .toggleOnFalse(shooter.stowAlgaeHookCommand());
+              .andThen(() -> shooter.setSpeed(-1)))
+          .toggleOnFalse(shooter
+              .retractAlgaeHookCommand()
+              .andThen(new WaitCommand(0.5))
+              .andThen(() -> shooter.setSpeed(-0.2)));
       operatorController
           .povRight()
           .and(() -> shooter.coralNotDetectedByEitherSensor()
@@ -180,7 +184,9 @@ public class RobotContainer {
           .and(() -> shooter.coralNotDetectedByEitherSensor()
               || operatorController.leftBumper().getAsBoolean())
           .and(operatorController.rightBumper().negate())
-          .onTrue(elevator.setRequestedPositionCommand(elevator.LEVELBARGE::getAndUpdate));
+          .onTrue(elevator
+              .setRequestedPositionCommand(elevator.LEVELBARGE::getAndUpdate)
+              .andThen(shooter.holdAlgaeHookCommand()));
 
       operatorController
           .back()
@@ -219,6 +225,13 @@ public class RobotContainer {
       // Shoots the coral and algae out of the shooter and stow algae mech if it is deployed
       operatorController
           .x()
+          .and(() -> shooter.coralNotDetectedByEitherSensor())
+          .whileTrue(shooter.shootAlgae())
+          .toggleOnFalse(shooter.stowAlgaeHookCommand());
+
+      operatorController
+          .x()
+          .and(() -> !shooter.coralNotDetectedByEitherSensor())
           .whileTrue(shooter.spitOutCoralCommand())
           .toggleOnFalse(shooter.stowAlgaeHookCommand());
     }
@@ -705,45 +718,45 @@ public class RobotContainer {
 
     autoScoreL3Left = Commands.defer(
             () -> CommandUtil.wrappedEventCommand(driveNearLeftPole)
-                .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL3))
+                .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL3::getAndUpdate))
                 .andThen(elevator.goToRequestedPositionCommand())
                 .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestLeftPole))
                 .andThen(shooter.timedSpitCoralCommand(0.2))
                 .andThen(CommandUtil.wrappedEventCommand(driveNearLeftPole))
-                .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP)),
+                .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP::getAndUpdate)),
             Set.of(drivetrain, elevator, shooter))
         .withName("AutoScoreL3Left");
 
     autoScoreL3Right = Commands.defer(
             () -> CommandUtil.wrappedEventCommand(driveNearRightPole)
-                .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL3))
+                .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL3::getAndUpdate))
                 .andThen(elevator.goToRequestedPositionCommand())
                 .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestRightPole))
                 .andThen(shooter.timedSpitCoralCommand(0.2))
                 .andThen(CommandUtil.wrappedEventCommand(driveNearRightPole))
-                .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP)),
+                .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP::getAndUpdate)),
             Set.of(drivetrain, elevator, shooter))
         .withName("AutoScoreL3Right");
 
     autoScoreL2Right = Commands.defer(
             () -> CommandUtil.wrappedEventCommand(driveNearRightPole)
-                .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL2))
+                .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL2::getAndUpdate))
                 .andThen(elevator.goToRequestedPositionCommand())
                 .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestRightPole))
                 .andThen(shooter.timedSpitCoralCommand(0.2))
                 .andThen(CommandUtil.wrappedEventCommand(driveNearRightPole))
-                .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP)),
+                .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP::getAndUpdate)),
             Set.of(drivetrain, elevator, shooter))
         .withName("AutoScoreL2Right");
 
     autoScoreL2Left = Commands.defer(
             () -> CommandUtil.wrappedEventCommand(driveNearLeftPole)
-                .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL2))
+                .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL2::getAndUpdate))
                 .andThen(elevator.goToRequestedPositionCommand())
                 .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestLeftPole))
                 .andThen(shooter.timedSpitCoralCommand(0.2))
                 .andThen(CommandUtil.wrappedEventCommand(driveNearLeftPole))
-                .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP)),
+                .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP::getAndUpdate)),
             Set.of(drivetrain, elevator, shooter))
         .withName("AutoScoreL2Left");
     // .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL2))
@@ -769,6 +782,9 @@ public class RobotContainer {
         "setRequestedPositionHP", elevator.setRequestedPositionCommand(elevator.LEVELHP));
     NamedCommands.registerCommand("goToRequestedPosition", elevator.goToRequestedPositionCommand());
     NamedCommands.registerCommand("spitOutCoral", shooter.timedSpitCoralCommand(1));
+    NamedCommands.registerCommand("goToLeftHumanPlayer", driveToLeftCoralStation);
+    NamedCommands.registerCommand("goToRightHumanPlayer", driveToRightCoralStation);
+    NamedCommands.registerCommand("intakeCoral", shooter.intakeCoralCommand());
   }
 
   public void updateAlliance(Alliance alliance) {

@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -63,6 +64,7 @@ public class Shooter extends SubsystemBase {
   private Config config;
 
   private TunablePID algaePid;
+  private TunablePID slot1Pid;
 
   public Shooter(Config config) {
     this.config = config;
@@ -73,10 +75,12 @@ public class Shooter extends SubsystemBase {
     intakeFlapMotorConfig = new SparkMaxConfig();
     algaePid = new TunablePID(
         "/AlgeaMech/AlgaePid", config.algaeKP, config.algaeKI, config.algaeKD, config.algaeKF);
+    slot1Pid = new TunablePID("/AlgeaMech/Slot1Pid", 0.01, 0, 0.00002, 0);
+
     STOWED = new TunableConstant("/AlgaeMech/Stowed", -5.5);
-    HOLD = new TunableConstant("/AlgaeMech/HOLD", -11.5);
+    HOLD = new TunableConstant("/AlgaeMech/HOLD", -9);
     DEPLOYEDREEF = new TunableConstant("/AlgaeMech/DeployedReef", -11.5);
-    DEPLOYEDFLOOR = new TunableConstant("/AlgaeMech/DeployedFloor", -22);
+    DEPLOYEDFLOOR = new TunableConstant("/AlgaeMech/DeployedFloor", -23.5);
 
     if (config.hasAlgaeMotor) {
       algaeMotor = new SparkMax(config.algaeMotorId, MotorType.kBrushless);
@@ -87,7 +91,9 @@ public class Shooter extends SubsystemBase {
           .idleMode(IdleMode.kBrake)
           .closedLoop
           .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-          .pidf(config.algaeKP, config.algaeKI, config.algaeKD, config.algaeKF);
+          .pidf(
+              config.algaeKP, config.algaeKI, config.algaeKD, config.algaeKF, ClosedLoopSlot.kSlot0)
+          .pidf(0.1, 0, 0.0002, 0, ClosedLoopSlot.kSlot1);
       algaeMotorConfig
           .softLimit
           .forwardSoftLimit(DEPLOYEDREEF.getAndUpdate() + .5)
@@ -204,23 +210,40 @@ public class Shooter extends SubsystemBase {
         .withName("Stow Algae Hook Command");
   }
 
+  public Command retractAlgaeHookCommand() {
+    return runOnce(() -> {
+          algaePositionController.setReference(
+              HOLD.getAndUpdate(), ControlType.kPosition, ClosedLoopSlot.kSlot1);
+        })
+        .withName("Hold Algae Hook Command");
+  }
+
   public boolean algaeMotorAtTarget(double target) {
     return Math.abs(algaeMotor.getEncoder().getPosition() - target) < 0.02;
   }
 
   public Command intakeAlgae() {
-    return new StartEndCommand(() -> shooterMotor.set(-0.23), () -> shooterMotor.set(-.15), this)
+    return new StartEndCommand(() -> shooterMotor.set(-0.3), () -> shooterMotor.set(-.15), this)
         .withName("Intake Algae");
   }
 
-  public Command shootAlgae() {
+  /**
+   *
+   * @param speed negative is in, positive spits algae
+   * @return
+   */
+  public Command intakeAlgae(double startSpeed, double endSpeed) {
     return new StartEndCommand(
-            () -> shooterMotor.set(1),
-            () -> {
-              shooterMotor.disable();
-              algaePositionController.setReference(STOWED.getAndUpdate(), ControlType.kPosition);
-            },
-            this)
+            () -> shooterMotor.set(startSpeed), () -> shooterMotor.set(endSpeed), this)
+        .withName("Intake Algae");
+  }
+
+  public void setSpeed(double speed) {
+    shooterMotor.set(speed);
+  }
+
+  public Command shootAlgae() {
+    return new StartEndCommand(() -> shooterMotor.set(0.9), () -> shooterMotor.disable(), this)
         .withName("Shoot Algae");
   }
 
@@ -315,6 +338,7 @@ public class Shooter extends SubsystemBase {
   public void testPeriodic() {
 
     algaePid.updatePID((algaekP, algaekI, algaekD) -> updateAlgaePid(algaekP, algaekI, algaekD));
+    slot1Pid.updatePID((kp, ki, kd) -> updateAlgaePid(kp, ki, kd));
   }
 
   public void testInit() {

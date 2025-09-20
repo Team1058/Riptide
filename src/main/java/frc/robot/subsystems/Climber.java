@@ -68,7 +68,7 @@ public class Climber extends SubsystemBase {
   public Command manualClimbCommand(DoubleSupplier supplier) {
     return new FunctionalCommand(
             () -> {},
-            () -> leaderMotor.set(Math.abs(supplier.getAsDouble())),
+            () -> leaderMotor.set(Math.abs(supplier.getAsDouble() * 0.75)),
             interrupted -> leaderMotor.disable(),
             () -> climberEncoder.getPosition() >= config.climberClimbed,
             this)

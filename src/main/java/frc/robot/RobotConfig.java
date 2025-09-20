@@ -82,8 +82,8 @@ public class RobotConfig {
     riptide.elevatorConfig.invertLeaderMotor = true;
 
     // Check this?
-    riptide.elevatorConfig.kP_Up = 0.03;
-    // riptide.elevatorConfig.kP_Up = 0.075;
+    // riptide.elevatorConfig.kP_Up = 0.03;
+    riptide.elevatorConfig.kP_Up = 0.075;
     riptide.elevatorConfig.kI_Up = 0.0;
     riptide.elevatorConfig.kD_Up = 0.0;
     riptide.elevatorConfig.kF_Up = 0.5;
@@ -116,7 +116,7 @@ public class RobotConfig {
     riptide.climberConfig.climberLeaderMotorId = 4;
     riptide.climberConfig.climberFollowerMotorId = 5;
     riptide.climberConfig.invertLeaderMotor = false;
-    riptide.climberConfig.climberClimbed = 0.765;
+    riptide.climberConfig.climberClimbed = 0.8;
     riptide.climberConfig.climberDeployed = 0.38;
     riptide.visionConfig = new Vision.Config();
 

@@ -32,7 +32,7 @@ public class FieldMap extends SubsystemBase {
 
   // These are old and will need to be updated for Riptide
   private static final Transform2d coralStationTransform =
-      new Transform2d(Inches.of(17.5), Inches.of(12.628), Rotation2d.k180deg);
+      new Transform2d(Inches.of(17.5), Inches.of(12.628), Rotation2d.kZero);
 
   // old left: -9.75
   // old right: 3.25

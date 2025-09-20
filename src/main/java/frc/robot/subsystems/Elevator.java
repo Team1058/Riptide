@@ -121,8 +121,8 @@ public class Elevator extends SubsystemBase {
     LEVELALGAEPROC = new TunableConstant("/ElevatorLevels/AlgaeProcessor", 1);
     LEVELALGAELOLLIPOP = new TunableConstant("/ElevatorLevel/AlgaeLollipop", 1);
     LEVELALGAEFLOOR = new TunableConstant("/ElevatorLevel/AlgaeFloor", 0.1);
-    LEVELALGAE1 = new TunableConstant("/ElevatorLevels/AlgaeLevel1", 4.6);
-    LEVELALGAE2 = new TunableConstant("/ElevatorLevels/AlgaeLevel2", 11);
+    LEVELALGAE1 = new TunableConstant("/ElevatorLevels/AlgaeLevel1", 5);
+    LEVELALGAE2 = new TunableConstant("/ElevatorLevels/AlgaeLevel2", 12);
     LEVELBARGE = new TunableConstant("/ElevatorLevels/AlgaeBarge", 30.5);
     LEVELHP = new TunableConstant("/ElevatorLevels/CoralHP", 0.32);
     LEVEL1 = new TunableConstant("/ElevatorLevels/CoralLevel1", 4.75);
