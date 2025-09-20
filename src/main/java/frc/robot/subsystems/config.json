@@ -1,0 +1,9 @@
+{
+    "name": "Batmobile",
+    "sourceUrl": "https://sketchfab.com/3d-models/batmobile-armored-sBv577Vdl9lrcvyFT3vbNvkGKml",
+    "disableSimpflication": false,
+    "rotations": [{ "axis": "x", "degrees": 90 }],
+    "position": [0, 0, 0],
+    "cameras": [],
+    "components": []
+}

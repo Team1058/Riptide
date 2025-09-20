@@ -14,15 +14,14 @@ import com.revrobotics.spark.config.LimitSwitchConfig.Type;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.utils.TunableConstant;
+import frc.robot.utils.TunablePID;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -47,25 +46,23 @@ public class Shooter extends SubsystemBase {
     public double algaeKF;
   }
 
-  public double STOWED = 4;
+  public TunableConstant STOWED;
   // public double HOLD = 0.56;
-  public double HOLD = 12;
-  public double DEPLOYED = 20;
+  public TunableConstant HOLD;
+  public TunableConstant DEPLOYEDREEF;
+  public TunableConstant DEPLOYEDFLOOR;
 
   private SparkFlex shooterMotor;
   private SparkMax intakeFlapMotor;
   public SparkMax algaeMotor = null;
-  private SparkClosedLoopController algaePositionController = null;
+  public SparkClosedLoopController algaePositionController = null;
   private SparkMaxConfig algaeMotorConfig;
   private SparkFlexConfig motorConfig;
   private SparkMaxConfig intakeFlapMotorConfig;
 
   private Config config;
 
-  private GenericEntry pEntry;
-  private GenericEntry iEntry;
-  private GenericEntry dEntry;
-  private GenericEntry fEntry;
+  private TunablePID algaePid;
 
   public Shooter(Config config) {
     this.config = config;
@@ -74,6 +71,12 @@ public class Shooter extends SubsystemBase {
     motorConfig = new SparkFlexConfig();
     algaeMotorConfig = new SparkMaxConfig();
     intakeFlapMotorConfig = new SparkMaxConfig();
+    algaePid = new TunablePID(
+        "/AlgeaMech/AlgaePid", config.algaeKP, config.algaeKI, config.algaeKD, config.algaeKF);
+    STOWED = new TunableConstant("/AlgaeMech/Stowed", -7);
+    HOLD = new TunableConstant("/AlgaeMech/HOLD", -7);
+    DEPLOYEDREEF = new TunableConstant("/AlgaeMech/DeployedReef", -13.5);
+    DEPLOYEDFLOOR = new TunableConstant("/AlgaeMech/DeployedFloor", -22);
 
     if (config.hasAlgaeMotor) {
       algaeMotor = new SparkMax(config.algaeMotorId, MotorType.kBrushless);
@@ -85,8 +88,14 @@ public class Shooter extends SubsystemBase {
           .closedLoop
           .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
           .pidf(config.algaeKP, config.algaeKI, config.algaeKD, config.algaeKF);
-      algaeMotorConfig.softLimit.forwardSoftLimit(DEPLOYED + .5).forwardSoftLimitEnabled(false);
-      algaeMotorConfig.softLimit.reverseSoftLimit(STOWED).reverseSoftLimitEnabled(false);
+      algaeMotorConfig
+          .softLimit
+          .forwardSoftLimit(DEPLOYEDREEF.getAndUpdate() + .5)
+          .forwardSoftLimitEnabled(false);
+      algaeMotorConfig
+          .softLimit
+          .reverseSoftLimit(STOWED.getAndUpdate())
+          .reverseSoftLimitEnabled(false);
 
       algaeMotor.configure(
           algaeMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -122,27 +131,6 @@ public class Shooter extends SubsystemBase {
 
     inLimitSwitch = shooterMotor.getForwardLimitSwitch();
     outLimitSwitch = shooterMotor.getReverseLimitSwitch();
-
-    initializeShuffleboardEntries();
-  }
-
-  private void initializeShuffleboardEntries() {
-    pEntry = Shuffleboard.getTab("PID")
-        .add("Algae P", config.algaeKP)
-        .withWidget(BuiltInWidgets.kTextView)
-        .getEntry();
-    iEntry = Shuffleboard.getTab("PID")
-        .add("Algae I", config.algaeKI)
-        .withWidget(BuiltInWidgets.kTextView)
-        .getEntry();
-    dEntry = Shuffleboard.getTab("PID")
-        .add("Algae D", config.algaeKD)
-        .withWidget(BuiltInWidgets.kTextView)
-        .getEntry();
-    fEntry = Shuffleboard.getTab("PID")
-        .add("Algae F", config.algaeKF)
-        .withWidget(BuiltInWidgets.kTextView)
-        .getEntry();
   }
 
   public boolean coralNotDetectedByEitherSensor() {
@@ -162,7 +150,7 @@ public class Shooter extends SubsystemBase {
   }
   // needs fixing
   public boolean algaeMechDeployed() {
-    return algaeEncoder.getPosition() == DEPLOYED;
+    return algaeEncoder.getPosition() == DEPLOYEDREEF.getAndUpdate();
   }
   // and provide commands to set rumble state
   public Trigger bothSensorsDetectCoral() {
@@ -179,7 +167,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public Command spitOutCoralCommand() {
-    return new StartEndCommand(() -> shooterMotor.set(-0.3), () -> shooterMotor.disable(), this)
+    return new StartEndCommand(() -> shooterMotor.set(-0.9), () -> shooterMotor.disable(), this)
         .withName("Spit Out Coral Command");
   }
 
@@ -193,17 +181,26 @@ public class Shooter extends SubsystemBase {
   }
 
   public Command deployAlgaeHookCommand() {
-    return runOnce(() -> algaePositionController.setReference(DEPLOYED, ControlType.kPosition))
+    return runOnce(() -> algaePositionController.setReference(
+            DEPLOYEDREEF.getAndUpdate(), ControlType.kPosition))
         .withName("Deploy Algae Hook Command");
   }
 
+  public Command deployAlgaeHookFloorCommand() {
+    return runOnce(() -> algaePositionController.setReference(
+            DEPLOYEDFLOOR.getAndUpdate(), ControlType.kPosition))
+        .withName("Deploy Algae Hook Floor Command");
+  }
+
   public Command holdAlgaeHookCommand() {
-    return runOnce(() -> algaePositionController.setReference(HOLD, ControlType.kPosition))
+    return runOnce(
+            () -> algaePositionController.setReference(HOLD.getAndUpdate(), ControlType.kPosition))
         .withName("Hold Algae Hook Command");
   }
 
   public Command stowAlgaeHookCommand() {
-    return runOnce(() -> algaePositionController.setReference(STOWED, ControlType.kPosition))
+    return runOnce(() ->
+            algaePositionController.setReference(STOWED.getAndUpdate(), ControlType.kPosition))
         .withName("Stow Algae Hook Command");
   }
 
@@ -212,7 +209,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public Command intakeAlgae() {
-    return new StartEndCommand(() -> shooterMotor.set(-0.5), () -> shooterMotor.set(-0.2), this)
+    return new StartEndCommand(() -> shooterMotor.set(-1), () -> shooterMotor.set(-.3), this)
         .withName("Intake Algae");
   }
 
@@ -221,7 +218,7 @@ public class Shooter extends SubsystemBase {
             () -> shooterMotor.set(1),
             () -> {
               shooterMotor.disable();
-              algaePositionController.setReference(STOWED, ControlType.kPosition);
+              algaePositionController.setReference(STOWED.getAndUpdate(), ControlType.kPosition);
             },
             this)
         .withName("Shoot Algae");
@@ -229,7 +226,7 @@ public class Shooter extends SubsystemBase {
 
   public Command runShooterInFastUntilInLimitTriggered() {
     return new FunctionalCommand(
-            () -> shooterMotor.set(-0.1),
+            () -> shooterMotor.set(-0.5),
             () -> {},
             interupted -> shooterMotor.disable(),
             () -> outLimitSwitch.isPressed(),
@@ -247,20 +244,20 @@ public class Shooter extends SubsystemBase {
         .withName("Runs shooter in slow until the out limit switch is triggered.");
   }
 
-  public Command runShooterOutSlowUntilInAndOutLimitTriggeredThenStop() {
+  public Command runShooterOutSlowUntilOutLimitTriggeredThenStop() {
     return new FunctionalCommand(
-            () -> shooterMotor.set(0.15),
+            () -> shooterMotor.set(0.3),
             () -> {},
             interrupted -> shooterMotor.disable(),
-            () -> inLimitSwitch.isPressed() && outLimitSwitch.isPressed(),
+            () -> outLimitSwitch.isPressed(),
             this)
         .withName(
-            "Runs the shooter in slow until the in and out limit switch is triggered then stop the shooter.");
+            "Runs the shooter in slow until out limit switch is triggered then stop the shooter.");
   }
 
   public Command intakeCoralCommand() {
     return runShooterInFastUntilInLimitTriggered()
-        .andThen(runShooterOutSlowUntilInAndOutLimitTriggeredThenStop())
+        .andThen(runShooterOutSlowUntilOutLimitTriggeredThenStop())
         .withName("Coral intake command");
   }
 
@@ -309,31 +306,22 @@ public class Shooter extends SubsystemBase {
     Logger.recordOutput("Algae position", algaeEncoder.getPosition());
   }
 
-  public void testPeriodic() {
-    double pFromShuffleBoard = pEntry.getDouble(config.algaeKP);
-    double iFromShuffleBoard = iEntry.getDouble(config.algaeKI);
-    double dFromShuffleBoard = dEntry.getDouble(config.algaeKD);
-    double fFromShuffleBoard = fEntry.getDouble(config.algaeKF);
-
-    double currentP = algaeMotor.configAccessor.closedLoop.getP();
-    double currentI = algaeMotor.configAccessor.closedLoop.getI();
-    double currentD = algaeMotor.configAccessor.closedLoop.getD();
-    double currentF = algaeMotor.configAccessor.closedLoop.getFF();
-
-    if (valuesActuallyDifferent(pFromShuffleBoard, currentP)
-        || valuesActuallyDifferent(iFromShuffleBoard, currentI)
-        || valuesActuallyDifferent(dFromShuffleBoard, currentD)
-        || valuesActuallyDifferent(fFromShuffleBoard, currentF)) {
-
-      algaeMotorConfig.closedLoop.pidf(
-          pFromShuffleBoard, iFromShuffleBoard, dFromShuffleBoard, fFromShuffleBoard);
-
-      algaeMotor.configure(
-          algaeMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    }
+  private void updateAlgaePid(double kP, double kI, double kD) {
+    algaeMotorConfig.closedLoop.pid(kP, kI, kD);
+    algaeMotor.configure(
+        algaeMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
   }
 
-  private boolean valuesActuallyDifferent(double val1, double val2) {
-    return Math.abs(val1 - val2) > .000001;
+  public void testPeriodic() {
+
+    algaePid.updatePID((algaekP, algaekI, algaekD) -> updateAlgaePid(algaekP, algaekI, algaekD));
+  }
+
+  public void testInit() {
+    STOWED.setTuningMode(true);
+    HOLD.setTuningMode(true);
+    DEPLOYEDFLOOR.setTuningMode(true);
+    DEPLOYEDREEF.setTuningMode(true);
+    algaePid.setTuningMode(true);
   }
 }

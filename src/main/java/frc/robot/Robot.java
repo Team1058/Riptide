@@ -73,6 +73,7 @@ public class Robot extends LoggedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    robotContainer.autonomousInit();
     m_autonomousCommand = robotContainer.getAutonomousCommand();
 
     // schedule the autonomous command (example)
@@ -87,6 +88,7 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void teleopInit() {
+    robotContainer.teleopInit();
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
@@ -102,6 +104,7 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void testInit() {
+    robotContainer.teleopInit();
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
     robotContainer.elevator.testInit();

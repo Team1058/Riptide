@@ -81,7 +81,7 @@ public class TunableConstant implements DoubleSupplier {
     }
   }
 
-  private double getAndUpdate() {
+  public double getAndUpdate() {
     lastValue = get();
     return lastValue;
   }

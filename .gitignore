@@ -185,8 +185,11 @@ compile_commands.json
 
 # Eclipse generated file for annotation processors
 .factorypath
+<<<<<<< HEAD
 
 # Gversion generated file
 src/main/java/frc/robot/BuildConstants.java
 
 .Glass/*
+=======
+>>>>>>> tunable_pid
