@@ -14,19 +14,15 @@ import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkLimitSwitch;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.LimitSwitchConfig.Type;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.measure.MutAngle;
 import edu.wpi.first.units.measure.MutAngularVelocity;
 import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
@@ -34,11 +30,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.utils.PidConsumer;
 import frc.robot.utils.TunableConstant;
 import frc.robot.utils.TunablePID;
-
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -70,7 +63,7 @@ public class Elevator extends SubsystemBase {
     public double upperLimit;
     public double lowerLimit;
   }
-  //DON'T go beyond 31.25
+  // DON'T go beyond 31.25
 
   public TunableConstant LEVEL1;
   public TunableConstant LEVEL2;
@@ -96,7 +89,6 @@ public class Elevator extends SubsystemBase {
   private SparkClosedLoopController sparkPIDController;
   protected double requestedPosition;
 
-
   private int stallLimit = 90;
   private int freeLimit = 90;
   private double rampRate = .3;
@@ -113,6 +105,7 @@ public class Elevator extends SubsystemBase {
   private static final ClosedLoopSlot upSlot = ClosedLoopSlot.kSlot1;
 
   private TunablePID elevatorPidUp, elevatorPidDown;
+
   public Elevator(Config config) {
 
     this.config = config;
@@ -121,12 +114,14 @@ public class Elevator extends SubsystemBase {
     follower2Config = new SparkFlexConfig();
     leaderMotor = new SparkFlex(config.leaderMotorId, MotorType.kBrushless);
     followerMotor = new SparkFlex(config.followerMotorId, MotorType.kBrushless);
-    elevatorPidUp = new TunablePID("elevatorPID_Up", config.kP_Up, config.kI_Up, config.kD_Up, config.kF_Up);
-    elevatorPidDown = new TunablePID("elevatorPID_Down", config.kP_Down, config.kI_Down, config.kD_Down, config.kF_Down);
-    LEVELALGAEPROC = new TunableConstant("/ElevatorLevels/AlgaeProcessor",1);
-    LEVELALGAELOLLIPOP = new TunableConstant("/ElevatorLevel/AlgaeLollipop",1);
-    LEVELALGAEFLOOR = new TunableConstant("/ElevatorLevel/AlgaeFloor",0.1);
-    LEVELALGAE1 = new TunableConstant( "/ElevatorLevels/AlgaeLevel1", 4.6);
+    elevatorPidUp =
+        new TunablePID("elevatorPID_Up", config.kP_Up, config.kI_Up, config.kD_Up, config.kF_Up);
+    elevatorPidDown = new TunablePID(
+        "elevatorPID_Down", config.kP_Down, config.kI_Down, config.kD_Down, config.kF_Down);
+    LEVELALGAEPROC = new TunableConstant("/ElevatorLevels/AlgaeProcessor", 1);
+    LEVELALGAELOLLIPOP = new TunableConstant("/ElevatorLevel/AlgaeLollipop", 1);
+    LEVELALGAEFLOOR = new TunableConstant("/ElevatorLevel/AlgaeFloor", 0.1);
+    LEVELALGAE1 = new TunableConstant("/ElevatorLevels/AlgaeLevel1", 4.6);
     LEVELALGAE2 = new TunableConstant("/ElevatorLevels/AlgaeLevel2", 11);
     LEVELBARGE = new TunableConstant("/ElevatorLevels/AlgaeBarge", 30.5);
     LEVELHP = new TunableConstant("/ElevatorLevels/CoralHP", 0.32);
@@ -155,8 +150,10 @@ public class Elevator extends SubsystemBase {
 
     leaderConfig
         .closedLoop
-        .pid(config.kP_Up, config.kI_Up, config.kD_Up, upSlot).outputRange(-0.75, .75, upSlot)
-        .pid(config.kP_Down, config.kI_Down, config.kD_Down, downSlot).outputRange(-0.4, .4, downSlot)
+        .pid(config.kP_Up, config.kI_Up, config.kD_Up, upSlot)
+        .outputRange(-0.75, .75, upSlot)
+        .pid(config.kP_Down, config.kI_Down, config.kD_Down, downSlot)
+        .outputRange(-0.4, .4, downSlot)
         .maxMotion
         .maxAcceleration(config.maxAcceleration_Up, upSlot)
         .maxVelocity(config.maxVelocity_Up, upSlot)
@@ -209,9 +206,9 @@ public class Elevator extends SubsystemBase {
             this));
   }
 
-
   public void setRequestedPosition(DoubleSupplier requested) {
-    this.requestedPosition = MathUtil.clamp(requested.getAsDouble(), config.lowerLimit, config.upperLimit);
+    this.requestedPosition =
+        MathUtil.clamp(requested.getAsDouble(), config.lowerLimit, config.upperLimit);
   }
 
   public void setRequestedPositionToCurrentPosition() {
@@ -246,7 +243,8 @@ public class Elevator extends SubsystemBase {
   //         this.setRequestedPosition(requested);
 
   //         if (requested > getCurrentPosition()) {
-  //           sparkPIDController.setReference(requested, ControlType.kPosition, upSlot, config.kF_Up);
+  //           sparkPIDController.setReference(requested, ControlType.kPosition, upSlot,
+  // config.kF_Up);
   //         } else {
   //           sparkPIDController.setReference(
   //               requested, ControlType.kPosition, downSlot, config.kD_Down);
@@ -261,7 +259,7 @@ public class Elevator extends SubsystemBase {
             () -> {
               leaderConfig.softLimit.reverseSoftLimitEnabled(false);
               leaderMotor.configure(
-                leaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+                  leaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
             },
             () -> leaderMotor.set(-.1),
             interrupted -> {
@@ -273,8 +271,7 @@ public class Elevator extends SubsystemBase {
               }
               leaderConfig.softLimit.reverseSoftLimitEnabled(true);
               leaderMotor.configure(
-                leaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-                
+                  leaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
             },
             () -> leaderMotor.getOutputCurrent() >= 30,
             this)
@@ -286,8 +283,7 @@ public class Elevator extends SubsystemBase {
   }
 
   public Trigger isAtPositionTrigger(double position) {
-      return new Trigger(
-        ()-> isAtPosition(position));
+    return new Trigger(() -> isAtPosition(position));
   }
 
   public double getCurrentPosition() {
@@ -297,21 +293,20 @@ public class Elevator extends SubsystemBase {
   public Command goToRequestedPositionCommand() {
 
     return runOnce(() -> {
-
           double requested;
 
-            requested = getRequestedPosition();
+          requested = getRequestedPosition();
 
           // if (requested- getCurrentPosition() < 0.1)
           if (requested > getCurrentPosition()) {
-            sparkPIDController.setReference(requested, ControlType.kPosition, upSlot, elevatorPidUp.getKF());
+            sparkPIDController.setReference(
+                requested, ControlType.kPosition, upSlot, elevatorPidUp.getKF());
           } else {
             sparkPIDController.setReference(
                 requested, ControlType.kPosition, downSlot, elevatorPidDown.getKF());
           }
         })
         .withName("goToRequestedPosition");
-
   }
 
   public double getRequestedPosition() {
@@ -328,33 +323,30 @@ public class Elevator extends SubsystemBase {
   }
 
   public Command setRequestedPositionCommand(DoubleSupplier position) {
-    return runOnce(
-      () -> this.setRequestedPosition(position))
-    .withName("setRequestedPosition")
-    .andThen(goToRequestedPositionCommand());
+    return runOnce(() -> this.setRequestedPosition(position))
+        .withName("setRequestedPosition")
+        .andThen(goToRequestedPositionCommand());
   }
 
   public Command setRequestedToCurrentPositionCommand() {
-    return runOnce(
-      () -> holdPosition())
-    .withName("setRequestedPositionFromSupplier");
+    return runOnce(() -> holdPosition()).withName("setRequestedPositionFromSupplier");
   }
 
   public void holdPosition() {
     setRequestedPosition(this::getCurrentPosition);
   }
-  private void updateElevatorPid(double kP, double kI, double kD, ClosedLoopSlot closedLoop){
-    leaderConfig
-    .closedLoop
-    .pid(kP, kI, kD, closedLoop);
+
+  private void updateElevatorPid(double kP, double kI, double kD, ClosedLoopSlot closedLoop) {
+    leaderConfig.closedLoop.pid(kP, kI, kD, closedLoop);
     leaderMotor.configure(
-      leaderConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        leaderConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
   }
+
   public void testPeriodic() {
     elevatorPidDown.updatePID((kP, kI, kD) -> updateElevatorPid(kP, kI, kD, downSlot));
     elevatorPidUp.updatePID((kP, kI, kD) -> updateElevatorPid(kP, kI, kD, upSlot));
-    
   }
+
   public void testInit() {
     elevatorPidDown.setTuningMode(true);
     elevatorPidUp.setTuningMode(true);

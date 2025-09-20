@@ -59,8 +59,7 @@ public class Climber extends SubsystemBase {
 
     followerMotor = new SparkMax(config.climberFollowerMotorId, MotorType.kBrushless);
     followerConfig = new SparkMaxConfig();
-    followerConfig
-    .follow(config.climberLeaderMotorId, true);
+    followerConfig.follow(config.climberLeaderMotorId, true);
 
     followerMotor.configure(
         followerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);

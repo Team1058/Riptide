@@ -81,7 +81,7 @@ public class RobotConfig {
     riptide.elevatorConfig.upperLimit = 31.2;
     riptide.elevatorConfig.invertLeaderMotor = true;
 
-    //Check this?
+    // Check this?
     riptide.elevatorConfig.kP_Up = 0.075;
     riptide.elevatorConfig.kI_Up = 0.0;
     riptide.elevatorConfig.kD_Up = 0.0;
@@ -104,8 +104,8 @@ public class RobotConfig {
     riptide.shooterConfig.algaeMotorId = 25;
     riptide.shooterConfig.intakeFlapMotorID = 12;
     riptide.shooterConfig.hasAlgaeMotor = true;
-    riptide.shooterConfig.algaeKP = 3.25/10;
-    riptide.shooterConfig.algaeKI = 0.0002/10;
+    riptide.shooterConfig.algaeKP = 3.25 / 10;
+    riptide.shooterConfig.algaeKI = 0.0002 / 10;
     riptide.shooterConfig.algaeKD = 0;
     riptide.shooterConfig.algaeKF = 0;
     riptide.shooterConfig.flapForwardLimit = 0;
@@ -123,22 +123,15 @@ public class RobotConfig {
     //     new Translation3d(Inches.of(6.996), Inches.of(7.250), Inches.of(38.075)),
     //     new Rotation3d(Degrees.of(0), Degrees.of(-30), Degrees.of(0)));
 
-
     // These are (theoretically) close to correct
     riptide.visionConfig.rightCameraToRobot = new Transform3d(
         new Translation3d(Inches.of(11.186), Inches.of(-9.091), Inches.of(9.026)),
         // new Translation3d(Inches.of(0), Inches.of(0), Inches.of(0)),
-        new Rotation3d(
-            Degrees.of(0),
-            Degrees.of(-20),
-            Degrees.of(28 + 1)));
+        new Rotation3d(Degrees.of(0), Degrees.of(-20), Degrees.of(28 + 1)));
 
     riptide.visionConfig.leftCameraToRobot = new Transform3d(
         new Translation3d(Inches.of(11.186), Inches.of(9.091), Inches.of(9.026)),
-        new Rotation3d(
-            Degrees.of(0),
-            Degrees.of(-20),
-            Degrees.of(-28)));
+        new Rotation3d(Degrees.of(0), Degrees.of(-20), Degrees.of(-28)));
 
     return riptide;
   }
