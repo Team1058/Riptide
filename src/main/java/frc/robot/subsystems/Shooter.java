@@ -73,9 +73,9 @@ public class Shooter extends SubsystemBase {
     intakeFlapMotorConfig = new SparkMaxConfig();
     algaePid = new TunablePID(
         "/AlgeaMech/AlgaePid", config.algaeKP, config.algaeKI, config.algaeKD, config.algaeKF);
-    STOWED = new TunableConstant("/AlgaeMech/Stowed", -7);
-    HOLD = new TunableConstant("/AlgaeMech/HOLD", -7);
-    DEPLOYEDREEF = new TunableConstant("/AlgaeMech/DeployedReef", -13.5);
+    STOWED = new TunableConstant("/AlgaeMech/Stowed", -5.5);
+    HOLD = new TunableConstant("/AlgaeMech/HOLD", -11.5);
+    DEPLOYEDREEF = new TunableConstant("/AlgaeMech/DeployedReef", -11.5);
     DEPLOYEDFLOOR = new TunableConstant("/AlgaeMech/DeployedFloor", -22);
 
     if (config.hasAlgaeMotor) {
@@ -209,7 +209,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public Command intakeAlgae() {
-    return new StartEndCommand(() -> shooterMotor.set(-1), () -> shooterMotor.set(-.3), this)
+    return new StartEndCommand(() -> shooterMotor.set(-0.23), () -> shooterMotor.set(-.15), this)
         .withName("Intake Algae");
   }
 
@@ -226,7 +226,7 @@ public class Shooter extends SubsystemBase {
 
   public Command runShooterInFastUntilInLimitTriggered() {
     return new FunctionalCommand(
-            () -> shooterMotor.set(-0.5),
+            () -> shooterMotor.set(-0.4),
             () -> {},
             interupted -> shooterMotor.disable(),
             () -> outLimitSwitch.isPressed(),
