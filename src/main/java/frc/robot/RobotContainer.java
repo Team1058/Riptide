@@ -662,7 +662,6 @@ public class RobotContainer {
 
     // autoscore l4: Drive near pole (line up in x but not y), deploy elevator, drive in slowly,
     // score, back off, retract
-
     autoScoreL4Right = Commands.defer(
         () -> CommandUtil.wrappedEventCommand(driveNearRightPole)
             .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL4))
