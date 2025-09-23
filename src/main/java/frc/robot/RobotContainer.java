@@ -8,6 +8,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.CommandUtil;
 import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -76,6 +77,9 @@ public class RobotContainer {
 
   SendableChooser<Command> autoChooser;
   private ShuffleboardTab autosTab;
+
+  private Command moveElevatorToAlgae1AndIntakeAlgae;
+  private Command moveElevatorToAlgae2AndIntakeAlgae;
 
   public RobotContainer() {
 
@@ -298,7 +302,44 @@ public class RobotContainer {
     //     .withTargetDirection(
     //         fieldMap.getLockedReefFaceAngle(fieldMap.getLockedReefFace(drivetrain.getPose())))));
 
-    driveController.x().whileTrue(drivetrain.applyRequest(() -> brake));
+    driveController
+        .x()
+        .whileTrue(Commands.defer(
+            () -> {
+              var reefFace = fieldMap.getLockedReefFace(drivetrain.getPose());
+              var farPose = fieldMap.getAlgaeFarPose(reefFace);
+              var closePose = fieldMap.getAlgaeClosePose(reefFace);
+              if (reefFace == ReefFace.One
+                  || reefFace == ReefFace.Three
+                  || reefFace == ReefFace.Five) {
+                // Low Algae ReefFace
+                return CommandUtil.wrappedEventCommand(moveElevatorToAlgae1AndIntakeAlgae)
+                    .alongWith(new WaitCommand(0.5)
+                        .andThen(drivetrain.makeGoToCommandWithMaxMPS(
+                            closePose.getRotation().rotateBy(Rotation2d.k180deg),
+                            MetersPerSecond.of(Math.hypot(
+                                drivetrain.getCurrentSpeeds().vxMetersPerSecond,
+                                drivetrain.getCurrentSpeeds().vyMetersPerSecond)),
+                            MetersPerSecond.of(0),
+                            1.0,
+                            farPose,
+                            closePose)));
+              } else {
+                // High Algae ReefFace
+                return CommandUtil.wrappedEventCommand(moveElevatorToAlgae2AndIntakeAlgae)
+                    .alongWith(new WaitCommand(0.5)
+                        .andThen(drivetrain.makeGoToCommandWithMaxMPS(
+                            closePose.getRotation().rotateBy(Rotation2d.k180deg),
+                            MetersPerSecond.of(Math.hypot(
+                                drivetrain.getCurrentSpeeds().vxMetersPerSecond,
+                                drivetrain.getCurrentSpeeds().vyMetersPerSecond)),
+                            MetersPerSecond.of(0),
+                            1.0,
+                            farPose,
+                            closePose)));
+              }
+            },
+            Set.of(drivetrain)));
 
     driveController.a().and(driveController.leftBumper()).whileTrue(driveToNearestLeftPole);
     driveController.a().and(driveController.rightBumper()).whileTrue(driveToNearestRightPole);
@@ -696,7 +737,8 @@ public class RobotContainer {
                 .withTimeout(0.2))
             // (Do we need an elevator up command to prevent collision with pole?)
             .andThen(CommandUtil.wrappedEventCommand(driveNearRightPole))
-            .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP::getAndUpdate)),
+            .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP::getAndUpdate))
+            .andThen(new WaitUntilCommand(() -> elevator.isAtPosition(elevator.LEVEL2.get()))),
         Set.of(drivetrain, elevator, shooter));
 
     autoScoreL4Left = Commands.defer(
@@ -712,7 +754,8 @@ public class RobotContainer {
                     .withTimeout(0.2))
                 // (Do we need an elevator up command to prevent collision with pole?)
                 .andThen(CommandUtil.wrappedEventCommand(driveNearLeftPole))
-                .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP::getAndUpdate)),
+                .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP::getAndUpdate))
+                .andThen(new WaitUntilCommand(() -> elevator.isAtPosition(elevator.LEVEL2.get()))),
             Set.of(drivetrain, elevator, shooter))
         .withName("AutoScoreL4Left");
 
@@ -759,6 +802,22 @@ public class RobotContainer {
                 .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP::getAndUpdate)),
             Set.of(drivetrain, elevator, shooter))
         .withName("AutoScoreL2Left");
+
+    moveElevatorToAlgae1AndIntakeAlgae = elevator
+        .setRequestedPositionCommand(elevator.LEVELALGAE1)
+        .andThen(elevator.goToRequestedPositionCommand())
+        .andThen(new WaitUntilCommand(
+            () -> elevator.currentPositionAtTarget(elevator.LEVELALGAE1.get())))
+        .andThen(shooter.deployAlgaeHookCommand())
+        .andThen(shooter.intakeAlgae());
+
+    moveElevatorToAlgae2AndIntakeAlgae = elevator
+        .setRequestedPositionCommand(elevator.LEVELALGAE2)
+        .andThen(elevator.goToRequestedPositionCommand())
+        .andThen(new WaitUntilCommand(
+            () -> elevator.currentPositionAtTarget(elevator.LEVELALGAE2.get())))
+        .andThen(shooter.deployAlgaeHookCommand())
+        .andThen(shooter.intakeAlgae());
     // .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL2))
     // .andThen(new WaitUntilCommand(() -> elevator.isAtPosition(elevator.LEVEL2)))
     // .andThen(shooter.timedSpitCoralCommand(0.2))

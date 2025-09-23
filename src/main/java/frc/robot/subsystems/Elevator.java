@@ -105,6 +105,7 @@ public class Elevator extends SubsystemBase {
   private static final ClosedLoopSlot upSlot = ClosedLoopSlot.kSlot1;
 
   private TunablePID elevatorPidUp, elevatorPidDown;
+  private double lastRequestedPosition;
 
   public Elevator(Config config) {
 
@@ -207,6 +208,7 @@ public class Elevator extends SubsystemBase {
   }
 
   public void setRequestedPosition(DoubleSupplier requested) {
+    this.lastRequestedPosition = requested.getAsDouble();
     this.requestedPosition =
         MathUtil.clamp(requested.getAsDouble(), config.lowerLimit, config.upperLimit);
   }
@@ -278,6 +280,10 @@ public class Elevator extends SubsystemBase {
         .withName("Reset Elevator Command");
   }
 
+  public boolean isAtPosition() {
+    return isAtPosition(lastRequestedPosition);
+  }
+
   public boolean isAtPosition(double position) {
     return Math.abs(getCurrentPosition() - position) < config.allowedError_Up;
   }
@@ -323,6 +329,7 @@ public class Elevator extends SubsystemBase {
   }
 
   public Command setRequestedPositionCommand(DoubleSupplier position) {
+    this.lastRequestedPosition = position.getAsDouble();
     return runOnce(() -> this.setRequestedPosition(position))
         .withName("setRequestedPosition")
         .andThen(goToRequestedPositionCommand());

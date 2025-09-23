@@ -32,7 +32,7 @@ public class FieldMap extends SubsystemBase {
 
   // These are old and will need to be updated for Riptide
   private static final Transform2d coralStationTransform =
-      new Transform2d(Inches.of(17.5), Inches.of(12.628), Rotation2d.kZero);
+      new Transform2d(Inches.of(16.5), Inches.of(12.628), Rotation2d.kZero);
 
   // old left: -9.75
   // old right: 3.25
@@ -53,6 +53,11 @@ public class FieldMap extends SubsystemBase {
       new Transform2d(Inches.of(48), Inches.of(rightReefY), Rotation2d.k180deg);
   private static final Transform2d L2L3RightReefTransform =
       new Transform2d(Inches.of(16), Inches.of(rightReefY), Rotation2d.k180deg);
+
+  private static final Transform2d farAlgaeTransform =
+      new Transform2d(Inches.of(36), Inches.of(-5.5), Rotation2d.k180deg);
+  private static final Transform2d closeAlgaeTransform =
+      new Transform2d(Inches.of(12), Inches.of(-5.5), Rotation2d.k180deg);
 
   private static final double leftPolePitch = 2.5;
   private static final double leftPoleYaw = 31.5;
@@ -161,6 +166,22 @@ public class FieldMap extends SubsystemBase {
       return face.bluePose.transformBy(pole.reefPoleTransform);
     } else {
       return face.redPose.transformBy(pole.reefPoleTransform);
+    }
+  }
+
+  public Pose2d getAlgaeFarPose(ReefFace face) {
+    if (alliance == Alliance.Blue) {
+      return face.bluePose.transformBy(farAlgaeTransform);
+    } else {
+      return face.redPose.transformBy(farAlgaeTransform);
+    }
+  }
+
+  public Pose2d getAlgaeClosePose(ReefFace face) {
+    if (alliance == Alliance.Blue) {
+      return face.bluePose.transformBy(closeAlgaeTransform);
+    } else {
+      return face.redPose.transformBy(closeAlgaeTransform);
     }
   }
 
