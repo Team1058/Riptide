@@ -162,7 +162,9 @@ public class RobotContainer {
           .and(operatorController.rightBumper().negate())
           .whileTrue(elevator
               .setRequestedPositionCommand(elevator.LEVELALGAEFLOOR::getAndUpdate)
-              .alongWith(shooter.deployAlgaeHookFloorCommand())
+              .andThen(new WaitUntilCommand(
+                  () -> elevator.isAtPosition(elevator.LEVELALGAEFLOOR.getAndUpdate())))
+              .andThen(shooter.deployAlgaeHookFloorCommand())
               .andThen(() -> shooter.setSpeed(-1)))
           .toggleOnFalse(shooter
               .retractAlgaeHookCommand()
@@ -242,6 +244,10 @@ public class RobotContainer {
   }
 
   public void teleopInit() {
+    shooter.stowAlgaeHookCommand().schedule();
+  }
+
+  public void testInit() {
     shooter.stowAlgaeHookCommand().schedule();
   }
 
