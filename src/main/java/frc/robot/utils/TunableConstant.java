@@ -7,6 +7,7 @@
 
 package frc.robot.utils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
@@ -18,6 +19,7 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
  */
 public class TunableConstant implements DoubleSupplier {
   private static final String tableKey = "/TunableNumbers";
+  private static ArrayList<TunableConstant> tunableList = new ArrayList<>();
   private boolean tuningMode = false;
   private final String key;
   private boolean hasDefault = false;
@@ -32,6 +34,7 @@ public class TunableConstant implements DoubleSupplier {
    */
   public TunableConstant(String dashboardKey) {
     this.key = tableKey + "/" + dashboardKey;
+    tunableList.add(this);
   }
 
   /**
@@ -124,5 +127,13 @@ public class TunableConstant implements DoubleSupplier {
   @Override
   public double getAsDouble() {
     return get();
+  }
+
+  /**
+   * Sets tuning mode of all tunable constants in existence
+   * @param tuningMode
+   */
+  public static void updateAll(boolean tuningMode) {
+    tunableList.forEach((tunable) -> tunable.setTuningMode(tuningMode));
   }
 }

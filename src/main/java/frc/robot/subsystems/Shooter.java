@@ -342,10 +342,10 @@ public class Shooter extends SubsystemBase {
   }
 
   public void testInit() {
-    STOWED.setTuningMode(true);
-    HOLD.setTuningMode(true);
-    DEPLOYEDFLOOR.setTuningMode(true);
-    DEPLOYEDREEF.setTuningMode(true);
-    algaePid.setTuningMode(true);
+    //   STOWED.setTuningMode(true);
+    //   HOLD.setTuningMode(true);
+    //   DEPLOYEDFLOOR.setTuningMode(true);
+    //   DEPLOYEDREEF.setTuningMode(true);
+    //   algaePid.setTuningMode(true);
   }
 }

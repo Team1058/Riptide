@@ -8,7 +8,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.CommandUtil;
 import com.pathplanner.lib.auto.NamedCommands;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -316,7 +315,7 @@ public class RobotContainer {
                 return CommandUtil.wrappedEventCommand(moveElevatorToAlgae1AndIntakeAlgae)
                     .alongWith(new WaitCommand(0.5)
                         .andThen(drivetrain.makeGoToCommandWithMaxMPS(
-                            closePose.getRotation().rotateBy(Rotation2d.k180deg),
+                            closePose.getRotation(),
                             MetersPerSecond.of(Math.hypot(
                                 drivetrain.getCurrentSpeeds().vxMetersPerSecond,
                                 drivetrain.getCurrentSpeeds().vyMetersPerSecond)),
@@ -329,7 +328,7 @@ public class RobotContainer {
                 return CommandUtil.wrappedEventCommand(moveElevatorToAlgae2AndIntakeAlgae)
                     .alongWith(new WaitCommand(0.5)
                         .andThen(drivetrain.makeGoToCommandWithMaxMPS(
-                            closePose.getRotation().rotateBy(Rotation2d.k180deg),
+                            closePose.getRotation(),
                             MetersPerSecond.of(Math.hypot(
                                 drivetrain.getCurrentSpeeds().vxMetersPerSecond,
                                 drivetrain.getCurrentSpeeds().vyMetersPerSecond)),
@@ -340,6 +339,28 @@ public class RobotContainer {
               }
             },
             Set.of(drivetrain)));
+
+    driveController
+        .x()
+        .onFalse(Commands.defer(
+                () -> {
+                  var reefFace = fieldMap.getLockedReefFace(drivetrain.getPose());
+                  var farPose = fieldMap.getAlgaeFarPose(reefFace);
+                  var closePose = fieldMap.getAlgaeClosePose(reefFace);
+                  return drivetrain.makeGoToCommandWithMaxMPS(
+                      farPose.getRotation(),
+                      MetersPerSecond.of(Math.hypot(
+                          drivetrain.getCurrentSpeeds().vxMetersPerSecond,
+                          drivetrain.getCurrentSpeeds().vyMetersPerSecond)),
+                      MetersPerSecond.of(0),
+                      1.0,
+                      closePose,
+                      farPose);
+                },
+                Set.of(drivetrain))
+            .andThen(shooter
+                .holdAlgaeHookCommand()
+                .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL1::get))));
 
     driveController.a().and(driveController.leftBumper()).whileTrue(driveToNearestLeftPole);
     driveController.a().and(driveController.rightBumper()).whileTrue(driveToNearestRightPole);
