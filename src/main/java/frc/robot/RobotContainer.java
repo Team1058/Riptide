@@ -769,7 +769,7 @@ public class RobotContainer {
             () -> CommandUtil.wrappedEventCommand(driveNearLeftPole)
                 .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL3::getAndUpdate))
                 .andThen(elevator.goToRequestedPositionCommand())
-                .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestLeftPole))
+                .andThen(CommandUtil.wrappedEventCommand(driveNearLeftPoleForLowerL))
                 .andThen(shooter.timedSpitCoralCommand(0.2))
                 .andThen(CommandUtil.wrappedEventCommand(driveNearLeftPole))
                 .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP::getAndUpdate)),
@@ -780,7 +780,7 @@ public class RobotContainer {
             () -> CommandUtil.wrappedEventCommand(driveNearRightPole)
                 .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL3::getAndUpdate))
                 .andThen(elevator.goToRequestedPositionCommand())
-                .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestRightPole))
+                .andThen(CommandUtil.wrappedEventCommand(driveNearRightPoleForLowerL))
                 .andThen(shooter.timedSpitCoralCommand(0.2))
                 .andThen(CommandUtil.wrappedEventCommand(driveNearRightPole))
                 .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP::getAndUpdate)),
@@ -791,7 +791,7 @@ public class RobotContainer {
             () -> CommandUtil.wrappedEventCommand(driveNearRightPole)
                 .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL2::getAndUpdate))
                 .andThen(elevator.goToRequestedPositionCommand())
-                .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestRightPole))
+                .andThen(CommandUtil.wrappedEventCommand(driveNearRightPoleForLowerL))
                 .andThen(shooter.timedSpitCoralCommand(0.2))
                 .andThen(CommandUtil.wrappedEventCommand(driveNearRightPole))
                 .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP::getAndUpdate)),
@@ -802,7 +802,7 @@ public class RobotContainer {
             () -> CommandUtil.wrappedEventCommand(driveNearLeftPole)
                 .andThen(elevator.setRequestedPositionCommand(elevator.LEVEL2::getAndUpdate))
                 .andThen(elevator.goToRequestedPositionCommand())
-                .andThen(CommandUtil.wrappedEventCommand(driveSlowlyToNearestLeftPole))
+                .andThen(CommandUtil.wrappedEventCommand(driveNearLeftPoleForLowerL))
                 .andThen(shooter.timedSpitCoralCommand(0.2))
                 .andThen(CommandUtil.wrappedEventCommand(driveNearLeftPole))
                 .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP::getAndUpdate)),
