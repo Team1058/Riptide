@@ -173,7 +173,8 @@ public class Shooter extends SubsystemBase {
   }
 
   public Command spitOutCoralCommand() {
-    return new StartEndCommand(() -> shooterMotor.set(-0.9), () -> shooterMotor.disable(), this)
+    return new StartEndCommand(
+      () -> shooterMotor.set(-0.9), () -> shooterMotor.disable(), this)
         .withName("Spit Out Coral Command");
   }
 

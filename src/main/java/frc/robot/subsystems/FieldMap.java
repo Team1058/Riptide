@@ -32,7 +32,7 @@ public class FieldMap extends SubsystemBase {
 
   // These are old and will need to be updated for Riptide
   private static final Transform2d coralStationTransform =
-      new Transform2d(Inches.of(16.5), Inches.of(12.628), Rotation2d.kZero);
+      new Transform2d(Inches.of(16.5), Inches.of(12.628), Rotation2d.k180deg);
 
   // old left: -9.75
   // old right: 3.25
@@ -55,9 +55,9 @@ public class FieldMap extends SubsystemBase {
       new Transform2d(Inches.of(14), Inches.of(rightReefY), Rotation2d.k180deg);
 
   private static final Transform2d farAlgaeTransform =
-      new Transform2d(Inches.of(36), Inches.of(-5.5), Rotation2d.k180deg);
+      new Transform2d(Inches.of(36), Inches.of(0), Rotation2d.k180deg);
   private static final Transform2d closeAlgaeTransform =
-      new Transform2d(Inches.of(12), Inches.of(-5.5), Rotation2d.k180deg);
+      new Transform2d(Inches.of(12), Inches.of(0), Rotation2d.k180deg);
 
   private static final double leftPolePitch = 2.5;
   private static final double leftPoleYaw = 31.5;

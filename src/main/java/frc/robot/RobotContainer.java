@@ -322,7 +322,7 @@ public class RobotContainer {
                 return CommandUtil.wrappedEventCommand(moveElevatorToAlgae1AndIntakeAlgae)
                     .alongWith(new WaitCommand(0.5)
                         .andThen(drivetrain.makeGoToCommandWithMaxMPS(
-                            closePose.getRotation().rotateBy(Rotation2d.k180deg),
+                            closePose.getRotation(),
                             MetersPerSecond.of(Math.hypot(
                                 drivetrain.getCurrentSpeeds().vxMetersPerSecond,
                                 drivetrain.getCurrentSpeeds().vyMetersPerSecond)),
@@ -335,7 +335,7 @@ public class RobotContainer {
                 return CommandUtil.wrappedEventCommand(moveElevatorToAlgae2AndIntakeAlgae)
                     .alongWith(new WaitCommand(0.5)
                         .andThen(drivetrain.makeGoToCommandWithMaxMPS(
-                            closePose.getRotation().rotateBy(Rotation2d.k180deg),
+                            closePose.getRotation(),
                             MetersPerSecond.of(Math.hypot(
                                 drivetrain.getCurrentSpeeds().vxMetersPerSecond,
                                 drivetrain.getCurrentSpeeds().vyMetersPerSecond)),
@@ -344,6 +344,28 @@ public class RobotContainer {
                             farPose,
                             closePose)));
               }
+            },
+            Set.of(drivetrain)));
+
+    driveController
+        .x()
+        .onFalse(Commands.defer(
+            () -> {
+              var reefFace = fieldMap.getLockedReefFace(drivetrain.getPose());
+              var farPose = fieldMap.getAlgaeFarPose(reefFace);
+              var closePose = fieldMap.getAlgaeClosePose(reefFace);
+              return drivetrain
+                  .makeGoToCommandWithMaxMPS(
+                      closePose.getRotation(),
+                      MetersPerSecond.of(Math.hypot(
+                          drivetrain.getCurrentSpeeds().vxMetersPerSecond,
+                          drivetrain.getCurrentSpeeds().vyMetersPerSecond)),
+                      MetersPerSecond.of(0),
+                      1.0,
+                      closePose,
+                      farPose)
+                  .andThen(CommandUtil.wrappedEventCommand(
+                      elevator.setRequestedPositionCommand(elevator.LEVEL1)));
             },
             Set.of(drivetrain)));
 
@@ -619,15 +641,23 @@ public class RobotContainer {
           var finalPose = fieldMap.coralStationLeft;
           if (reefFace == ReefFace.One || reefFace == ReefFace.Six) {
             return drivetrain.makeGoToCommand(
-                finalPose.getRotation(),
+                finalPose.getRotation().rotateBy(Rotation2d.k180deg),
                 MetersPerSecond.zero(),
                 fieldMap.coralStationMiddleLeftIntermediate,
                 finalPose);
           } else if (reefFace == ReefFace.Four || reefFace == ReefFace.Five) {
             return drivetrain.makeGoToCommand(
-                finalPose.getRotation(), MetersPerSecond.zero(), finalPose);
+                finalPose.getRotation().rotateBy(Rotation2d.k180deg),
+                MetersPerSecond.zero(),
+                finalPose);
+          } else {
+            return drivetrain.makeGoToCommand(
+                finalPose.getRotation(),
+                MetersPerSecond.zero(),
+                fieldMap.coralStationLeftIntermediate,
+                finalPose);
           }
-          return Commands.none();
+          // return Commands.none();
         },
         Set.of(drivetrain));
 
@@ -638,15 +668,23 @@ public class RobotContainer {
           var finalPose = fieldMap.coralStationRight;
           if (reefFace == ReefFace.One || reefFace == ReefFace.Two) {
             return drivetrain.makeGoToCommand(
-                finalPose.getRotation(),
+                finalPose.getRotation().rotateBy(Rotation2d.k180deg),
                 MetersPerSecond.zero(),
                 fieldMap.coralStationRightIntermediate,
                 finalPose);
           } else if (reefFace == ReefFace.Three || reefFace == ReefFace.Four) {
             return drivetrain.makeGoToCommand(
-                finalPose.getRotation(), MetersPerSecond.zero(), finalPose);
+                finalPose.getRotation().rotateBy(Rotation2d.k180deg),
+                MetersPerSecond.zero(),
+                finalPose);
+          } else {
+            return drivetrain.makeGoToCommand(
+                finalPose.getRotation(),
+                MetersPerSecond.zero(),
+                fieldMap.coralStationRightIntermediate,
+                finalPose);
           }
-          return Commands.none();
+          // return Commands.none();
         },
         Set.of(drivetrain));
 
@@ -744,7 +782,7 @@ public class RobotContainer {
             // (Do we need an elevator up command to prevent collision with pole?)
             .andThen(CommandUtil.wrappedEventCommand(driveNearRightPole))
             .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP::getAndUpdate))
-            .andThen(new WaitUntilCommand(() -> elevator.isAtPosition(elevator.LEVEL2.get()))),
+            .andThen(new WaitUntilCommand(() -> elevator.isBelowPosition(elevator.LEVEL2.get()))),
         Set.of(drivetrain, elevator, shooter));
 
     autoScoreL4Left = Commands.defer(
@@ -761,7 +799,8 @@ public class RobotContainer {
                 // (Do we need an elevator up command to prevent collision with pole?)
                 .andThen(CommandUtil.wrappedEventCommand(driveNearLeftPole))
                 .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP::getAndUpdate))
-                .andThen(new WaitUntilCommand(() -> elevator.isAtPosition(elevator.LEVEL2.get()))),
+                .andThen(
+                    new WaitUntilCommand(() -> elevator.isBelowPosition(elevator.LEVEL2.get()))),
             Set.of(drivetrain, elevator, shooter))
         .withName("AutoScoreL4Left");
 

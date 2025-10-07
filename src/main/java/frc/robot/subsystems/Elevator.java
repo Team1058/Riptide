@@ -288,6 +288,14 @@ public class Elevator extends SubsystemBase {
     return Math.abs(getCurrentPosition() - position) < config.allowedError_Up;
   }
 
+  public boolean isBelowPosition(double position) {
+    return getCurrentPosition() < position;
+  }
+
+  public boolean isAbovePosition(double position) {
+    return getCurrentPosition() > position;
+  }
+
   public Trigger isAtPositionTrigger(double position) {
     return new Trigger(() -> isAtPosition(position));
   }
