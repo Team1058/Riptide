@@ -41,6 +41,7 @@ public class RobotContainer {
   Controllers controllers;
   Drivetrain drivetrain;
   Vision vision;
+  boolean isDisabled;
 
   CommandXboxController operatorController;
   CommandXboxController driveController;
@@ -101,6 +102,7 @@ public class RobotContainer {
     configureDriverBindings(robotConfig.drivetrainConfig);
     configureOperatorBindings();
     initAuto();
+    isDisabled = true;
   }
 
   private void configureOperatorBindings() {
@@ -238,21 +240,29 @@ public class RobotContainer {
       operatorController
           .x()
           .and(() -> !shooter.coralNotDetectedByEitherSensor())
-          .whileTrue(shooter.spitOutCoralCommand())
+          .whileTrue(shooter
+              .spitOutCoralCommand()
+              .alongWith(controllers.bothRumbleControllersCommand(operatorController, 0.5)))
           .toggleOnFalse(shooter.stowAlgaeHookCommand());
     }
   }
 
   public void teleopInit() {
     shooter.stowAlgaeHookCommand().schedule();
+    isDisabled = false;
   }
 
   public void testInit() {
     shooter.stowAlgaeHookCommand().schedule();
+    isDisabled = false;
   }
 
   public void autonomousInit() {
     shooter.stowAlgaeHookCommand().schedule();
+    isDisabled = false;
+  }
+  public void disabledInit() {
+    isDisabled = true;
   }
 
   private Trigger reefLockEnabledTrigger() {
@@ -912,17 +922,19 @@ public class RobotContainer {
       leds.applyPatternsToStrips();
 
       if ((shooter.getCurrentCommand() != null
-              && shooter.getCurrentCommand().getName().equals("Coral intake command"))
-          || (shooter.getCurrentCommand() != null
-              && shooter.getCurrentCommand().getName().equals("Spit Out Coral Command"))) {
+      && shooter.getCurrentCommand().getName().equals("Coral intake command"))
+      || (shooter.getCurrentCommand() != null
+      && shooter.getCurrentCommand().getName().equals("Spit Out Coral Command"))) {
         leds.leftPattern = leds.greenBase;
       } else if (shooter.algaeMechDeployed()) {
         leds.leftPattern = leds.blueBlink;
       } else if (climber.getCurrentCommand() != null
-          && climber.getCurrentCommand().getName().equals("Manual Climb Command")) {
+      && climber.getCurrentCommand().getName().equals("Manual Climb Command")) {
         leds.leftPattern = leds.whiteBlink;
       } else if (climber.isClimbing) {
         leds.leftPattern = leds.whiteBase;
+      } if (isDisabled){
+        leds.leftPattern = leds.alianceColorBreath;
       } else {
         leds.leftPattern = leds.redOrangeBlinkWithRsl;
       }
@@ -935,6 +947,8 @@ public class RobotContainer {
         leds.middlePattern = leds.brownBase;
       } else if (RobotController.getCommsDisableCount() > 5) {
         leds.middlePattern = leds.blueBase;
+      } else if (isDisabled){
+        leds.middlePattern = leds.alianceColorBreath;
       } else {
         leds.middlePattern = leds.greenBase;
       }
@@ -942,8 +956,10 @@ public class RobotContainer {
               && !operatorController.rightBumper().getAsBoolean()
           || operatorController.leftBumper().getAsBoolean()) {
         leds.rightPattern = leds.blueProgressMaskWithElevator;
-      } else {
+      } else if (elevator.getCurrentPosition() > 0.2){
         leds.rightPattern = leds.redProgressMaskWithElevator;
+      } else if (isDisabled){
+        leds.rightPattern = leds.alianceColorBreath;
       }
     }
   }

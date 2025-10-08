@@ -38,6 +38,9 @@ public class Leds {
   public LEDPattern whiteBlink;
   public LEDPattern brownBase;
   public LEDPattern yellowBase;
+  public LEDPattern alianceColorBase;
+  public LEDPattern alianceColorBreath;
+  public Color alianceColor;
 
   public Leds(Elevator elevator) {
     ledStrip = new AddressableLED(ledPort);
@@ -72,6 +75,9 @@ public class Leds {
     brownBase = LEDPattern.solid(Color.kBrown);
 
     yellowBase = LEDPattern.solid(Color.kYellow);
+
+    alianceColorBase = LEDPattern.solid(alianceColor);
+    alianceColorBreath = redBase.breathe(Seconds.of(2));
 
     leftPattern = redOrangeBlinkWithRsl;
     middlePattern = redOrangeBlinkWithRsl;
