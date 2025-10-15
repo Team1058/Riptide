@@ -36,23 +36,25 @@ public class FieldMap extends SubsystemBase {
 
   // old left: -9.75
   // old right: 3.25
+  private static double l2l3reefX = 12;
+  private static double farReefX = 48;
   private static double leftReefY = -6;
 
   private static final Transform2d leftReefTransform =
       new Transform2d(Inches.of(19.5), Inches.of(leftReefY), Rotation2d.k180deg);
   private static final Transform2d farLeftReefTransform =
-      new Transform2d(Inches.of(48), Inches.of(leftReefY), Rotation2d.k180deg);
+      new Transform2d(Inches.of(farReefX), Inches.of(leftReefY), Rotation2d.k180deg);
 
   private static final Transform2d L2L3LeftReefTransform =
-      new Transform2d(Inches.of(14), Inches.of(leftReefY), Rotation2d.k180deg);
+      new Transform2d(Inches.of(l2l3reefX), Inches.of(leftReefY), Rotation2d.k180deg);
 
   private static double rightReefY = 6;
   private static final Transform2d rightReefTransform =
       new Transform2d(Inches.of(19.5), Inches.of(rightReefY), Rotation2d.k180deg);
   private static final Transform2d farRightReefTransform =
-      new Transform2d(Inches.of(48), Inches.of(rightReefY), Rotation2d.k180deg);
+      new Transform2d(Inches.of(farReefX), Inches.of(rightReefY), Rotation2d.k180deg);
   private static final Transform2d L2L3RightReefTransform =
-      new Transform2d(Inches.of(14), Inches.of(rightReefY), Rotation2d.k180deg);
+      new Transform2d(Inches.of(l2l3reefX), Inches.of(rightReefY), Rotation2d.k180deg);
 
   private static final Transform2d farAlgaeTransform =
       new Transform2d(Inches.of(36), Inches.of(0), Rotation2d.k180deg);

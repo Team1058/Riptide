@@ -30,26 +30,27 @@ public class Controllers extends SubsystemBase {
   }
 
   public Command rightRumbleControllersCommand(
-    CommandXboxController rumbleController, double rumbleStrangth) {
-  return new StartEndCommand(
-          () -> {
-            rumbleController.setRumble(RumbleType.kRightRumble, rumbleStrangth);
-          },
-          () -> {
-            rumbleController.setRumble(RumbleType.kRightRumble, 0);
-          })
-      .withName("Controllers Right Rumble Command");
-}
+      CommandXboxController rumbleController, double rumbleStrangth) {
+    return new StartEndCommand(
+            () -> {
+              rumbleController.setRumble(RumbleType.kRightRumble, rumbleStrangth);
+            },
+            () -> {
+              rumbleController.setRumble(RumbleType.kRightRumble, 0);
+            })
+        .withName("Controllers Right Rumble Command");
+  }
+
   public Command leftRumbleControllersCommand(
-    CommandXboxController rumbleController, double rumbleStrangth) {
-  return new StartEndCommand(
-          () -> {
-            rumbleController.setRumble(RumbleType.kLeftRumble, rumbleStrangth);
-          },
-          () -> {
-            rumbleController.setRumble(RumbleType.kLeftRumble, 0);
-          })
-      .withName("Controllers Left Rumble Command");
+      CommandXboxController rumbleController, double rumbleStrangth) {
+    return new StartEndCommand(
+            () -> {
+              rumbleController.setRumble(RumbleType.kLeftRumble, rumbleStrangth);
+            },
+            () -> {
+              rumbleController.setRumble(RumbleType.kLeftRumble, 0);
+            })
+        .withName("Controllers Left Rumble Command");
   }
 
   private boolean isOutsideDeadband(double value) {
