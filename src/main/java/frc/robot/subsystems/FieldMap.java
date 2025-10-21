@@ -1,15 +1,16 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.*;
+import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import org.littletonrobotics.junction.Logger;
 
 public class FieldMap extends SubsystemBase {
   static AprilTagFieldLayout fieldLayout =
@@ -36,23 +37,23 @@ public class FieldMap extends SubsystemBase {
 
   // old left: -9.75
   // old right: 3.25
-  private static double leftReefY = -6;
+  private final static double LEFT_REEF_Y = -6;
 
   private static final Transform2d leftReefTransform =
-      new Transform2d(Inches.of(19.5), Inches.of(leftReefY), Rotation2d.k180deg);
+      new Transform2d(Inches.of(19.5), Inches.of(LEFT_REEF_Y), Rotation2d.k180deg);
   private static final Transform2d farLeftReefTransform =
-      new Transform2d(Inches.of(48), Inches.of(leftReefY), Rotation2d.k180deg);
+      new Transform2d(Inches.of(48), Inches.of(LEFT_REEF_Y), Rotation2d.k180deg);
 
   private static final Transform2d L2L3LeftReefTransform =
-      new Transform2d(Inches.of(16), Inches.of(leftReefY), Rotation2d.k180deg);
+      new Transform2d(Inches.of(17), Inches.of(LEFT_REEF_Y), Rotation2d.k180deg);
 
-  private static double rightReefY = 6;
+  private final static double RIGHT_REEF_Y = 6;
   private static final Transform2d rightReefTransform =
-      new Transform2d(Inches.of(19.5), Inches.of(rightReefY), Rotation2d.k180deg);
+      new Transform2d(Inches.of(19.5), Inches.of(RIGHT_REEF_Y), Rotation2d.k180deg);
   private static final Transform2d farRightReefTransform =
-      new Transform2d(Inches.of(48), Inches.of(rightReefY), Rotation2d.k180deg);
+      new Transform2d(Inches.of(48), Inches.of(RIGHT_REEF_Y), Rotation2d.k180deg);
   private static final Transform2d L2L3RightReefTransform =
-      new Transform2d(Inches.of(16), Inches.of(rightReefY), Rotation2d.k180deg);
+      new Transform2d(Inches.of(17), Inches.of(RIGHT_REEF_Y), Rotation2d.k180deg);
 
   private static final Transform2d farAlgaeTransform =
       new Transform2d(Inches.of(36), Inches.of(0), Rotation2d.k180deg);

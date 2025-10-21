@@ -63,7 +63,7 @@
       ]
     }
   },
-  "resetOdom": true,
+  "resetOdom": false,
   "folder": "SWAuTos",
   "choreoAuto": false
 }
