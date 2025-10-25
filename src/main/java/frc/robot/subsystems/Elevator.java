@@ -296,6 +296,10 @@ public class Elevator extends SubsystemBase {
     return elevatorEncoder.getPosition();
   }
 
+  public boolean isBelowPosition(double position) {
+    return getCurrentPosition() < position;
+  }
+
   public Command goToRequestedPositionCommand() {
 
     return runOnce(() -> {

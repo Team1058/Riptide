@@ -271,7 +271,10 @@ public class Shooter extends SubsystemBase {
     return new FunctionalCommand(
             () -> shooterMotor.set(0.3),
             () -> {},
-            interrupted -> shooterMotor.disable(),
+            interrupted -> {
+              shooterMotor.disable();
+              // System.out.println("I am done!");
+            },
             () -> outLimitSwitch.isPressed(),
             this)
         .withName(

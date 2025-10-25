@@ -8,6 +8,8 @@ import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.CommandUtil;
 import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -632,15 +634,17 @@ public class RobotContainer {
           var currentPose = drivetrain.getPose();
           var reefFace = fieldMap.getLockedReefFace(currentPose);
           var finalPose = fieldMap.coralStationLeft;
+          var finalHeading = fieldMap.coralStationLeft.getRotation();
+          finalPose =
+              fieldMap.coralStationLeft.transformBy(new Transform2d(0, 0, Rotation2d.k180deg));
           if (reefFace == ReefFace.One || reefFace == ReefFace.Six) {
             return drivetrain.makeGoToCommand(
-                finalPose.getRotation(),
+                finalHeading,
                 MetersPerSecond.zero(),
                 fieldMap.coralStationMiddleLeftIntermediate,
                 finalPose);
           } else if (reefFace == ReefFace.Four || reefFace == ReefFace.Five) {
-            return drivetrain.makeGoToCommand(
-                finalPose.getRotation(), MetersPerSecond.zero(), finalPose);
+            return drivetrain.makeGoToCommand(finalHeading, MetersPerSecond.zero(), finalPose);
           }
           return Commands.none();
         },
@@ -651,15 +655,17 @@ public class RobotContainer {
           var currentPose = drivetrain.getPose();
           var reefFace = fieldMap.getLockedReefFace(currentPose);
           var finalPose = fieldMap.coralStationRight;
+          var finalHeading = fieldMap.coralStationRight.getRotation();
+          finalPose =
+              fieldMap.coralStationLeft.transformBy(new Transform2d(0, 0, Rotation2d.k180deg));
           if (reefFace == ReefFace.One || reefFace == ReefFace.Two) {
             return drivetrain.makeGoToCommand(
-                finalPose.getRotation(),
+                finalHeading,
                 MetersPerSecond.zero(),
                 fieldMap.coralStationRightIntermediate,
                 finalPose);
           } else if (reefFace == ReefFace.Three || reefFace == ReefFace.Four) {
-            return drivetrain.makeGoToCommand(
-                finalPose.getRotation(), MetersPerSecond.zero(), finalPose);
+            return drivetrain.makeGoToCommand(finalHeading, MetersPerSecond.zero(), finalPose);
           }
           return Commands.none();
         },
@@ -759,7 +765,7 @@ public class RobotContainer {
             // (Do we need an elevator up command to prevent collision with pole?)
             .andThen(CommandUtil.wrappedEventCommand(driveNearRightPole))
             .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP::getAndUpdate))
-            .andThen(new WaitUntilCommand(() -> elevator.isAtPosition(elevator.LEVEL2.get()))),
+            .andThen(new WaitUntilCommand(() -> elevator.isBelowPosition(elevator.LEVEL2.get()))),
         Set.of(drivetrain, elevator, shooter));
 
     autoScoreL4Left = Commands.defer(
@@ -776,7 +782,8 @@ public class RobotContainer {
                 // (Do we need an elevator up command to prevent collision with pole?)
                 .andThen(CommandUtil.wrappedEventCommand(driveNearLeftPole))
                 .andThen(elevator.setRequestedPositionCommand(elevator.LEVELHP::getAndUpdate))
-                .andThen(new WaitUntilCommand(() -> elevator.isAtPosition(elevator.LEVEL2.get()))),
+                .andThen(
+                    new WaitUntilCommand(() -> elevator.isBelowPosition(elevator.LEVEL2.get()))),
             Set.of(drivetrain, elevator, shooter))
         .withName("AutoScoreL4Left");
 
@@ -848,12 +855,12 @@ public class RobotContainer {
   }
 
   public void initNamedCommands() {
-    NamedCommands.registerCommand("AutoScoreL4Left", autoScoreL4Left);
-    NamedCommands.registerCommand("AutoScoreL3Left", autoScoreL3Left);
-    NamedCommands.registerCommand("AutoScoreL2Left", autoScoreL2Left);
-    NamedCommands.registerCommand("AutoScoreL4Right", autoScoreL4Right);
-    NamedCommands.registerCommand("AutoScoreL3Right", autoScoreL3Right);
-    NamedCommands.registerCommand("AutoScoreL2Right", autoScoreL2Right);
+    NamedCommands.registerCommand("autoScoreL4Left", autoScoreL4Left);
+    NamedCommands.registerCommand("autoScoreL3Left", autoScoreL3Left);
+    NamedCommands.registerCommand("autoScoreL2Left", autoScoreL2Left);
+    NamedCommands.registerCommand("autoScoreL4Right", autoScoreL4Right);
+    NamedCommands.registerCommand("autoScoreL3Right", autoScoreL3Right);
+    NamedCommands.registerCommand("autoScoreL2Right", autoScoreL2Right);
     NamedCommands.registerCommand(
         "setRequestedPositionL4", elevator.setRequestedPositionCommand(elevator.LEVEL4));
     NamedCommands.registerCommand(
