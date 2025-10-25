@@ -8,6 +8,8 @@ import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.CommandUtil;
 import com.pathplanner.lib.auto.NamedCommands;
+
+import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -657,7 +659,7 @@ public class RobotContainer {
           var finalPose = fieldMap.coralStationRight;
           var finalHeading = fieldMap.coralStationRight.getRotation();
           finalPose =
-              fieldMap.coralStationLeft.transformBy(new Transform2d(0, 0, Rotation2d.k180deg));
+              fieldMap.coralStationRight.transformBy(new Transform2d(0, 0, Rotation2d.k180deg));
           if (reefFace == ReefFace.One || reefFace == ReefFace.Two) {
             return drivetrain.makeGoToCommand(
                 finalHeading,
