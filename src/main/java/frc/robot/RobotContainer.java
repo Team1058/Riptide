@@ -657,7 +657,7 @@ public class RobotContainer {
           var finalPose = fieldMap.coralStationRight;
           var finalHeading = fieldMap.coralStationRight.getRotation();
           finalPose =
-              fieldMap.coralStationLeft.transformBy(new Transform2d(0, 0, Rotation2d.k180deg));
+              fieldMap.coralStationRight.transformBy(new Transform2d(0, 0, Rotation2d.k180deg));
           if (reefFace == ReefFace.One || reefFace == ReefFace.Two) {
             return drivetrain.makeGoToCommand(
                 finalHeading,
