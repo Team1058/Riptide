@@ -19,6 +19,11 @@ public class PathPose extends Pose2d {
     this.heading = directionOfTravelIsSameAsHeading ?  pose.getRotation() : pose.getRotation().rotateBy(Rotation2d.k180deg);
   }
 
+  public PathPose(Pose2d pose, Rotation2d heading) {
+    this.pose = pose;
+
+  }
+
   public Rotation2d getHeading() {
     return heading;
   }
