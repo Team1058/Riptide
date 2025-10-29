@@ -4,6 +4,8 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.*;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.path.GoalEndState;
@@ -13,13 +15,12 @@ import com.pathplanner.lib.path.Waypoint;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.Drivetrain;
 
 public class PathToCommand extends Command{
@@ -72,7 +73,8 @@ public class PathToCommand extends Command{
             () -> false,
              drivetrain);
     } catch (Exception e) {
-      DriverStation.reportError("Could not create go to command.", true);
+      DriverStation.reportError("Could not create go to command. " + e.getMessage(), e.getStackTrace());
+      pathCommand = Commands.none();
     }
 
   }
@@ -95,6 +97,7 @@ public class PathToCommand extends Command{
   public void end(boolean interrupted) {
     pathCommand.end(interrupted);
     running = false;
+    drivetrain.xWheels();
   }
 
   /**
@@ -104,9 +107,9 @@ public class PathToCommand extends Command{
    * @return whether the command has finished.
    */
   public boolean isFinished() {
-    ChassisSpeeds speed = drivetrain.getCurrentSpeeds();
-    running = Math.hypot(speed.vxMetersPerSecond, speed.vyMetersPerSecond) > 0.1;
-    return running;
+    // ChassisSpeeds speed = drivetrain.getCurrentSpeeds();
+    // running = Math.hypot(speed.vxMetersPerSecond, speed.vyMetersPerSecond) > 0.1;
+    return pathCommand.isFinished();
   }
 
   private PathPlannerPath getPath(LinearVelocity endVelocity, List<Pose2d> poses) {
@@ -122,8 +125,8 @@ public class PathToCommand extends Command{
     path = new PathPlannerPath(
         waypoints,
         drivetrain.pathConstraints,
-        new IdealStartingState(startingVelocity, currentPose.getRotation()),
-        new GoalEndState(endVelocity, currentPose.getHeading()));
+        new IdealStartingState(startingVelocity, currentPose.getHeading()),
+        new GoalEndState(endVelocity, endPose.getHeading()));
     path.preventFlipping = true;
     return path;
   }

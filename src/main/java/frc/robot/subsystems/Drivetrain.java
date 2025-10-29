@@ -678,6 +678,10 @@ public class Drivetrain extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> imp
         .withName("Get Align Direction To Tag Command Via Bang Bang");
   }
 
+  public void xWheels() {
+    applyRequest(() -> new SwerveRequest.SwerveDriveBrake());
+  }
+
   public RobotConfig getPPConfig() {
       return ppConfig;
   }
@@ -768,6 +772,7 @@ public class Drivetrain extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> imp
       Rotation2d endHeading, LinearVelocity endVelocity, Pose2d... poses) {
     return makeGoToCommand(endHeading, endVelocity, Arrays.asList(poses));
   }
+
 
   // Make command to go to end pose with
   public Command makeGoToCommandWithMaxMPS(

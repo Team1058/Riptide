@@ -1,5 +1,6 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Meter;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -30,6 +31,9 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.FieldMap.ReefFace;
 import frc.robot.subsystems.FieldMap.ReefPole;
+import frc.robot.utils.HolonomicPose;
+import frc.robot.utils.PathToCommand;
+
 import java.util.Set;
 
 public class RobotContainer {
@@ -494,19 +498,19 @@ public class RobotContainer {
                     .times(-controllers.getDriverRightX()
                         * 0.125)) // Drive counterclockwise with negative X (left)
             ));
-    operatorController
-        .b()
-        .whileTrue(drivetrain.applyRequest(
-            () -> drive
-                .withVelocityX(Drivetrain.MAX_LINEAR_SPEED.times(-controllers.getDriverLeftY()
-                    * 0.125)) // Drive forward with negative Y (forward)
-                .withVelocityY(Drivetrain.MAX_LINEAR_SPEED.times(
-                    -controllers.getDriverLeftX() * 0.125)) // Drive left with negative X (left)
-                .withRotationalRate(drivetrain
-                    .getMaxAngularVelocity()
-                    .times(-controllers.getDriverRightX()
-                        * 0.125)) // Drive counterclockwise with negative X (left)
-            ));
+    // operatorController
+    //     .b()
+    //     .whileTrue(drivetrain.applyRequest(
+    //         () -> drive
+    //             .withVelocityX(Drivetrain.MAX_LINEAR_SPEED.times(-controllers.getDriverLeftY()
+    //                 * 0.125)) // Drive forward with negative Y (forward)
+    //             .withVelocityY(Drivetrain.MAX_LINEAR_SPEED.times(
+    //                 -controllers.getDriverLeftX() * 0.125)) // Drive left with negative X (left)
+    //             .withRotationalRate(drivetrain
+    //                 .getMaxAngularVelocity()
+    //                 .times(-controllers.getDriverRightX()
+    //                     * 0.125)) // Drive counterclockwise with negative X (left)
+    //         ));
   }
 
   private void swapControllers() {
@@ -592,6 +596,8 @@ public class RobotContainer {
               finalPose.getRotation(), MetersPerSecond.zero(), approachPose, finalPose);
         },
         Set.of(drivetrain));
+
+    driveToNearestLeftPole = Commands.defer(() -> new PathToCommand(drivetrain, null, MetersPerSecond.of(0)), Set.of(drivetrain));
     driveToNearestRightPole = Commands.defer(
         () -> {
           var reefFace = fieldMap.getLockedReefFace(drivetrain.getPose());
