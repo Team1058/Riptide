@@ -123,7 +123,7 @@ public class Drivetrain extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> imp
   public PathPlannerPath path;
   public PPHolonomicDriveController ppDriveController;
   public PathConstraints pathConstraints;
-  RobotConfig ppConfig;
+  public RobotConfig ppConfig;
 
   private Notifier simNotifier = null;
   private double lastSimTime;
@@ -179,8 +179,10 @@ public class Drivetrain extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> imp
       public final int driveId;
       public final int steerId;
       public final int encoderId;
-      // Absolute position reading of the encoder in calibration position (wheel at 45 degree angle
-      // with bevel gear facing the steering motor)
+      /**
+       * Absolute position reading of the encoder in calibration position (wheel at 45 degree angle
+       * with bevel gear facing the steering motor)
+       **/
       public final Angle encoderZeroPoint;
 
       private Module(int driveId, int steerId, int encoderId, Angle encoderZeroPoint) {
@@ -674,6 +676,10 @@ public class Drivetrain extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> imp
                 < currentTolerance, // add rotation in if needed
             this)
         .withName("Get Align Direction To Tag Command Via Bang Bang");
+  }
+
+  public RobotConfig getPPConfig() {
+      return ppConfig;
   }
 
   private void initializeShuffleboardEntries() {

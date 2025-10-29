@@ -1,7 +1,11 @@
+package frc.robot.utils;
+
+import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import frc.robot.subsystems.Drivetrain;
 
 public class HolonomicPose {
     private final Pose2d pose;
@@ -18,6 +22,14 @@ public class HolonomicPose {
         this.heading = heading;
     }
 
+    public HolonomicPose(Drivetrain dt) {
+      double x = dt.getCurrentSpeeds().vxMetersPerSecond;
+      double y = dt.getCurrentSpeeds().vyMetersPerSecond;
+
+      this.pose = new Pose2d(dt.getPose().getTranslation(), new Rotation2d(Math.atan2(y, x)));
+      this.heading = dt.getPose().getRotation();
+    }
+
     public HolonomicPose(Translation2d translation, Rotation2d rotation, Rotation2d heading) {
         this.pose = new Pose2d(translation, rotation);
         this.heading = heading;
@@ -27,12 +39,12 @@ public class HolonomicPose {
         return pose;
     }
 
-    public Translation2d getTranslation() {
-        return pose.getTranslation();
+    public Rotation2d getDirectionofTravel() {
+      return pose.getRotation();
     }
 
-    public Rotation2d getRotation() {
-        return pose.getRotation();
+    public Translation2d getTranslation() {
+        return pose.getTranslation();
     }
 
     public Rotation2d getHeading() {
