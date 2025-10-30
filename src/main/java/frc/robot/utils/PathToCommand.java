@@ -16,6 +16,7 @@ import com.pathplanner.lib.path.Waypoint;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -46,9 +47,9 @@ public class PathToCommand extends Command{
     addRequirements(drivetrain);
   }
 
-  public PathToCommand(Drivetrain drivetrain, Pose2d pose, Rotation2d endHeading) {
+  public PathToCommand(Drivetrain drivetrain, Pose2d endPose, Rotation2d endHeading) {
     this.drivetrain = drivetrain;
-    this.endPose = new HolonomicPose(pose, endHeading);
+    this.endPose = new HolonomicPose(endPose, endHeading);
 
     addRequirements(drivetrain);
   }
@@ -56,10 +57,9 @@ public class PathToCommand extends Command{
 
   /** The initial subroutine of a command. Called once when the command is initially scheduled. */
   public void initialize() {
-
       try {
       // Use final pose getter from field map
-      PathPlannerPath path = getPath(endVelocity, List.of(currentPose.getPose(), endPose.getPose()));
+      path = getPath(endVelocity, List.of(currentPose.getPose(), endPose.getPose()));
       this.pathCommand = new FollowPathCommand(
         path,
          drivetrain::getPose,
@@ -96,20 +96,17 @@ public class PathToCommand extends Command{
    */
   public void end(boolean interrupted) {
     pathCommand.end(interrupted);
-    running = false;
     drivetrain.xWheels();
   }
 
   /**
-   * Whether the command has finished. Once a command finishes, the scheduler will call its end()
-   * method and un-schedule it.
    *
-   * @return whether the command has finished.
+   * This command should be interrupted
    */
   public boolean isFinished() {
-    // ChassisSpeeds speed = drivetrain.getCurrentSpeeds();
-    // running = Math.hypot(speed.vxMetersPerSecond, speed.vyMetersPerSecond) > 0.1;
-    return pathCommand.isFinished();
+
+
+    return false;
   }
 
   private PathPlannerPath getPath(LinearVelocity endVelocity, List<Pose2d> poses) {

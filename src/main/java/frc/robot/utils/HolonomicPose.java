@@ -26,7 +26,11 @@ public class HolonomicPose {
       double x = dt.getCurrentSpeeds().vxMetersPerSecond;
       double y = dt.getCurrentSpeeds().vyMetersPerSecond;
 
-      this.pose = new Pose2d(dt.getPose().getTranslation(), new Rotation2d(Math.atan2(y, x)));
+      Rotation2d directionOfTravel = (Math.hypot(x, y) > 1e-4)
+      ? new Rotation2d(Math.atan2(y, x))
+      : dt.getPose().getRotation();
+
+      this.pose = new Pose2d(dt.getPose().getTranslation(), directionOfTravel);
       this.heading = dt.getPose().getRotation();
     }
 
@@ -39,7 +43,7 @@ public class HolonomicPose {
         return pose;
     }
 
-    public Rotation2d getDirectionofTravel() {
+    public Rotation2d getTravelDirection() {
       return pose.getRotation();
     }
 
@@ -50,6 +54,30 @@ public class HolonomicPose {
     public Rotation2d getHeading() {
         return heading;
     }
+
+    public HolonomicPose relativeTo(HolonomicPose pose) {
+      Pose2d relativePose = getPose().relativeTo(pose.getPose());
+      Rotation2d relativeHeading = getHeading().minus(pose.getHeading());
+
+      return new HolonomicPose(relativePose, relativeHeading);
+    }
+
+    public HolonomicPose withHeading(Rotation2d heading) {
+      return new HolonomicPose(getPose(), heading);
+    }
+
+    /**
+     * Interpolate between two poses
+     * @param end end pose
+     * @param t Percentage along path to interpolate (0 -> beginning, 0.5 -> halfway, 1 -> end)
+     * @return a Holonomic Pose
+     */
+    public HolonomicPose interpolate(HolonomicPose end, double t) {
+      return new HolonomicPose(
+          pose.interpolate(end.pose, t),
+          heading.interpolate(end.heading, t)
+      );
+  }
 
     @Override
     public String toString() {
