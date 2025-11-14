@@ -116,6 +116,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void testPeriodic() {
     robotContainer.elevator.testPeriodic();
+    robotContainer.vision.testPeriodic();
   }
 
   /** This function is called once when the robot is first started up. */

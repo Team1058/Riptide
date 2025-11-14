@@ -9,6 +9,7 @@ package frc.robot.utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
@@ -112,6 +113,14 @@ public class TunableConstant implements DoubleSupplier {
    * @param tunableNumbers All tunable numbers to check
    */
   public static void ifChanged(Consumer<double[]> action, TunableConstant... tunableNumbers) {
+    if (Arrays.stream(tunableNumbers).anyMatch(tunableNumber -> tunableNumber.hasChanged())) {
+      action.accept(Arrays.stream(tunableNumbers)
+          .mapToDouble(TunableConstant::getAndUpdate)
+          .toArray());
+    }
+  }
+
+  public static void ifChanged(Consumer<double[]> action, List<TunableConstant> tunableNumbers) {
     if (Arrays.stream(tunableNumbers).anyMatch(tunableNumber -> tunableNumber.hasChanged())) {
       action.accept(Arrays.stream(tunableNumbers)
           .mapToDouble(TunableConstant::getAndUpdate)

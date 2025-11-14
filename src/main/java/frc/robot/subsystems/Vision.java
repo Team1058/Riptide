@@ -12,8 +12,11 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.vision.VisionPipeline;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.utils.TunableConstant;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -79,6 +82,16 @@ public class Vision extends SubsystemBase {
     PhotonCamera camera;
     double poseAmbiguity;
 
+    TunableConstant x;
+    TunableConstant y;
+    TunableConstant z;
+
+    TunableConstant yaw;
+    TunableConstant pitch;
+    TunableConstant roll;
+
+    List<TunableConstant> tunableList = List.of(x,y,z,yaw,pitch,roll);
+
     Optional<StampedPose2d> robotPose = Optional.empty();
 
     // Initialize the PhotonPoseEstimator
@@ -96,7 +109,39 @@ public class Vision extends SubsystemBase {
       } catch (Exception e) {
         e.printStackTrace();
       }
+
+      this.x = new TunableConstant(cameraName, cameraToRobot.getX());
+      this.y = new TunableConstant(cameraName, cameraToRobot.getY());
+      this.z = new TunableConstant(cameraName, cameraToRobot.getZ());
+      this.yaw = new TunableConstant(cameraName, cameraToRobot.getRotation().getMeasureZ().in(Degree));
+      this.pitch = new TunableConstant(cameraName, cameraToRobot.getRotation().getMeasureY().in(Degree));
+      this.roll = new TunableConstant(cameraName, cameraToRobot.getRotation().getMeasureX().in(Degree));
     }
+
+    public void rebuildPoseEstimators() {
+      Transform3d cameraToRobot = new Transform3d (
+        x.getAndUpdate(),
+        y.getAndUpdate(),
+        z.getAndUpdate(),
+        new Rotation3d(
+          roll.getAndUpdate(),
+          pitch.getAndUpdate(),
+          yaw.getAndUpdate()));
+
+      try {
+        primaryPoseEstimator = new PhotonPoseEstimator(
+            fieldLayout,
+            PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+            cameraToRobot);
+
+        secondaryPoseEstimator = new PhotonPoseEstimator(
+            fieldLayout, PhotonPoseEstimator.PoseStrategy.CLOSEST_TO_LAST_POSE, cameraToRobot);
+
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+
 
     private static boolean isValidPose(Pose3d pose) {
       double z = pose.getZ();
@@ -191,6 +236,10 @@ public class Vision extends SubsystemBase {
 
     public Optional<StampedPose2d> getPose() {
       return robotPose;
+    }
+
+    public void rebuildCameras() {
+
     }
   }
 
@@ -310,4 +359,10 @@ public class Vision extends SubsystemBase {
       }
     }
   }
+
+  public void testPeriodic() {
+    // leftVision.tunableList.forEach(tunable -> tunable.ifChanged(() -> leftVision.rebuildPoseEstimators(), null));
+    TunableConstant.ifChanged((dub) -> leftVision.rebuildPoseEstimators(), leftVision.tunableList);
+    TunableConstant.ifChanged((dub) -> rightVision.rebuildPoseEstimators(), rightVision.tunableList);
+
 }
