@@ -2,29 +2,24 @@ package frc.robot.utils;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.util.*;
-
-import org.littletonrobotics.junction.Logger;
-
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.IdealStartingState;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.Drivetrain;
+import java.util.*;
 
-public class PathToCommand extends Command{
+public class PathToCommand extends Command {
   Drivetrain drivetrain;
   HolonomicPose currentPose;
   HolonomicPose endPose;
@@ -48,40 +43,44 @@ public class PathToCommand extends Command{
   }
 
   public PathToCommand(Drivetrain drivetrain, Pose2d endPose, Rotation2d endHeading) {
+    System.out.println("creating");
     this.drivetrain = drivetrain;
     this.endPose = new HolonomicPose(endPose, endHeading);
 
     addRequirements(drivetrain);
   }
 
-
   /** The initial subroutine of a command. Called once when the command is initially scheduled. */
   public void initialize() {
-      try {
+    try {
+      // this is not printing, making me think the command is never being initialized
+      System.out.println("initializing");
       // Use final pose getter from field map
       path = getPath(endVelocity, List.of(currentPose.getPose(), endPose.getPose()));
       this.pathCommand = new FollowPathCommand(
-        path,
-         drivetrain::getPose,
+          path,
+          drivetrain::getPose,
           () -> drivetrain.getCurrentSpeeds(),
           (speeds, feedforwards) -> drivetrain.setControl(new SwerveRequest.ApplyRobotSpeeds()
-          .withSpeeds(speeds)
-          .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
-          .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
-            drivetrain.ppDriveController,
-            drivetrain.getPPConfig(),
-            () -> false,
-             drivetrain);
+              .withSpeeds(speeds)
+              .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+              .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
+          drivetrain.ppDriveController,
+          drivetrain.getPPConfig(),
+          () -> false,
+          drivetrain);
     } catch (Exception e) {
-      DriverStation.reportError("Could not create go to command. " + e.getMessage(), e.getStackTrace());
+      DriverStation.reportError(
+          "Could not create go to command. " + e.getMessage(), e.getStackTrace());
       pathCommand = Commands.none();
     }
-
   }
-
 
   /** The main body of a command. Called repeatedly while the command is scheduled. */
   public void execute() {
+
+    // this prints when execute called
+    System.out.println("executing");
     pathCommand.execute();
   }
 
@@ -95,23 +94,23 @@ public class PathToCommand extends Command{
    * @param interrupted whether the command was interrupted/canceled
    */
   public void end(boolean interrupted) {
+    System.out.println("ending");
     pathCommand.end(interrupted);
     drivetrain.xWheels();
   }
 
   /**
-   *
    * This command should be interrupted
    */
   public boolean isFinished() {
-
-
     return false;
   }
 
   private PathPlannerPath getPath(LinearVelocity endVelocity, List<Pose2d> poses) {
 
-    double startingVelocity = Math.hypot(drivetrain.getState().Speeds.vyMetersPerSecond, drivetrain.getState().Speeds.vxMetersPerSecond);
+    double startingVelocity = Math.hypot(
+        drivetrain.getState().Speeds.vyMetersPerSecond,
+        drivetrain.getState().Speeds.vxMetersPerSecond);
 
     // Waypoints generated from current, any intermediate poses, and endpose
     var all_poses = new ArrayList<Pose2d>(1 + poses.size());
@@ -127,5 +126,4 @@ public class PathToCommand extends Command{
     path.preventFlipping = true;
     return path;
   }
-
 }

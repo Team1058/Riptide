@@ -9,7 +9,6 @@ package frc.robot.utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
@@ -57,6 +56,10 @@ public class TunableConstant implements DoubleSupplier {
     tuningMode = enable;
     if (tuningMode) {
       dashboardNumber = new LoggedNetworkNumber(key, defaultValue);
+    } else {
+      // Prevent lastValue from being a tuning mode value eg. leaving tuning mode means
+      //  lastValue is default value, so has changed won't be randomly true;
+      lastValue = defaultValue;
     }
   }
 
@@ -93,8 +96,6 @@ public class TunableConstant implements DoubleSupplier {
   /**
    * Checks whether the number has changed since our last check
    *
-   * @param id Unique identifier for the caller to avoid conflicts when shared between multiple
-   *        objects. Recommended approach is to pass the result of "hashCode()"
    * @return True if the number has changed since the last time this method was called, false
    *         otherwise.
    */
@@ -120,11 +121,11 @@ public class TunableConstant implements DoubleSupplier {
     }
   }
 
-  public static void ifChanged(Consumer<double[]> action, List<TunableConstant> tunableNumbers) {
-    if (Arrays.stream(tunableNumbers).anyMatch(tunableNumber -> tunableNumber.hasChanged())) {
-      action.accept(Arrays.stream(tunableNumbers)
-          .mapToDouble(TunableConstant::getAndUpdate)
-          .toArray());
+  public static void ifChanged(
+      Consumer<double[]> action, ArrayList<TunableConstant> tunableNumbers) {
+    if (tunableNumbers.stream().anyMatch(tunableNumber -> tunableNumber.hasChanged())) {
+      action.accept(
+          tunableNumbers.stream().mapToDouble(TunableConstant::getAndUpdate).toArray());
     }
   }
 
@@ -138,11 +139,36 @@ public class TunableConstant implements DoubleSupplier {
     return get();
   }
 
+  public String getDashboardKey() {
+    return this.key;
+  }
+
   /**
    * Sets tuning mode of all tunable constants in existence
-   * @param tuningMode
+   * @param tuningMode Enable tuning mode
    */
   public static void updateAll(boolean tuningMode) {
     tunableList.forEach((tunable) -> tunable.setTuningMode(tuningMode));
+  }
+
+  /**
+   *
+   * @param dashboardKey The dashboard key of the tunables to set
+   * @param tuningMode Enable tuning mode
+   */
+  public static void updateByKey(String dashboardKey, boolean tuningMode) {
+    tunableList.forEach((tunable) -> {
+      if (tunable.getDashboardKey().equals(dashboardKey)) {
+        tunable.setTuningMode(tuningMode);
+      }
+    });
+  }
+
+  public static void updateBySubstring(String subKey, boolean tuningMode) {
+    tunableList.forEach((tunable) -> {
+      if (tunable.getDashboardKey().contains((subKey))) {
+        tunable.setTuningMode(tuningMode);
+      }
+    });
   }
 }

@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.Degree;
+import static edu.wpi.first.units.Units.Inches;
 
 import com.ctre.phoenix6.Utils;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -12,11 +13,10 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.vision.VisionPipeline;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utils.TunableConstant;
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -90,7 +90,7 @@ public class Vision extends SubsystemBase {
     TunableConstant pitch;
     TunableConstant roll;
 
-    List<TunableConstant> tunableList = List.of(x,y,z,yaw,pitch,roll);
+    ArrayList<TunableConstant> tunableList;
 
     Optional<StampedPose2d> robotPose = Optional.empty();
 
@@ -113,35 +113,25 @@ public class Vision extends SubsystemBase {
       this.x = new TunableConstant(cameraName, cameraToRobot.getX());
       this.y = new TunableConstant(cameraName, cameraToRobot.getY());
       this.z = new TunableConstant(cameraName, cameraToRobot.getZ());
-      this.yaw = new TunableConstant(cameraName, cameraToRobot.getRotation().getMeasureZ().in(Degree));
-      this.pitch = new TunableConstant(cameraName, cameraToRobot.getRotation().getMeasureY().in(Degree));
-      this.roll = new TunableConstant(cameraName, cameraToRobot.getRotation().getMeasureX().in(Degree));
+      this.yaw = new TunableConstant(
+          cameraName, cameraToRobot.getRotation().getMeasureZ().in(Degree));
+      this.pitch = new TunableConstant(
+          cameraName, cameraToRobot.getRotation().getMeasureY().in(Degree));
+      this.roll = new TunableConstant(
+          cameraName, cameraToRobot.getRotation().getMeasureX().in(Degree));
+      this.tunableList = new ArrayList<>(List.of(x, y, z, yaw, pitch, roll));
     }
 
     public void rebuildPoseEstimators() {
-      Transform3d cameraToRobot = new Transform3d (
-        x.getAndUpdate(),
-        y.getAndUpdate(),
-        z.getAndUpdate(),
-        new Rotation3d(
-          roll.getAndUpdate(),
-          pitch.getAndUpdate(),
-          yaw.getAndUpdate()));
+      Transform3d cameraToRobot = new Transform3d(
+          x.getAndUpdate(),
+          y.getAndUpdate(),
+          z.getAndUpdate(),
+          new Rotation3d(roll.getAndUpdate(), pitch.getAndUpdate(), yaw.getAndUpdate()));
 
-      try {
-        primaryPoseEstimator = new PhotonPoseEstimator(
-            fieldLayout,
-            PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-            cameraToRobot);
-
-        secondaryPoseEstimator = new PhotonPoseEstimator(
-            fieldLayout, PhotonPoseEstimator.PoseStrategy.CLOSEST_TO_LAST_POSE, cameraToRobot);
-
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
+      primaryPoseEstimator.setRobotToCameraTransform(cameraToRobot);
+      secondaryPoseEstimator.setRobotToCameraTransform(cameraToRobot);
     }
-
 
     private static boolean isValidPose(Pose3d pose) {
       double z = pose.getZ();
@@ -149,7 +139,7 @@ public class Vision extends SubsystemBase {
 
       double roll = rotation.getX();
       double pitch = rotation.getY();
-      double yaw = rotation.getZ();
+      // double yaw = rotation.getZ();
 
       if (Math.abs(roll) > Math.PI / 2 || Math.abs(pitch) > Math.PI / 2) {
         return false;
@@ -238,9 +228,7 @@ public class Vision extends SubsystemBase {
       return robotPose;
     }
 
-    public void rebuildCameras() {
-
-    }
+    public void rebuildCameras() {}
   }
 
   public Vision(Config config) {
@@ -361,8 +349,8 @@ public class Vision extends SubsystemBase {
   }
 
   public void testPeriodic() {
-    // leftVision.tunableList.forEach(tunable -> tunable.ifChanged(() -> leftVision.rebuildPoseEstimators(), null));
     TunableConstant.ifChanged((dub) -> leftVision.rebuildPoseEstimators(), leftVision.tunableList);
-    TunableConstant.ifChanged((dub) -> rightVision.rebuildPoseEstimators(), rightVision.tunableList);
-
+    TunableConstant.ifChanged(
+        (dub) -> rightVision.rebuildPoseEstimators(), rightVision.tunableList);
+  }
 }

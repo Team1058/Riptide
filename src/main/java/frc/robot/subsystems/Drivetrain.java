@@ -683,7 +683,7 @@ public class Drivetrain extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> imp
   }
 
   public RobotConfig getPPConfig() {
-      return ppConfig;
+    return ppConfig;
   }
 
   private void initializeShuffleboardEntries() {
@@ -772,7 +772,6 @@ public class Drivetrain extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> imp
       Rotation2d endHeading, LinearVelocity endVelocity, Pose2d... poses) {
     return makeGoToCommand(endHeading, endVelocity, Arrays.asList(poses));
   }
-
 
   // Make command to go to end pose with
   public Command makeGoToCommandWithMaxMPS(

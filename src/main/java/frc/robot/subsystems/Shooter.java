@@ -74,7 +74,7 @@ public class Shooter extends SubsystemBase {
     algaeMotorConfig = new SparkMaxConfig();
     intakeFlapMotorConfig = new SparkMaxConfig();
     algaePid = new TunablePID(
-        "/AlgeaMech/AlgaePid", config.algaeKP, config.algaeKI, config.algaeKD, config.algaeKF);
+        "/AlgaeMech/AlgaePid", config.algaeKP, config.algaeKI, config.algaeKD, config.algaeKF);
     slot1Pid = new TunablePID("/AlgeaMech/Slot1Pid", 0.01, 0, 0.00002, 0);
 
     STOWED = new TunableConstant("/AlgaeMech/Stowed", -5.5);

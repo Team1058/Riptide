@@ -1,6 +1,5 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Meter;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -9,8 +8,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.CommandUtil;
 import com.pathplanner.lib.auto.NamedCommands;
-
-import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -31,9 +28,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.FieldMap.ReefFace;
 import frc.robot.subsystems.FieldMap.ReefPole;
-import frc.robot.utils.HolonomicPose;
 import frc.robot.utils.PathToCommand;
-
 import java.util.Set;
 
 public class RobotContainer {
@@ -379,7 +374,14 @@ public class RobotContainer {
     // driveController.b().and(driveController.leftBumper()).whileTrue(driveToLeftCoralStation);
     // driveController.b().and(driveController.rightBumper()).whileTrue(driveToRightCoralStation);
 
-    driveController.b().whileTrue(new PathToCommand(drivetrain, fieldMap.coralStationLeft, fieldMap.coralStationLeft.getRotation()));
+    driveController
+        .b()
+        .whileTrue(Commands.defer(
+                () -> new PathToCommand(
+                    drivetrain, fieldMap.coralStationLeft, fieldMap.coralStationLeft.getRotation()),
+                Set.of(drivetrain))
+            .withName("DriveToCommand"));
+
     // driveController
     //     .pov(0)
     //     .and(() -> (driveController.leftBumper().getAsBoolean()
@@ -598,7 +600,9 @@ public class RobotContainer {
         },
         Set.of(drivetrain));
 
-    driveToNearestLeftPole = Commands.defer(() -> new PathToCommand(drivetrain, null, MetersPerSecond.of(0)), Set.of(drivetrain));
+    // driveToNearestLeftPole = Commands.defer(
+    //     () -> new PathToCommand(drivetrain, null, MetersPerSecond.of(0)), Set.of(drivetrain));
+
     driveToNearestRightPole = Commands.defer(
         () -> {
           var reefFace = fieldMap.getLockedReefFace(drivetrain.getPose());
