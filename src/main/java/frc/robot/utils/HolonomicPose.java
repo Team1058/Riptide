@@ -1,11 +1,10 @@
 package frc.robot.utils;
 
-import static edu.wpi.first.units.Units.*;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.subsystems.Drivetrain;
+import org.littletonrobotics.junction.Logger;
 
 public class HolonomicPose {
   private final Pose2d pose;
@@ -20,6 +19,7 @@ public class HolonomicPose {
   public HolonomicPose(Pose2d pose, Rotation2d heading) {
     this.pose = pose;
     this.heading = heading;
+    initializeLogging();
   }
 
   public HolonomicPose(Drivetrain dt) {
@@ -32,11 +32,22 @@ public class HolonomicPose {
 
     this.pose = new Pose2d(dt.getPose().getTranslation(), directionOfTravel);
     this.heading = dt.getPose().getRotation();
+    initializeLogging();
   }
 
   public HolonomicPose(Translation2d translation, Rotation2d rotation, Rotation2d heading) {
     this.pose = new Pose2d(translation, rotation);
     this.heading = heading;
+    initializeLogging();
+  }
+  /**
+   * Defines a Pose2d with heading and direction of travel
+   * This constructor asssumes direction of travel and heading to be the same.
+   * @param pose
+   */
+  public HolonomicPose(Pose2d pose) {
+    this.pose = pose;
+    this.heading = pose.getRotation();
   }
 
   public Pose2d getPose() {
@@ -74,6 +85,10 @@ public class HolonomicPose {
    */
   public HolonomicPose interpolate(HolonomicPose end, double t) {
     return new HolonomicPose(pose.interpolate(end.pose, t), heading.interpolate(end.heading, t));
+  }
+
+  private void initializeLogging() {
+    Logger.recordOutput("/HolonomicPose", this.pose);
   }
 
   @Override

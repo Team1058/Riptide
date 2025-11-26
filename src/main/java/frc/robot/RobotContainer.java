@@ -371,16 +371,19 @@ public class RobotContainer {
     driveController.y().and(driveController.leftBumper()).whileTrue(driveNearLeftPoleForLowerL);
     driveController.y().and(driveController.rightBumper()).whileTrue(driveNearRightPoleForLowerL);
 
-    // driveController.b().and(driveController.leftBumper()).whileTrue(driveToLeftCoralStation);
-    // driveController.b().and(driveController.rightBumper()).whileTrue(driveToRightCoralStation);
+    driveController
+        .b()
+        .and(driveController.leftBumper())
+        .whileTrue(new PathToCommand(drivetrain, fieldMap.coralStationLeft));
+    driveController
+        .b()
+        .and(driveController.rightBumper())
+        .whileTrue(new PathToCommand(drivetrain, fieldMap.coralStationRight));
 
     driveController
         .b()
-        .whileTrue(Commands.defer(
-                () -> new PathToCommand(
-                    drivetrain, fieldMap.coralStationLeft, fieldMap.coralStationLeft.getRotation()),
-                Set.of(drivetrain))
-            .withName("DriveToCommand"));
+        .and(driveController.rightBumper().or(driveController.leftBumper()).negate())
+        .whileTrue(new PathToCommand(drivetrain, fieldMap.coralStationMiddleRightIntermediate));
 
     // driveController
     //     .pov(0)

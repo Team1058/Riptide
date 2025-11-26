@@ -10,6 +10,7 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -23,7 +24,7 @@ public class PathToCommand extends Command {
   Drivetrain drivetrain;
   HolonomicPose currentPose;
   HolonomicPose endPose;
-  LinearVelocity endVelocity;
+  LinearVelocity endVelocity = MetersPerSecond.of(0);
   PathPlannerPath path;
   Command pathCommand;
   boolean running;
@@ -31,6 +32,14 @@ public class PathToCommand extends Command {
   Distance xTolerance = Meters.of(0.05);
   Distance yTolerance = Meters.of(0.05);
   Translation2d tolerance = new Translation2d(xTolerance, yTolerance);
+
+  public PathToCommand(Drivetrain drivetrain, HolonomicPose endPose) {
+    this.drivetrain = drivetrain;
+    this.endPose = endPose;
+
+    this.currentPose = new HolonomicPose(drivetrain);
+    addRequirements(drivetrain);
+  }
 
   public PathToCommand(Drivetrain drivetrain, HolonomicPose endPose, LinearVelocity endVelocity) {
     this.drivetrain = drivetrain;
@@ -43,32 +52,57 @@ public class PathToCommand extends Command {
   }
 
   public PathToCommand(Drivetrain drivetrain, Pose2d endPose, Rotation2d endHeading) {
-    System.out.println("creating");
     this.drivetrain = drivetrain;
     this.endPose = new HolonomicPose(endPose, endHeading);
+    this.currentPose = new HolonomicPose(drivetrain);
 
+    addRequirements(drivetrain);
+  }
+
+  public PathToCommand(
+      Drivetrain drivetrain, Pose2d endPose, Rotation2d endHeading, LinearVelocity endVelocity) {
+    this.drivetrain = drivetrain;
+    this.endVelocity = endVelocity;
+    this.endPose = new HolonomicPose(endPose, endHeading);
+    addRequirements(drivetrain);
+  }
+  /**
+   * Creates a path command using a drivetrain and a given end pose. This constructor assumes endpose's
+   * rotation to be the intended end direction of travel.
+   * @param drivetrain
+   * @param endPose
+   */
+  public PathToCommand(Drivetrain drivetrain, Pose2d endPose) {
+    this.drivetrain = drivetrain;
+    // This is only here bc all of our field waypoints are flipped 180deg, PLEASE CHANGE for 2026
+    endPose = endPose.transformBy(new Transform2d(0, 0, Rotation2d.k180deg));
+    this.endPose = new HolonomicPose(endPose, endPose.getRotation());
     addRequirements(drivetrain);
   }
 
   /** The initial subroutine of a command. Called once when the command is initially scheduled. */
   public void initialize() {
     try {
-      // this is not printing, making me think the command is never being initialized
-      System.out.println("initializing");
       // Use final pose getter from field map
-      path = getPath(endVelocity, List.of(currentPose.getPose(), endPose.getPose()));
-      this.pathCommand = new FollowPathCommand(
-          path,
-          drivetrain::getPose,
-          () -> drivetrain.getCurrentSpeeds(),
-          (speeds, feedforwards) -> drivetrain.setControl(new SwerveRequest.ApplyRobotSpeeds()
-              .withSpeeds(speeds)
-              .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
-              .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
-          drivetrain.ppDriveController,
-          drivetrain.getPPConfig(),
-          () -> false,
-          drivetrain);
+      this.currentPose = new HolonomicPose(drivetrain);
+      path = getPath(endVelocity, List.of(endPose.getPose()));
+      this.pathCommand = Commands.defer(
+          () -> new FollowPathCommand(
+                  path,
+                  drivetrain::getPose,
+                  () -> drivetrain.getCurrentSpeeds(),
+                  (speeds, feedforwards) ->
+                      drivetrain.setControl(new SwerveRequest.ApplyRobotSpeeds()
+                          .withSpeeds(speeds)
+                          .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+                          .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
+                  drivetrain.ppDriveController,
+                  drivetrain.getPPConfig(),
+                  () -> false,
+                  drivetrain)
+              .withName("Path Command"),
+          Set.of(drivetrain));
+      pathCommand.initialize();
     } catch (Exception e) {
       DriverStation.reportError(
           "Could not create go to command. " + e.getMessage(), e.getStackTrace());
@@ -104,6 +138,13 @@ public class PathToCommand extends Command {
    */
   public boolean isFinished() {
     return false;
+  }
+  /**
+   * Sets end velocity. This must be done before the command is initialized
+   * @param endVelocity
+   */
+  public void setEndVelocity(LinearVelocity endVelocity) {
+    this.endVelocity = endVelocity;
   }
 
   private PathPlannerPath getPath(LinearVelocity endVelocity, List<Pose2d> poses) {
