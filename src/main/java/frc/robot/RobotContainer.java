@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.FieldMap.ReefFace;
 import frc.robot.subsystems.FieldMap.ReefPole;
+import frc.robot.utils.HolonomicPose;
 import frc.robot.utils.PathToCommand;
 import java.util.Set;
 
@@ -374,16 +375,17 @@ public class RobotContainer {
     driveController
         .b()
         .and(driveController.leftBumper())
-        .whileTrue(new PathToCommand(drivetrain, fieldMap.coralStationLeft));
+        .whileTrue(new PathToCommand(drivetrain, new HolonomicPose(fieldMap.coralStationLeft)));
     driveController
         .b()
         .and(driveController.rightBumper())
-        .whileTrue(new PathToCommand(drivetrain, fieldMap.coralStationRight));
+        .whileTrue(new PathToCommand(drivetrain, new HolonomicPose(fieldMap.coralStationRight)));
 
     driveController
         .b()
         .and(driveController.rightBumper().or(driveController.leftBumper()).negate())
-        .whileTrue(new PathToCommand(drivetrain, fieldMap.coralStationMiddleRightIntermediate));
+        .whileTrue(new PathToCommand(
+            drivetrain, new HolonomicPose(fieldMap.coralStationMiddleRightIntermediate)));
 
     // driveController
     //     .pov(0)
@@ -946,4 +948,5 @@ public class RobotContainer {
       }
     }
   }
+
 }

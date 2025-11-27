@@ -60,6 +60,7 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.utils.HolonomicPose;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -469,6 +470,10 @@ public class Drivetrain extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> imp
 
   public Pose2d getPose() {
     return this.getState().Pose;
+  }
+
+  public HolonomicPose getHolonomicPose() {
+    return new HolonomicPose(this);
   }
 
   public ChassisSpeeds getCurrentSpeeds() {
