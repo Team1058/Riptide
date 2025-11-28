@@ -1,8 +1,13 @@
 package frc.robot.utils;
 
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
 import frc.robot.subsystems.Drivetrain;
 import org.littletonrobotics.junction.Logger;
 
@@ -85,6 +90,11 @@ public class HolonomicPose {
    */
   public HolonomicPose interpolate(HolonomicPose end, double t) {
     return new HolonomicPose(pose.interpolate(end.pose, t), heading.interpolate(end.heading, t));
+  }
+
+  public boolean isNear(HolonomicPose otherPose, Distance tolerance, Angle rotTolerance) {
+    return getTranslation().getDistance(otherPose.getTranslation()) < tolerance.in(Meters)
+        && getHeading().getMeasure().in(Radians) < rotTolerance.in(Radians);
   }
 
   private void initializeLogging() {
