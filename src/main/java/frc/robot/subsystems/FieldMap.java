@@ -162,6 +162,10 @@ public class FieldMap extends SubsystemBase {
     }
   }
 
+  public Pose2d getNearestPolePose(Pose2d pose, ReefPole pole) {
+    var reefFace = getLockedReefFace(pose);
+    return getPolePose(reefFace, pole);
+  }
   public Pose2d getPolePose(ReefFace face, ReefPole pole) {
     if (alliance == Alliance.Blue) {
       return face.bluePose.transformBy(pole.reefPoleTransform);
