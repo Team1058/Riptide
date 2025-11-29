@@ -6,6 +6,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.IdealStartingState;
+import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -24,14 +25,14 @@ public class PathToCommand extends Command {
   Drivetrain drivetrain;
   HolonomicPose currentPose;
   HolonomicPose endPose;
-  Supplier<HolonomicPose>[] pathPoseSuppliers;
-  Supplier<LinearVelocity> endVelocitySupplier;
-  // Default end velocity
-  LinearVelocity endVelocity = MetersPerSecond.of(0);
+  // Initialize as empty array
+  ArrayList<Supplier<HolonomicPose>> poseSuppliers = new ArrayList<>();
+  Supplier<LinearVelocity> endVelocitySupplier = () -> MetersPerSecond.of(0);
   PathPlannerPath path;
   Command pathCommand;
-  boolean endDeferred = false;
-  boolean velocityDeferred = false;
+
+  boolean pathConstraintsSet = false;
+  PathConstraints pathConstraints;
 
   Distance xTolerance = Meters.of(0.05);
   Distance yTolerance = Meters.of(0.05);
@@ -46,8 +47,7 @@ public class PathToCommand extends Command {
    */
   public PathToCommand(Drivetrain dt, HolonomicPose endPose) {
     this.drivetrain = dt;
-    this.endPose = endPose;
-
+    poseSuppliers.add(() -> endPose);
     addRequirements(drivetrain);
   }
 
@@ -59,9 +59,8 @@ public class PathToCommand extends Command {
    */
   public PathToCommand(Drivetrain dt, HolonomicPose endPose, LinearVelocity endVelocity) {
     this.drivetrain = dt;
-    this.endPose = endPose;
-    this.endVelocity = endVelocity;
-
+    poseSuppliers.add(() -> endPose);
+    endVelocitySupplier = () -> endVelocity;
     addRequirements(drivetrain);
   }
 
@@ -73,9 +72,11 @@ public class PathToCommand extends Command {
    */
   @SuppressWarnings("unchecked")
   public PathToCommand(Drivetrain dt, Supplier<HolonomicPose>... poseSuppliers) {
-    this.pathPoseSuppliers = poseSuppliers;
+    // iterate over pose suppliers and append each in order passed
+    for (int i = 0; i < poseSuppliers.length; i++) {
+      this.poseSuppliers.add(poseSuppliers[i]);
+    }
     this.drivetrain = dt;
-    this.endDeferred = true;
     addRequirements(drivetrain);
   }
 
@@ -90,10 +91,12 @@ public class PathToCommand extends Command {
       Drivetrain dt,
       Supplier<LinearVelocity> endVelocitySupplier,
       Supplier<HolonomicPose>... poseSuppliers) {
-    this.pathPoseSuppliers = poseSuppliers;
+
+    for (int i = 0; i < poseSuppliers.length; i++) {
+      this.poseSuppliers.add(poseSuppliers[i]);
+    }
+    this.endVelocitySupplier = endVelocitySupplier;
     this.drivetrain = dt;
-    this.endDeferred = true;
-    this.velocityDeferred = true;
     addRequirements(drivetrain);
   }
 
@@ -103,34 +106,15 @@ public class PathToCommand extends Command {
     try {
       ArrayList<Pose2d> poses = new ArrayList<>();
 
-      if (endDeferred) {
-        if (pathPoseSuppliers == null || pathPoseSuppliers.length == 0) {
-          throw new RuntimeException("Deferred path requested but no pose suppliers given.");
-        }
-
-        // add poses
-        for (int i = 0; i < pathPoseSuppliers.length; i++) {
-          poses.add(pathPoseSuppliers[i].get().getPose());
-        }
-
-        // initialize endpose
-        endPose = pathPoseSuppliers[pathPoseSuppliers.length - 1].get();
-
-      } else {
-        if (endPose == null) {
-          throw new RuntimeException("Non-deferred PathToCommand created without an end pose.");
-        }
-        poses.add(endPose.getPose());
-      }
+      poseSuppliers.forEach((supplier) -> poses.add(supplier.get().getPose()));
 
       this.currentPose = new HolonomicPose(drivetrain);
-
-      if (velocityDeferred && endVelocitySupplier != null) {
-        this.endVelocity = endVelocitySupplier.get();
+      this.endPose = poseSuppliers.get(poseSuppliers.size() - 1).get();
+      if (!pathConstraintsSet) {
+        pathConstraints = drivetrain.pathConstraints;
       }
-
       // build path
-      path = getPath(endVelocity, poses);
+      path = getPath(endVelocitySupplier.get(), poses);
 
       this.pathCommand = new FollowPathCommand(
               path,
@@ -158,7 +142,7 @@ public class PathToCommand extends Command {
   /** The main body of a command. Called repeatedly while the command is scheduled. */
   public void execute() {
     // Recheck current pose every loop cycle
-    currentPose = new HolonomicPose(drivetrain);
+    currentPose.update(drivetrain.getPose(), drivetrain.getHeading());
     pathCommand.execute();
   }
 
@@ -184,16 +168,15 @@ public class PathToCommand extends Command {
   public boolean isFinished() {
     return currentPose.isNear(endPose, tolerance, rotTolerance);
   }
-  /**
-   * Sets end velocity. This must be done before the command is initialized by the scheduler
-   * @param endVelocity
-   */
-  public void setEndVelocity(LinearVelocity endVelocity) {
-    this.endVelocity = endVelocity;
-  }
 
-  public void setEndPose(HolonomicPose endPose) {
-    this.endPose = endPose;
+  public PathToCommand withMaxSpeed(LinearVelocity speed) {
+    pathConstraints = new PathConstraints(
+      speed,
+      MetersPerSecondPerSecond.of(3.0),
+      drivetrain.getMaxAngularVelocity(),
+      RadiansPerSecondPerSecond.of(4 * Math.PI));
+      pathConstraintsSet = true;
+    return this;
   }
 
   /**
@@ -216,7 +199,7 @@ public class PathToCommand extends Command {
 
     path = new PathPlannerPath(
         waypoints,
-        drivetrain.pathConstraints,
+        pathConstraints,
         new IdealStartingState(startingVelocity, currentPose.getHeading()),
         new GoalEndState(endVelocity, endPose.getHeading()));
     path.preventFlipping = true;

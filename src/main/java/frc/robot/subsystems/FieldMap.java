@@ -166,6 +166,7 @@ public class FieldMap extends SubsystemBase {
     var reefFace = getLockedReefFace(pose);
     return getPolePose(reefFace, pole);
   }
+
   public Pose2d getPolePose(ReefFace face, ReefPole pole) {
     if (alliance == Alliance.Blue) {
       return face.bluePose.transformBy(pole.reefPoleTransform);

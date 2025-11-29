@@ -8,8 +8,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.CommandUtil;
 import com.pathplanner.lib.auto.NamedCommands;
-
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -605,19 +603,21 @@ public class RobotContainer {
     // driveToNearestLeftPole = Commands.defer(
     //     () -> new PathToCommand(drivetrain, null, MetersPerSecond.of(0)), Set.of(drivetrain));
 
-    driveToNearestRightPole = Commands.defer(
-        () -> {
-          var reefFace = fieldMap.getLockedReefFace(drivetrain.getPose());
-          var approachPose = fieldMap.getPolePose(reefFace, ReefPole.FarRight);
-          var finalPose = fieldMap.getPolePose(reefFace, ReefPole.Right);
-          return drivetrain.makeGoToCommand(
-              finalPose.getRotation(), MetersPerSecond.zero(), approachPose, finalPose);
-        },
-        Set.of(drivetrain));
+    // driveToNearestRightPole = Commands.defer(
+    //     () -> {
+    //       var reefFace = fieldMap.getLockedReefFace(drivetrain.getPose());
+    //       var approachPose = fieldMap.getPolePose(reefFace, ReefPole.FarRight);
+    //       var finalPose = fieldMap.getPolePose(reefFace, ReefPole.Right);
+    //       return drivetrain.makeGoToCommand(
+    //           finalPose.getRotation(), MetersPerSecond.zero(), approachPose, finalPose);
+    //     },
+    //     Set.of(drivetrain));
 
-    driveToNearestRightPole = new PathToCommand(drivetrain,
-     () -> new HolonomicPose(fieldMap.getNearestPolePose(drivetrain.getPose(), ReefPole.FarRight)),
-    () -> new HolonomicPose(fieldMap.getNearestPolePose(drivetrain.getPose(), ReefPole.Right)));
+    driveToNearestRightPole = new PathToCommand(
+        drivetrain,
+        () ->
+            new HolonomicPose(fieldMap.getNearestPolePose(drivetrain.getPose(), ReefPole.FarRight)),
+        () -> new HolonomicPose(fieldMap.getNearestPolePose(drivetrain.getPose(), ReefPole.Right)));
 
     driveSlowlyToNearestRightPole = Commands.defer(
         () -> {
@@ -908,7 +908,6 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     return autoChooser.getSelected();
   }
-
 
   public void ledSetPatternsLogic() {
     if (leds != null) {

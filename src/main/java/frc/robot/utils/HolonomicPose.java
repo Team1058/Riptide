@@ -12,8 +12,8 @@ import frc.robot.subsystems.Drivetrain;
 import org.littletonrobotics.junction.Logger;
 
 public class HolonomicPose {
-  private final Pose2d pose;
-  private final Rotation2d heading; // Direction of travel
+  private Pose2d pose;
+  private Rotation2d heading; // Direction of travel
 
   /**
    * Defines a Pose2d with heading, useful for swerve drives where direction of travel
@@ -71,6 +71,11 @@ public class HolonomicPose {
     return heading;
   }
 
+  public void update(Pose2d pose, Rotation2d heading) {
+    this.pose = pose;
+    this.heading = heading;
+  }
+
   public HolonomicPose relativeTo(HolonomicPose pose) {
     Pose2d relativePose = getPose().relativeTo(pose.getPose());
     Rotation2d relativeHeading = getHeading().minus(pose.getHeading());
@@ -92,9 +97,16 @@ public class HolonomicPose {
     return new HolonomicPose(pose.interpolate(end.pose, t), heading.interpolate(end.heading, t));
   }
 
+  /**
+   * Checks if holonomic pose is within tolerance positionally and rotationally
+   * @param otherPose Pose to check against
+   * @param tolerance Position tolerance
+   * @param rotTolerance Rotation tolerance
+   * @return boolean
+   */
   public boolean isNear(HolonomicPose otherPose, Distance tolerance, Angle rotTolerance) {
     return getTranslation().getDistance(otherPose.getTranslation()) < tolerance.in(Meters)
-        && getHeading().getMeasure().in(Radians) < rotTolerance.in(Radians);
+        && Math.abs(getHeading().minus(otherPose.getHeading()).getRadians()) < rotTolerance.in(Radians);
   }
 
   private void initializeLogging() {

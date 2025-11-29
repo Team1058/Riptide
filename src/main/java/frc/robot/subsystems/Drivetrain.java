@@ -472,6 +472,19 @@ public class Drivetrain extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> imp
     return this.getState().Pose;
   }
 
+  public Rotation2d getDirectionOfTravel() {
+    double x = getCurrentSpeeds().vxMetersPerSecond;
+    double y = getCurrentSpeeds().vyMetersPerSecond;
+    Rotation2d rot = (Math.hypot(x, y) > 1e-4)
+        ? new Rotation2d(Math.atan2(y, x))
+        : getPose().getRotation();
+    return rot;
+  }
+
+  public Rotation2d getHeading() {
+    return getPose().getRotation();
+  }
+
   public HolonomicPose getHolonomicPose() {
     return new HolonomicPose(this);
   }
