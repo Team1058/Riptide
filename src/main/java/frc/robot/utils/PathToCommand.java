@@ -30,8 +30,6 @@ public class PathToCommand extends Command {
   Supplier<LinearVelocity> endVelocitySupplier = () -> MetersPerSecond.of(0);
   PathPlannerPath path;
   Command pathCommand;
-
-  boolean pathConstraintsSet = false;
   PathConstraints pathConstraints;
 
   Distance xTolerance = Meters.of(0.05);
@@ -110,7 +108,7 @@ public class PathToCommand extends Command {
 
       this.currentPose = new HolonomicPose(drivetrain);
       this.endPose = poseSuppliers.get(poseSuppliers.size() - 1).get();
-      if (!pathConstraintsSet) {
+      if (pathConstraints == null) {
         pathConstraints = drivetrain.pathConstraints;
       }
       // build path
@@ -142,7 +140,8 @@ public class PathToCommand extends Command {
   /** The main body of a command. Called repeatedly while the command is scheduled. */
   public void execute() {
     // Recheck current pose every loop cycle
-    currentPose.update(drivetrain.getPose(), drivetrain.getHeading());
+    // Is this too expensive? Is there a better way of doing this?
+    currentPose = new HolonomicPose(drivetrain);
     pathCommand.execute();
   }
 
@@ -169,13 +168,48 @@ public class PathToCommand extends Command {
     return currentPose.isNear(endPose, tolerance, rotTolerance);
   }
 
+  /**
+   * Sets the max speed of the pathcommand
+   * @param speed
+   * @return
+   */
   public PathToCommand withMaxSpeed(LinearVelocity speed) {
+    if (pathConstraints != null) {
+      pathConstraints = new PathConstraints(
+        speed,
+         pathConstraints.maxAcceleration(),
+          pathConstraints.maxAngularVelocity(),
+           pathConstraints.maxAngularAcceleration());
+    } else {
+      // these should be the drivetrains default path constraints;
     pathConstraints = new PathConstraints(
       speed,
       MetersPerSecondPerSecond.of(3.0),
       drivetrain.getMaxAngularVelocity(),
       RadiansPerSecondPerSecond.of(4 * Math.PI));
-      pathConstraintsSet = true;
+    }
+    return this;
+  }
+
+  /**
+   * Set path constraints
+   * @param constraints
+   * @return itself for method chaining
+   */
+  public PathToCommand withPathConstraints(PathConstraints constraints) {
+    pathConstraints = constraints;
+    return this;
+  }
+
+  /**
+   * Adds a new waypoint to the front of the path
+   * @param waypoint Supplier of a HolonomicPose
+   * @return itself for method chaining
+   */
+  public PathToCommand withNewWaypoint(Supplier<HolonomicPose> waypoint) {
+    ArrayList<Supplier<HolonomicPose>> temp = new ArrayList<>(1 + poseSuppliers.size());
+    temp.add(waypoint);
+    temp.addAll(poseSuppliers);
     return this;
   }
 
