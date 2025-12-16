@@ -106,7 +106,8 @@ public class HolonomicPose {
    */
   public boolean isNear(HolonomicPose otherPose, Distance tolerance, Angle rotTolerance) {
     return getTranslation().getDistance(otherPose.getTranslation()) < tolerance.in(Meters)
-        && Math.abs(getHeading().minus(otherPose.getHeading()).getRadians()) < rotTolerance.in(Radians);
+        && Math.abs(getHeading().minus(otherPose.getHeading()).getRadians())
+            < rotTolerance.in(Radians);
   }
 
   private void initializeLogging() {

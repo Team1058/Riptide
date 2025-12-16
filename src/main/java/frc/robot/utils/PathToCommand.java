@@ -176,17 +176,17 @@ public class PathToCommand extends Command {
   public PathToCommand withMaxSpeed(LinearVelocity speed) {
     if (pathConstraints != null) {
       pathConstraints = new PathConstraints(
-        speed,
-         pathConstraints.maxAcceleration(),
+          speed,
+          pathConstraints.maxAcceleration(),
           pathConstraints.maxAngularVelocity(),
-           pathConstraints.maxAngularAcceleration());
+          pathConstraints.maxAngularAcceleration());
     } else {
       // these should be the drivetrains default path constraints;
-    pathConstraints = new PathConstraints(
-      speed,
-      MetersPerSecondPerSecond.of(3.0),
-      drivetrain.getMaxAngularVelocity(),
-      RadiansPerSecondPerSecond.of(4 * Math.PI));
+      pathConstraints = new PathConstraints(
+          speed,
+          MetersPerSecondPerSecond.of(3.0),
+          drivetrain.getMaxAngularVelocity(),
+          RadiansPerSecondPerSecond.of(4 * Math.PI));
     }
     return this;
   }

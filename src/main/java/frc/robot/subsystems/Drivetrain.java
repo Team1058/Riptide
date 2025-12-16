@@ -475,9 +475,8 @@ public class Drivetrain extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> imp
   public Rotation2d getDirectionOfTravel() {
     double x = getCurrentSpeeds().vxMetersPerSecond;
     double y = getCurrentSpeeds().vyMetersPerSecond;
-    Rotation2d rot = (Math.hypot(x, y) > 1e-4)
-        ? new Rotation2d(Math.atan2(y, x))
-        : getPose().getRotation();
+    Rotation2d rot =
+        (Math.hypot(x, y) > 1e-4) ? new Rotation2d(Math.atan2(y, x)) : getPose().getRotation();
     return rot;
   }
 
