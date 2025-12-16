@@ -27,9 +27,12 @@ public abstract class PVCSparkSystemBase extends SubsystemBase {
     public boolean followerConnected = true;
   }
 
-  protected String subsystemName;
   protected SubsystemInputs subsystemInputs;
   protected SparkBase primaryMotor;
+
+  public PVCSparkSystemBase(String name) {
+    super(name);
+  }
 
   public abstract void setAllMotorsBrake();
 
@@ -52,6 +55,6 @@ public abstract class PVCSparkSystemBase extends SubsystemBase {
   @Override
   public void periodic() {
     updateInputs();
-    Logger.processInputs(subsystemName, (SubsystemInputsAutoLogged) subsystemInputs);
+    Logger.processInputs(getName(), (SubsystemInputsAutoLogged) subsystemInputs);
   }
 }
